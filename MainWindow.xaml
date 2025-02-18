@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:NOBApp"
         xmlns:core="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="企鵝之野望" Height="250" Icon="/448545149_994763355983896_6737183326767466195_n.jpg" Width="680">
+        Title="企鵝之野望" Height="310" Icon="/448545149_994763355983896_6737183326767466195_n.jpg" Width="680">
 
     <Grid x:Name="Root" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <ListView x:Name="快速切換" HorizontalAlignment="Left" Height="126" Margin="570,8,0,0" VerticalAlignment="Top" Width="69"  SelectionChanged="QuickSelectShowList_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VerticalContentAlignment="Top" Grid.RowSpan="1" Grid.Column="5">
@@ -14,7 +14,6 @@
                 <GridViewColumn/>
             </GridView>
         </ListView>
-
         <TextBox x:Name="認證TBox" HorizontalAlignment="Left" Height="18" Margin="431,8,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="131" Grid.Column="1" Grid.ColumnSpan="3"/>
         <CheckBox x:Name="認證2CB" HorizontalAlignment="Left" Height="20" Margin="411,9,0,0" VerticalAlignment="Top" Width="20" Grid.ColumnSpan="2"/>
 
@@ -60,7 +59,7 @@
 
         </Canvas>
 
-        <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本區" Margin="5,110,5,0" VerticalAlignment="Top" Height="250">
+        <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本區" Margin="5,170,5,0" VerticalAlignment="Top" Height="250">
             <Grid x:Name="ControlGrid" UseLayoutRounding="False" HorizontalAlignment="Left" VerticalAlignment="Top" Height="218" Width="552" IsEnabled="False" Margin="0,5,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="123*"/>
@@ -72,11 +71,8 @@
                     <RowDefinition Height="0*"/>
                 </Grid.RowDefinitions>
                 <Canvas x:Name="武技設定頁面" d:IsHidden="True">
-                    <ComboBox x:Name="FName1" Height="20" Width="55" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="270" Canvas.Top="30" VerticalAlignment="Top"/>
-                    <ComboBox x:Name="FName2" Height="20" Width="55" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="270" Canvas.Top="50" VerticalAlignment="Top"/>
-                    <ComboBox x:Name="FName3" Height="20" Width="55" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="270" Canvas.Top="70" VerticalAlignment="Top"/>
-                    <TextBox x:Name="TB_SetANum" Height="20" TextWrapping="Wrap" Text="2" Width="30" MaxLines="1" MaxLength="2" ToolTip="1-上杉2-武田3-北條" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="10" Canvas.Top="30" VerticalAlignment="Top"/>
-                    <TextBox x:Name="TB_SetBNum" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="0-弱1-普2-強3-如鬼" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="70" Canvas.Top="30" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TB_選擇關卡" Height="20" TextWrapping="Wrap" Text="2" Width="30" MaxLines="1" MaxLength="2" ToolTip="1-上杉2-武田3-北條" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="10" Canvas.Top="30" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TB_選擇難度" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="0-弱1-普2-強3-如鬼" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="70" Canvas.Top="30" VerticalAlignment="Top"/>
                     <TextBox x:Name="TB_SetCNum" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="往下打幾場" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="40" Canvas.Top="30" VerticalAlignment="Top"/>
                     <TextBox x:Name="TB_Set家臣" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="家臣數量" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="100" Canvas.Top="30" VerticalAlignment="Top"/>
                     <CheckBox x:Name="CB_大會地" Content="大會地" Height="16" Width="63" Canvas.Left="135" Canvas.Top="32" HorizontalAlignment="Left" VerticalAlignment="Top" />
@@ -89,7 +85,6 @@
                 <TextBox x:Name="FNPCID" HorizontalAlignment="Left" Height="20" Margin="57,25,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="118" Visibility="Hidden" Grid.ColumnSpan="2"/>
                 <TextBox x:Name="SMENU1" HorizontalAlignment="Left" Height="20" Margin="71,50,0,0" TextWrapping="Wrap" Text="6" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
                 <CheckBox x:Name="CB_AllIn" Content="全邀請" Margin="79,122,0,0" VerticalAlignment="Top" Visibility="Hidden" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="56"/>
-                <Button Content="清除" HorizontalAlignment="Left" Height="19" Margin="79,98,0,0" VerticalAlignment="Top" Width="54" Click="Button_Click_5" Visibility="Hidden" Grid.Column="1" Grid.ColumnSpan="2"/>
                 <Canvas x:Name="黑槍Page" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" d:IsHidden="True">
                     <CheckBox x:Name="解無敵" Content="F5解無敵" Canvas.Left="55" Canvas.Top="140" HorizontalAlignment="Left" VerticalAlignment="Center" Width="74"/>
                     <CheckBox x:Name="CB_開打" Content="開打" Canvas.Left="0" Canvas.Top="140" HorizontalAlignment="Center" VerticalAlignment="Top"/>
@@ -129,7 +124,7 @@
                 <TextBox x:Name="SMENU2" HorizontalAlignment="Left" Height="20" Margin="101,50,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
             </Grid>
         </Expander>
-        <Expander x:Name="戰鬥輔助面" Grid.ColumnSpan="4" Header="戰鬥輔助" Margin="5,140,5,0" VerticalAlignment="Top" Height="523" d:IsHidden="True">
+        <Expander x:Name="戰鬥輔助面" Grid.ColumnSpan="4" Header="戰鬥輔助" Margin="5,200,5,0" VerticalAlignment="Top" Height="523" d:IsHidden="True">
             <Grid Background="#FFE5E5E5">
                 <Canvas x:Name="技能頁面" VerticalAlignment="Stretch">
                     <ScrollViewer Canvas.Top="100" Width="552">
@@ -331,9 +326,6 @@
                 </Canvas>
             </Grid>
         </Expander>
-
-
-
         <Grid x:Name="背景圖" ScrollViewer.VerticalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0.7" Panel.ZIndex="-65535" IsHitTestVisible="False" IsEnabled="False" Grid.Column="1" Width="572" Height="722" AutomationProperties.HelpText="手把-空白代表不啟動" Grid.ColumnSpan="3">
             <Grid.Background>
                 <ImageBrush Stretch="Uniform" ImageSource="/images.jpg" Opacity="0.1" TileMode="None">

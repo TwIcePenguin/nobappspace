@@ -81,15 +81,15 @@ namespace NOBApp
             public string UseSkillName { get; set; }
             public string 上次使用的腳本 { get; set; }
             public List<string> 組隊玩家技能 { get; set; }
-            public List<string> 同步設定玩家Name { get; set; }
-            public string 快捷 { get; set; }
+            public bool AllInTeam { get; set; }
             public int 自動結束X位置 { get; set; }
             public int 自動結束Y位置 { get; set; }
-
-            public int 天地關卡 { get; set; }
-            public int 天地難度 { get; set; }
-            public int 天地家臣數量 { get; set; }
-            public int 天地全邀 { get; set; }
+            /// <summary>
+            /// 地下町天地 連打幾場後出去
+            /// </summary>
+            public int 連續戰鬥 { get; set; }
+            public int 選擇關卡 { get; set; }
+            public int 選擇難度 { get; set; }
             public int 目標A { get; set; }
             public int 目標B { get; set; }
             public int 目標C { get; set; }

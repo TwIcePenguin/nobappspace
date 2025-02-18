@@ -8,7 +8,7 @@ using static NOBApp.MainWindow;
 
 namespace NOBApp.Sports
 {
-    internal class 討伐2025A : BaseClass
+    internal class 討伐2025_白石 : BaseClass
     {
         NOBDATA? mUseNOB;
         public int SetClass = 0;

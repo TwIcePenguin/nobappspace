@@ -23,11 +23,8 @@ namespace NOBApp.Sports
                     移動點 = new();
                     移動點.Add(new(MainNob.CodeSetting.定位點X, MainNob.CodeSetting.定位點Y));
                 }
-
                 MainNob.選擇目標類型(7);
             }
-
-
         }
 
         public override void 腳本運作()

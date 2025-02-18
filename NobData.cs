@@ -41,8 +41,11 @@ namespace NOBApp
             public DateTime TimeUP;
             public Process Proc;
             public RECT 原視窗;
+            public int NowHeight;
+            public int NowWidth;
             public int Hwnd => (int)Proc.MainWindowHandle;
 
+            static Random random = new Random();
             #region 記憶體讀取位置
             public string Account => ReadString("<nobolHD.bng> +" + AddressData.Acc, 0, 15);
             public string Password => ReadString("<nobolHD.bng> +" + AddressData.Pas, 0, 15);
@@ -589,9 +592,11 @@ namespace NOBApp
                 var width = 原視窗.Right - 原視窗.Left;
                 var height = 原視窗.Bottom - 原視窗.Top;
 
+                int inPosX = width / 2;
+                int inPosY = (height / 2) - 100;
                 離開戰鬥確認 = false;
                 int checkDoneCount = 0;
-                Task.Delay(500).Wait();
+                Task.Delay(100).Wait();
                 do
                 {
                     if (戰鬥中) { break; }
@@ -599,8 +604,9 @@ namespace NOBApp
                     if (對話與結束戰鬥)
                     {
                         checkDoneCount = 0;
-                        MR_Clik((width + 16) / 2 - 20, (height / 2) - 100);
-                        Task.Delay(100).Wait();
+                        var (x, y) = GetRandomPosition(inPosX, inPosY, 100, 50);
+                        MR_Clik(x, y);
+                        Task.Delay(50).Wait();
                     }
                     else
                     {
@@ -612,6 +618,14 @@ namespace NOBApp
                         }
                     }
                 } while ((MainWindow.CodeRun || MainWindow.UseAutoSkill) && true);
+
+                (int x, int y) GetRandomPosition(int centerX, int centerY, int rangeX, int rangeY)
+                {
+                    int x = centerX + random.Next(-rangeX, rangeX);
+                    int y = centerY + random.Next(-rangeY, rangeY);
+                    return (x, y);
+                }
+
             }
 
             public NOBDATA(Process proc)
@@ -619,37 +633,41 @@ namespace NOBApp
                 Proc = proc;
                 GetWindowRect(Proc.MainWindowHandle, out RECT rect);
                 原視窗 = rect;
-                var width = rect.Right - rect.Left;
-                var height = rect.Bottom - rect.Top;
-                Debug.WriteLine($"W : {width} H : {height} - {rect}");
+                NowWidth = rect.Right - rect.Left;
+                NowHeight = rect.Bottom - rect.Top;
+                //Debug.WriteLine($"W : {width} H : {height} - {rect}");
             }
 
-            public void 縮小(string str)
+            public void 縮小(string str = "")
             {
                 if (!string.IsNullOrEmpty(str))
                 {
                     var array = str.Split(',');
                     if (array.Length > 1)
                     {
-                        int.TryParse(array[0], out int width);
-                        int.TryParse(array[1], out int height);
-                        比例 = 比例 - 0.1f;
-                        float f = Math.Max(比例, 0.3f);
-
-                        MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, (int)((width + 16) * f), (int)((height + 39) * f), true);
+                        if (int.TryParse(array[0], out int width) && int.TryParse(array[1], out int height))
+                        {
+                            UpdateWindowSize(width, height, -0.1f);
+                        }
                     }
                 }
                 else
                 {
                     var width = 原視窗.Right - 原視窗.Left;
                     var height = 原視窗.Bottom - 原視窗.Top;
-                    比例 = 比例 - 0.1f;
-                    float f = Math.Max(比例, 0.3f);
-                    MoveWindow(Proc.MainWindowHandle, (int)原視窗.Left, (int)原視窗.Top, (int)(width * f), (int)(height * f), true);
+                    UpdateWindowSize(width, height, -0.1f);
                 }
             }
+            private void UpdateWindowSize(int width, int height, float scaleChange)
+            {
+                比例 = Math.Max(比例 + scaleChange, 0.3f);
+                float f = 比例;
+                NowWidth = (int)((width + 16) * f);
+                NowHeight = (int)((height + 39) * f);
+                MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, NowWidth, NowHeight, true);
+            }
 
-            public void 還原(string str)
+            public void 還原(string str = "")
             {
                 比例 = 1;
                 if (!string.IsNullOrEmpty(str))
@@ -657,12 +675,16 @@ namespace NOBApp
                     var array = str.Split(',');
                     if (array.Length > 1)
                     {
-                        int.TryParse(array[0], out int width);
-                        int.TryParse(array[1], out int height);
-                        MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, width + 16, height + 39, true);
+                        if (int.TryParse(array[0], out int width) && int.TryParse(array[1], out int height))
+                        {
+                            MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, width + 16, height + 39, true);
+                        }
                     }
                 }
-                //x + 16 y + 39
+                else
+                {
+                    MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, 原視窗.Right - 原視窗.Left, 原視窗.Bottom - 原視窗.Top, true);
+                }
             }
 
         }

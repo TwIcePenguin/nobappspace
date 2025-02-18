@@ -257,41 +257,15 @@ namespace NOBApp
 
         void RefreshNOBID_Sec()
         {
-            FName1.Items.Clear();
-            FName2.Items.Clear();
-            FName3.Items.Clear();
-            SelectFID_1.Items.Clear();
-            SelectFID_2.Items.Clear();
-            SelectFID_3.Items.Clear();
-            SelectFID_4.Items.Clear();
-            SelectFID_5.Items.Clear();
-            SelectFID_6.Items.Clear();
-            SelectFID_7.Items.Clear();
-
-            foreach (var item in nobList)
+            foreach (var cb in comboBoxes)
             {
-                FName1.Items.Add(item.PlayerName);
-                FName2.Items.Add(item.PlayerName);
-                FName3.Items.Add(item.PlayerName);
-                SelectFID_1.Items.Add(item.PlayerName);
-                SelectFID_2.Items.Add(item.PlayerName);
-                SelectFID_3.Items.Add(item.PlayerName);
-                SelectFID_4.Items.Add(item.PlayerName);
-                SelectFID_5.Items.Add(item.PlayerName);
-                SelectFID_6.Items.Add(item.PlayerName);
-                SelectFID_7.Items.Add(item.PlayerName);
+                cb.Items.Clear();
+                foreach (var item in nobList)
+                {
+                    cb.Items.Add(item.PlayerName);
+                }
+                cb.Items.Add("");
             }
-
-            FName1.Items.Add("");
-            FName2.Items.Add("");
-            FName3.Items.Add("");
-            SelectFID_1.Items.Add("");
-            SelectFID_2.Items.Add("");
-            SelectFID_3.Items.Add("");
-            SelectFID_4.Items.Add("");
-            SelectFID_5.Items.Add("");
-            SelectFID_6.Items.Add("");
-            SelectFID_7.Items.Add("");
         }
 
         public static List<long> 目標IDs = new();

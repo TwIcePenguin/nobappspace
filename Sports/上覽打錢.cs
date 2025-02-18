@@ -38,9 +38,6 @@ namespace NOBApp.Sports
         {
             統計販賣戰鬥 = false;
             mENDCheck = 0;
-            if (上覽小販 < 1)
-                上覽小販 = 大黑天ID + 65;
-
             if (MainNob != null)
             {
                 大黑天ID = MainNob.CodeSetting.目標A;
