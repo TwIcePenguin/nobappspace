@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS8600: 正在將 Null 常值或可能的 Null 值轉換為不可為 Null 的型別。
+dotnet_diagnostic.CS8600.severity = none
