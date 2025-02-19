@@ -14,9 +14,39 @@ using System.Windows;
 
 namespace NOBApp
 {
+
     public partial class MainWindow
     {
         public static List<NOBDATA> useNobList = new List<NOBDATA>();
+        public static List<NPCData> allNPCs = GetAllNPCs();
+        /// <summary>
+        /// NPC 類型 96
+        /// </summary>
+        public static List<NPCData> filteredNPCs = FilterNPCsByType(allNPCs, 96);
+        public static List<NPCData> GetFilteredNPCs(int targetChid)
+        {
+            // 取得所有 NPC 資料
+            allNPCs = MainWindow.GetAllNPCs();
+
+            // 過濾出符合條件的 NPC
+            return MainWindow.FilterNPCsByType(allNPCs, targetChid);
+        }
+
+        public static NPCData GetNPCWithMinID()
+        {
+            // 過濾出符合條件的 NPC
+            List<NPCData> filteredNPCs = GetFilteredNPCs(96);
+
+            if (filteredNPCs == null || filteredNPCs.Count == 0)
+            {
+                throw new InvalidOperationException("filteredNPCs 列表為空或未初始化。");
+            }
+
+            // 找出 ID 最小的 NPC
+            var npcWithMinID = filteredNPCs.OrderBy(npc => npc.ID).FirstOrDefault();
+            return npcWithMinID;
+        }
+
         /// <summary>
         /// 註冊訊息
         /// </summary>
@@ -210,7 +240,7 @@ namespace NOBApp
             Debug.WriteLine(dJson);
             PNobUserData nobUseData = JsonSerializer.Deserialize<PNobUserData>(dJson);
             if (nobUseData != null && string.IsNullOrEmpty(nobUseData.Acc) == false &&
-                string.IsNullOrEmpty(UseLockNOB!.Account) == false)
+                string.IsNullOrEmpty(UseLockNOB?.Account) == false)
             {
                 DateTime getOnlineTime = GetNetworkTimeAsync();
                 if (DateTime.TryParse(nobUseData.StartTimer, out 到期日) && 到期日 > getOnlineTime)
@@ -528,7 +558,69 @@ namespace NOBApp
             return foundNpcIds;
         }
 
-        // ... 你的 HexStringToByteArray 函數 (放在 Main 函數外面或其他方便的地方) ...
+        static public List<NPCData> GetAllNPCs()
+        {
+            List<NPCData> allNPCs = new List<NPCData>();
+
+            if (UseLockNOB == null)
+            {
+                Debug.WriteLine("UseLockNOB 為 null，無法搜尋 NPC。");
+                return allNPCs; // 如果 NOB 未鎖定，返回空列表
+            }
+
+            string startAddress = AddressData.搜尋身邊NPCID起始; // 使用已儲存的 AddressData
+
+            // 1. 批次讀取記憶體: 一次讀取所有 NPC 資料
+            int npcCountToRead = 150; // 固定迴圈次數，考慮是否能動態化
+            int bytesToRead = npcCountToRead * 12; // 根據原始碼，每個 NPC 條目佔 12 位元組
+
+            string dataStr = MainWindow.dmSoft?.ReadData(UseLockNOB.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
+
+            if (string.IsNullOrEmpty(dataStr))
+                return allNPCs; // 處理dataStr失敗
+
+            byte[] npcDataBytes = null;
+            try
+            {
+                npcDataBytes = HexStringToByteArray(dataStr); // 使用 HexStringToByteArray 函數
+            }
+            catch (FormatException ex)
+            {
+                Debug.WriteLine($"轉換 Hex 字串時發生錯誤: {ex.Message}");
+                return allNPCs; // 處理 Hex 字串格式錯誤
+            }
+
+            if (npcDataBytes == null || npcDataBytes.Length != bytesToRead)
+            {
+                Debug.WriteLine($"{npcDataBytes == null} 讀取 NPC 資料區塊時發生錯誤。 ReadData 返回 null 或不正確的大小。");
+                return allNPCs; // 處理記憶體讀取失敗
+            }
+
+            // 2. 在記憶體中處理批次資料
+            for (int i = 0; i < npcCountToRead; i++)
+            {
+                int offset = i * 12; // 位元組陣列中每個 NPC 條目的偏移量
+
+                long findID = BitConverter.ToInt32(npcDataBytes, offset); // 讀取 Int32 (4 位元組) 作為 findID
+                int chid = npcDataBytes[offset + 3];
+                ushort dis = BitConverter.ToUInt16(npcDataBytes, offset + 4); // 讀取 UInt16 (2 位元組) 作為 dis
+
+                allNPCs.Add(new NPCData
+                {
+                    ID = findID,
+                    Chid = chid,
+                    Distance = dis
+                });
+            }
+
+            return allNPCs;
+        }
+
+        public static List<NPCData> FilterNPCsByType(List<NPCData> allNPCs, int targetChid)
+        {
+            return allNPCs.Where(npc => npc.Chid == targetChid).ToList();
+        }
+
         public static byte[] HexStringToByteArray(string hex)
         {
             hex = hex.Replace(" ", "");
@@ -546,4 +638,11 @@ namespace NOBApp
         }
     }
 
+}
+
+public class NPCData
+{
+    public long ID { get; set; }
+    public int Chid { get; set; }
+    public ushort Distance { get; set; }
 }

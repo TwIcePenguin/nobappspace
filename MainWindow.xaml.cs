@@ -51,10 +51,10 @@ namespace NOBApp
         DispatcherTimer _timer = new DispatcherTimer();
         static 隊伍技能紀錄 m隊伍技能紀錄 = new();
         Dictionary<string, Action> menuMapping = new Dictionary<string, Action>();
-        static bool 自動結束_A = false;
-        static bool 自動結束_B = false;
-        static bool 隊長希望取得 = false;
-        static bool 全隊追蹤 = false;
+        public static bool 自動結束_A = false;
+        public static bool 自動結束_B = false;
+        public static bool 隊長希望取得 = false;
+        public static bool 全隊追蹤 = false;
         static bool isGoogleReg = false;
         public static bool Enter點怪 = false;
         public static bool F5解無敵 = false;
@@ -1619,7 +1619,7 @@ namespace NOBApp
 
             UseLockNOB.CodeSetting.UseSkillName = SkillComTitle.Text;
             UseLockNOB.CodeSetting.上次使用的腳本 = SelectMenu.Text;
-
+            UseLockNOB!.CodeSetting.組隊玩家技能 = new List<string>();
             foreach (var cb in comboBoxes)
             {
                 saveSkillUserList(cb);
@@ -1627,9 +1627,16 @@ namespace NOBApp
 
             void saveSkillUserList(ComboBox cb)
             {
-                if (cb.SelectedItem != null && !string.IsNullOrEmpty(cb.SelectedItem.ToString()))
+                try
                 {
-                    UseLockNOB!.CodeSetting.組隊玩家技能.Add(cb.SelectedItem.ToString()!);
+                    if (cb.SelectedItem != null && !string.IsNullOrEmpty(cb.SelectedItem.ToString()))
+                    {
+                        UseLockNOB!.CodeSetting.組隊玩家技能.Add(cb.SelectedItem.ToString()!);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("saveSkillUserList Error -> " + e.ToString());
                 }
             }
 

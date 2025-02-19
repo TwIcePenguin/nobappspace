@@ -11,8 +11,8 @@ namespace NOBApp.Sports
 {
     public class BaseClass
     {
-        // 移動相關常數 - 建議值，可根據遊戲調整
-        private const int InitialDelayMs = 300;                  // 初始延遲 (毫秒)
+        #region 移動相關常數 - 建議值，可根據遊戲調整
+        private const int InitialDelayMs = 300;                  // 初始延遲 (毫秒)
         private const int BattleCheckDelayMs = 500;               // 戰鬥檢查延遲 (毫秒)
         private const int DistanceThresholdForWaypoint = 300;     // 中途點距離閾值 (像素)
         private const int DistanceThresholdForFinalWaypoint = 200;  // 最終點距離閾值 (像素)
@@ -24,8 +24,8 @@ namespace NOBApp.Sports
         private const int BattleEndCheckDelayMs = 500;            // 戰鬥結束檢查延遲 (毫秒)
         private const int BattleEndCheckRetries = 3;              // 戰鬥結束檢查重試次數
         private const int LoopDelayMs = 20;                       // 迴圈延遲 (毫秒)
-
-        ~BaseClass()  // finalizer
+        #endregion
+        ~BaseClass()  // finalizer
         {
             // cleanup statements...
         }
@@ -566,9 +566,8 @@ namespace NOBApp.Sports
             return false; // 如果迴圈因為 MainWindow.CodeRun 為 false 而結束，也返回 false
         }
 
+
     }
-
-
 
     public enum E_TargetColor
     {
@@ -576,7 +575,6 @@ namespace NOBApp.Sports
         橘NPC,
         紅NPC,
     }
-
 
     public struct 座標
     {
