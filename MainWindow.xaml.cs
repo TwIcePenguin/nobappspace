@@ -620,6 +620,8 @@ namespace NOBApp
                 { "冥宮", () => { useMenu = new 冥宮();  } },
                 { "鬼島", () => { useMenu = new 鬼島(); Btn_TargetA.Content = "村長-補符"; 黑槍Page.Visibility = Visibility.Visible; 自動鎖定PC.Visibility = 鎖定後自動黑槍.Visibility = 鎖定排序.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible; 其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
                 { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
+                { "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
+
                 { "地下町天地", () => { useMenu = new 地下町天地(); 武技設定頁面.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = Btn_TargetC.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility = Visibility.Visible; } },
                 { "刷大名物", () => { useMenu = new 刷大名物(); } },
                 { "超級打怪", () => { useMenu = new 超級打怪(); Btn_TargetA.Content = "鎖定目標"; Btn_TargetA.Visibility = Visibility.Visible; } },
@@ -738,6 +740,9 @@ namespace NOBApp
 
         private void CB_HID_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (CB_HID.SelectedValue == null)
+                return;
+
             string idstr = CB_HID.SelectedValue.ToString();
             bool autoCheckin = string.IsNullOrEmpty(idstr) == false && 讀取認證訊息Name(idstr) && string.IsNullOrEmpty(CUCDKEY) == false;
 
