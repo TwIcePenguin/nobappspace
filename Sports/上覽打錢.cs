@@ -42,6 +42,7 @@ namespace NOBApp.Sports
             {
                 大黑天ID = MainNob.CodeSetting.目標A;
                 上覽小販 = MainNob.CodeSetting.目標B;
+                線路 = MainNob.CodeSetting.線路;
             }
         }
         public override void 腳本運作()

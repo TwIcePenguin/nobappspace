@@ -19,11 +19,17 @@ namespace NOBApp
     {
         public static List<NOBDATA> useNobList = new List<NOBDATA>();
         public static List<NPCData> allNPCs = GetAllNPCs();
+        public static List<NPCData> skipNPCs = new();
+        public static int NpcCountToRead = 150;
         /// <summary>
         /// NPC 類型 96
         /// </summary>
         public static List<NPCData> filteredNPCs = FilterNPCsByType(allNPCs, 96);
-        public static List<NPCData> GetFilteredNPCs(int targetChid)
+        public static void AddNowFindNpcToSkip()
+        {
+            skipNPCs.AddRange(allNPCs);
+        }
+        public static List<NPCData> GetFilteredNPCs(int targetChid = 96)
         {
             // 取得所有 NPC 資料
             allNPCs = MainWindow.GetAllNPCs();
@@ -32,7 +38,45 @@ namespace NOBApp
             return MainWindow.FilterNPCsByType(allNPCs, targetChid);
         }
 
-        public static NPCData GetNPCWithMinID()
+        public static List<NPCData> GetFilteredNPCs(int minDistance, int maxDistance = 65535, int targetChid = 96)
+        {
+            // 取得所有 NPC 資料
+            allNPCs = MainWindow.GetAllNPCs();
+            List<NPCData> filteredNPCs = GetFilteredNPCs(96);
+
+            // 過濾出符合距離條件的 NPC
+            var filteredByDistance = filteredNPCs.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance).ToList();
+
+            if (filteredByDistance.Count == 0)
+            {
+                throw new InvalidOperationException("沒有符合距離條件的 NPC。");
+            }
+
+            // 過濾出符合條件的 範圍內的 NPCs
+            return filteredNPCs;
+        }
+
+        public static NPCData GetNPCWithMinID(int minDistance = 0, int maxDistance = 65535, long greaterThanID = 0)
+        {
+            // 過濾出符合條件的 NPC
+            List<NPCData> filteredNPCs = GetFilteredNPCs(96);
+
+            // 過濾出符合距離條件的 NPC
+            var filteredByDistance = filteredNPCs.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance).ToList();
+
+            if (filteredByDistance.Count == 0)
+            {
+                throw new InvalidOperationException("沒有符合距離條件的 NPC。");
+            }
+
+            var filteredByID = filteredByDistance.Where(npc => npc.ID > greaterThanID).ToList();
+
+            // 找出 ID 最小的 NPC
+            var npcWithMinID = filteredByDistance.OrderBy(npc => npc.ID).FirstOrDefault();
+            return npcWithMinID;
+        }
+
+        public static NPCData GetNPCWithMaxID(int minDistance = 0, int maxDistance = 65535)
         {
             // 過濾出符合條件的 NPC
             List<NPCData> filteredNPCs = GetFilteredNPCs(96);
@@ -42,10 +86,19 @@ namespace NOBApp
                 throw new InvalidOperationException("filteredNPCs 列表為空或未初始化。");
             }
 
-            // 找出 ID 最小的 NPC
-            var npcWithMinID = filteredNPCs.OrderBy(npc => npc.ID).FirstOrDefault();
-            return npcWithMinID;
+            // 過濾出符合距離條件的 NPC
+            var filteredByDistance = filteredNPCs.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance).ToList();
+
+            if (filteredByDistance.Count == 0)
+            {
+                throw new InvalidOperationException("沒有符合距離條件的 NPC。");
+            }
+
+            // 找出 ID 最大的 NPC
+            var npcWithMaxID = filteredByDistance.OrderByDescending(npc => npc.ID).FirstOrDefault();
+            return npcWithMaxID;
         }
+
 
         /// <summary>
         /// 註冊訊息
@@ -571,7 +624,7 @@ namespace NOBApp
             string startAddress = AddressData.搜尋身邊NPCID起始; // 使用已儲存的 AddressData
 
             // 1. 批次讀取記憶體: 一次讀取所有 NPC 資料
-            int npcCountToRead = 150; // 固定迴圈次數，考慮是否能動態化
+            int npcCountToRead = NpcCountToRead; // 固定迴圈次數，考慮是否能動態化
             int bytesToRead = npcCountToRead * 12; // 根據原始碼，每個 NPC 條目佔 12 位元組
 
             string dataStr = MainWindow.dmSoft?.ReadData(UseLockNOB.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
@@ -604,6 +657,11 @@ namespace NOBApp
                 long findID = BitConverter.ToInt32(npcDataBytes, offset); // 讀取 Int32 (4 位元組) 作為 findID
                 int chid = npcDataBytes[offset + 3];
                 ushort dis = BitConverter.ToUInt16(npcDataBytes, offset + 4); // 讀取 UInt16 (2 位元組) 作為 dis
+                                                                              // 忽略 skipNPCs 名單中的 NPC
+                if (skipNPCs.Any(npc => npc.ID == findID))
+                {
+                    continue;
+                }
 
                 allNPCs.Add(new NPCData
                 {

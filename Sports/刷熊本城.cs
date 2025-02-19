@@ -108,7 +108,7 @@ namespace NOBApp.Sports
 
                             while (MainWindow.CodeRun)
                             {
-                                talkID_1 = 顏色尋目標(checkIDC1, E_TargetColor.藍NPC);
+                                talkID_1 = 顏色尋目標前往(checkIDC1, E_TargetColor.藍NPC);
 
                                 if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                 {
@@ -199,7 +199,7 @@ namespace NOBApp.Sports
                             //第一次對話 清正
                             while (MainWindow.CodeRun)
                             {
-                                talkID_1 = 顏色尋目標(checkIDC1, E_TargetColor.藍NPC);
+                                talkID_1 = 顏色尋目標前往(checkIDC1, E_TargetColor.藍NPC);
 
                                 if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                 {
@@ -212,7 +212,7 @@ namespace NOBApp.Sports
                             Task.Delay(2000).Wait();
                             while (MainWindow.CodeRun)
                             {
-                                talkID_1 = 顏色尋目標(checkIDC1, E_TargetColor.藍NPC);
+                                talkID_1 = 顏色尋目標前往(checkIDC1, E_TargetColor.藍NPC);
                                 if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                 {
                                     cache地圖 = MainNob.MAPID;

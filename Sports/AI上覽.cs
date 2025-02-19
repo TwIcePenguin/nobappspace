@@ -133,6 +133,8 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
+                Debug.WriteLine($"尋找戰鬥 {MainNob.GetSStatus} {m進行官ID} {m上一場目標ID} {m目標ID} MAP : {MainNob.MAPID}");
+
                 MainNob.目前動作 = "尋找戰鬥:" + MainNob.GetSStatus + " : " + MainNob.MAPID;
                 if (狀態刷新判斷())
                 {
@@ -141,6 +143,7 @@ namespace NOBApp.Sports
                         if (m目標ID != 0)
                         {
                             m上一場目標ID = m目標ID;
+                            MainWindow.AddNowFindNpcToSkip();
                         }
                         是否經過戰鬥 = false;
                         mErrorCheck = 0;
@@ -157,14 +160,6 @@ namespace NOBApp.Sports
 
                         MainNob.KeyPress(VKeys.KEY_ENTER, 3);
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 4);
-                    }
-                    else if (mErrorCheck > 5)
-                    {
-                        Task.Delay(200).Wait();
-                        MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
-                        MainNob.KeyPressT(VKeys.KEY_W, 500);
-                        Task.Delay(200).Wait();
-                        尋找筆試官();
                     }
 
                     if (m進行官ID == 0)
@@ -252,19 +247,10 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                // 取得所有 NPC 資料
-                List<NPCData> allNPCs = MainWindow.GetAllNPCs();
-
-                // 過濾出符合條件的 NPC
-                List<NPCData> filteredNPCs = MainWindow.FilterNPCsByType(allNPCs, 96);
-
                 // 找出符合條件的 NPC
-                NPCData? nextTargetNPC = filteredNPCs
-                    .Where(npc => npc.ID > m上一場目標ID)
-                    .OrderBy(npc => npc.ID)
-                    .FirstOrDefault(npc => Math.Abs(npc.ID - m上一場目標ID) < 7);
+                NPCData? nextTargetNPC = MainWindow.GetNPCWithMinID(0, 65534, m上一場目標ID);
 
-                if (nextTargetNPC != null)
+                if (nextTargetNPC != null && nextTargetNPC.ID > m上一場目標ID && Math.Abs(nextTargetNPC.ID - m上一場目標ID) < 7)
                 {
                     m目標ID = (int)nextTargetNPC.ID;
                     MainNob.MoveToNPC(m目標ID);
@@ -356,6 +342,7 @@ namespace NOBApp.Sports
                         m進行官ID = 0;
                         m目標ID = 0;
                         mENDCheck = 0;
+                        MainWindow.skipNPCs.Clear();
                         入場正式NPC說話 = false;
                         是否經過戰鬥 = false;
                         Task.Delay(1000).Wait();
@@ -418,8 +405,7 @@ namespace NOBApp.Sports
 
         void 尋找筆試官()
         {
-
-            var minNpcData = MainWindow.GetNPCWithMinID();
+            var minNpcData = MainWindow.GetNPCWithMaxID(65534, 65536);
             m進行官ID = (int)minNpcData.ID + 1;
             m目標ID = (int)minNpcData.ID - 1;
         }

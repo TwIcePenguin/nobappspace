@@ -324,7 +324,7 @@ namespace NOBApp.Sports
                                 MainNob.目前動作 = $"離開 尋找絕 = {TalkID_1} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
                                 if (TalkID_1 == -1)
                                 {
-                                    TalkID_1 = 顏色尋目標(15, E_TargetColor.藍NPC);
+                                    TalkID_1 = 顏色尋目標前往(15, E_TargetColor.藍NPC);
                                 }
                                 else
                                 {

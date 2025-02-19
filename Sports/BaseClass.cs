@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Org.BouncyCastle.Asn1.X509;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -273,6 +274,7 @@ namespace NOBApp.Sports
 
         public List<int> targetIDs = new();
         public List<int> skipIDs = new();
+
         public List<int> 顏色尋目標群(int colorMath, int needCount = 1, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             List<int> targets = new();
@@ -330,6 +332,59 @@ namespace NOBApp.Sports
             return targets;
         }
 
+
+        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, int targetChid = 96, E_TargetColor eTC = E_TargetColor.藍NPC)
+        {
+            int targetID = -1;
+            if (MainNob != null)
+            {
+                string colorStr = eTC switch
+                {
+                    E_TargetColor.紅NPC => "6363EE",
+                    E_TargetColor.橘NPC => "565ABD",
+                    _ => "F6F67A",
+                };
+                int findCheck = 0;
+
+                var allNPCIDs = MainWindow.GetFilteredNPCs(minDistance, maxDistance);
+                while (CodeRun)
+                {
+                    foreach (var npc in allNPCIDs)
+                    {
+                        if (skipIDs.Contains((int)npc.ID))
+                            continue;
+
+                        MainNob.鎖定NPC((int)npc.ID);
+                        Task.Delay(200).Wait();
+                        var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), colorStr);
+                        if (c1 == colorMath)
+                        {
+                            targetID = (int)npc.ID;
+                            return targetID;
+                        }
+                    }
+
+                    if (targetID != -1)
+                    {
+                        Debug.WriteLine($"敵人搜尋完成");
+                        return targetID;
+                    }
+                    else
+                    {
+                        MainNob.KeyPressT(VKeys.KEY_E, 500);
+                    }
+                    findCheck++;
+                    if (findCheck > 3)
+                    {
+                        allNPCIDs = MainWindow.GetFilteredNPCs(minDistance, maxDistance + 2000);
+                        findCheck = 0;
+                        skipIDs.Clear();
+                    }
+                }
+            }
+            return targetID;
+        }
+
         public int 顏色尋目標(int colorMath, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             int targetID = -1;
@@ -339,6 +394,20 @@ namespace NOBApp.Sports
                 if (list.Count > 0)
                 {
                     targetID = list[0];
+                    return targetID;
+                }
+            }
+            return targetID;
+        }
+
+        public int 顏色尋目標前往(int colorMath, E_TargetColor eTC = E_TargetColor.藍NPC)
+        {
+            int targetID = -1;
+            if (MainNob != null)
+            {
+                targetID = 顏色尋目標(colorMath, eTC);
+                if (targetID > 0)
+                {
                     MainNob.MoveToNPC(targetID);
                     return targetID;
                 }
@@ -487,7 +556,7 @@ namespace NOBApp.Sports
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
                 {
-                    talkNPCID = 顏色尋目標(targetColorCheck, targetNPCType); // 呼叫顏色尋目標函數尋找目標
+                    talkNPCID = 顏色尋目標前往(targetColorCheck, targetNPCType); // 呼叫顏色尋目標函數尋找目標
 
                     if (talkNPCID == -1) // 如果顏色尋目標函數找不到目標
                     {
@@ -531,7 +600,7 @@ namespace NOBApp.Sports
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
                 {
-                    talkNPCID = 顏色尋目標(targetColorCheck, targetNPCType); // 呼叫顏色尋目標函數尋找目標
+                    talkNPCID = 顏色尋目標前往(targetColorCheck, targetNPCType); // 呼叫顏色尋目標函數尋找目標
 
                     if (talkNPCID == -1) // 如果顏色尋目標函數找不到目標
                     {
