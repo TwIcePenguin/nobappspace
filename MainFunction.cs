@@ -25,7 +25,7 @@ namespace NOBApp
         /// NPC 類型 96
         /// </summary>
         public static List<NPCData> filteredNPCs = FilterNPCsByType(allNPCs, 96);
-        public static void AddNowFindNpcToSkip()
+        public static List<NPCData> GetFilteredNPCs(int targetChid)
         {
             skipNPCs.AddRange(allNPCs);
         }
@@ -38,45 +38,7 @@ namespace NOBApp
             return MainWindow.FilterNPCsByType(allNPCs, targetChid);
         }
 
-        public static List<NPCData> GetFilteredNPCs(int minDistance, int maxDistance = 65535, int targetChid = 96)
-        {
-            // 取得所有 NPC 資料
-            allNPCs = MainWindow.GetAllNPCs();
-            List<NPCData> filteredNPCs = GetFilteredNPCs(96);
-
-            // 過濾出符合距離條件的 NPC
-            var filteredByDistance = filteredNPCs.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance).ToList();
-
-            if (filteredByDistance.Count == 0)
-            {
-                throw new InvalidOperationException("沒有符合距離條件的 NPC。");
-            }
-
-            // 過濾出符合條件的 範圍內的 NPCs
-            return filteredNPCs;
-        }
-
-        public static NPCData GetNPCWithMinID(int minDistance = 0, int maxDistance = 65535, long greaterThanID = 0)
-        {
-            // 過濾出符合條件的 NPC
-            List<NPCData> filteredNPCs = GetFilteredNPCs(96);
-
-            // 過濾出符合距離條件的 NPC
-            var filteredByDistance = filteredNPCs.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance).ToList();
-
-            if (filteredByDistance.Count == 0)
-            {
-                throw new InvalidOperationException("沒有符合距離條件的 NPC。");
-            }
-
-            var filteredByID = filteredByDistance.Where(npc => npc.ID > greaterThanID).ToList();
-
-            // 找出 ID 最小的 NPC
-            var npcWithMinID = filteredByDistance.OrderBy(npc => npc.ID).FirstOrDefault();
-            return npcWithMinID;
-        }
-
-        public static NPCData GetNPCWithMaxID(int minDistance = 0, int maxDistance = 65535)
+        public static NPCData GetNPCWithMinID()
         {
             // 過濾出符合條件的 NPC
             List<NPCData> filteredNPCs = GetFilteredNPCs(96);
