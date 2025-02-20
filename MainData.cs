@@ -10,7 +10,28 @@ using System.Windows;
 
 namespace NOBApp
 {
+    public class UData
+    {
+        public string KeyStr { get; set; } = string.Empty;
+    }
 
+    public class UseTime
+    {
+        public string FromName { get; set; } = string.Empty;
+        public string StartTimer { get; set; } = string.Empty;
+        public string EndTimer { get; set; } = string.Empty;
+        public string ISEND { get; set; } = string.Empty;
+        public string CheckC { get; set; } = string.Empty;
+    }
+
+    public class FPDATA
+    {
+        public string UserName { get; set; } = string.Empty;
+        public string Acc { get; set; } = string.Empty;
+        public string Pww { get; set; } = string.Empty;
+        public string SerialNumber { get; set; } = string.Empty;
+        public string LoginTimer { get; set; } = string.Empty;
+    }
 
     public class PNobUserData
     {

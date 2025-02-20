@@ -27,7 +27,7 @@ namespace NOBApp.Sports
                     Task.Delay(100).Wait();
                 }
 
-                if (MainWindow.目標IDs != null && MainWindow.開打)
+                if (MainWindow.TargetsID != null && MainWindow.開打)
                 {
                     if (MainNob.待機)
                     {
@@ -39,14 +39,14 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
                         }
 
-                        Debug.WriteLine($"{MainWindow.目標IDs.Count}");
-                        if (MainWindow.目標IDs.Count == 0)
+                        Debug.WriteLine($"{MainWindow.TargetsID.Count}");
+                        if (MainWindow.TargetsID.Count == 0)
                         {
                             MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                         }
                         else
                         {
-                            for (int i = 0; i < MainWindow.目標IDs.Count; i++)
+                            for (int i = 0; i < MainWindow.TargetsID.Count; i++)
                             {
                                 if (MainWindow.開打 == false || !MainNob.待機)
                                 {
@@ -58,7 +58,7 @@ namespace NOBApp.Sports
                                     break;
                                 }
 
-                                var id = (int)MainWindow.目標IDs[i];
+                                var id = (int)MainWindow.TargetsID[i];
                                 if (MainWindow.Enter點怪)
                                 {
                                     MainNob.鎖定NPC(id);
@@ -100,8 +100,8 @@ namespace NOBApp.Sports
                         {
                             cacheIGID.Remove(delint[i]);
 
-                            if (MainWindow.忽略名單IDs.Contains(delint[i]) == false)
-                                MainWindow.忽略名單IDs.Add(delint[i]);
+                            if (MainWindow.IgnoredIDs.Contains(delint[i]) == false)
+                                MainWindow.IgnoredIDs.Add(delint[i]);
                         }
                     }
 

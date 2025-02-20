@@ -1,3 +1,4 @@
+using NOBApp.GoogleData;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,11 +12,6 @@ namespace NOBApp
     public class WebRegistration
     {
         public static List<NOBDATA> useNobList = new List<NOBDATA>();
-
-        public class UData
-        {
-            public string KeyStr { get; set; }
-        }
 
         public void OnWebReg()
         {
@@ -61,7 +57,7 @@ namespace NOBApp
                                     var fdata = JsonSerializer.Serialize(data);
                                     var fdataStr = Encoder.AesEncrypt(fdata);
 
-                                    var jdata = JsonSerializer.Serialize(new UData() { KeyStr = fdataStr }); ;
+                                    var jdata = JsonSerializer.Serialize(new UData() { KeyStr = fdataStr });
 
                                     var content = new StringContent(jdata, Encoding.UTF8, "application/json");
 
@@ -74,7 +70,7 @@ namespace NOBApp
                                     {
                                         string responseContent = await response.Content.ReadAsStringAsync();
                                         Debug.WriteLine($"回傳訊息 -> \n{responseContent}");
-                                        MainWindow.讀取認證訊息Json(responseContent);
+                                        Authentication.讀取認證訊息Json(responseContent);
                                     }
                                     else
                                     {

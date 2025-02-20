@@ -24,7 +24,7 @@ namespace NOBApp
         /// <param name="minID">ID 最小值</param>
         /// <param name="maxID">ID 最大值</param>
         /// <returns>符合條件的 NPC 清單</returns>
-        public static List<NPCData> GetFilteredNPCs(List<NPCType> types = null, int minDistance = 0, int maxDistance = int.MaxValue, long? minID = null, long? maxID = null)
+        public static List<NPCData> GetFilteredNPCs(TargetTypes flags = TargetTypes.None, int minDistance = 0, int maxDistance = int.MaxValue, long? minID = null, long? maxID = null)
         {
             // 取得所有 NPC 資料
             allNPCs = GetAllNPCs();
@@ -33,9 +33,9 @@ namespace NOBApp
             var query = allNPCs.AsEnumerable();
 
             // 過濾類型
-            if (types != null && types.Count > 0)
+            if (flags != TargetTypes.None)
             {
-                query = query.Where(npc => types.Contains(npc.Type));
+                query = query.Where(npc => (npc.Type & flags) != 0);
             }
 
             // 過濾距離
@@ -116,16 +116,30 @@ namespace NOBApp
                 {
                     continue;
                 }
-
+                TargetTypes type = TargetTypes.None;
+                switch (chid)
+                {
+                    case 1: type = TargetTypes.Player; break;
+                    case 96: type = TargetTypes.NPC; break;
+                    case 254: type = TargetTypes.TreasureBox; break;
+                    default: break;
+                }
+                //Debug.WriteLine($"NPC ID: {findID}, Type: {type}, Distance: {dis}");
                 allNPCs.Add(new NPCData
                 {
                     ID = findID,
-                    Type = (NPCType)chid,
+                    Type = type,
                     Distance = dis
                 });
             }
 
             return allNPCs;
+        }
+
+        public static List<int> GetAllNPCIDs()
+        {
+            allNPCs = GetAllNPCs();
+            return allNPCs.Select(npc => (int)npc.ID).ToList();
         }
 
         /// <summary>
@@ -150,42 +164,22 @@ namespace NOBApp
         }
     }
 
+    [Flags]
+    public enum TargetTypes
+    {
+        None = 0,
+        Player = 1 << 0,
+        NPC = 1 << 1,
+        TreasureBox = 1 << 2
+    }
+
     /// <summary>
-    /// NPC 資料類別
+    /// 取代原本的 int chid，改用旗標表示具體類型
     /// </summary>
     public class NPCData
     {
         public long ID { get; set; }
-
-        /// <summary>
-        /// NPC 的類型，對應如下：
-        /// - `1`：玩家（Player）
-        /// - `96`：一般 NPC
-        /// - `254`：寶箱（TreasureBox）
-        /// </summary>
-        public NPCType Type { get; set; }
-
+        public TargetTypes Type { get; set; }
         public ushort Distance { get; set; }
-    }
-
-    /// <summary>
-    /// NPC 類型枚舉
-    /// </summary>
-    public enum NPCType
-    {
-        /// <summary>
-        /// 玩家
-        /// </summary>
-        Player = 1,
-
-        /// <summary>
-        /// 一般 NPC
-        /// </summary>
-        NPC = 96,
-
-        /// <summary>
-        /// 寶箱
-        /// </summary>
-        TreasureBox = 254
     }
 }

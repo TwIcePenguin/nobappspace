@@ -123,7 +123,7 @@ namespace NOBApp.Sports
                     }
 
                     Debug.WriteLine("全部補完");
-                    MainWindow.忽略名單IDs.Clear();
+                    MainWindow.IgnoredIDs.Clear();
                     全部追隨();
                     Task.Delay(1000).Wait();
                     戰鬥回合 = 0;
@@ -177,7 +177,7 @@ namespace NOBApp.Sports
                     {
                         Debug.WriteLine($"搜尋新敵人");
                         MainNob.目前動作 = "搜尋新敵人";
-                        MainWindow.目標IDs.Clear();
+                        MainWindow.TargetsID.Clear();
                         Task.Delay(300).Wait();
                         UpdateUI?.Invoke();
                         Task.Delay(100).Wait();
@@ -189,7 +189,7 @@ namespace NOBApp.Sports
                         }
                     }
 
-                    if (MainWindow.目標IDs != null && MainWindow.開打)
+                    if (MainWindow.TargetsID != null && MainWindow.開打)
                     {
                         MainNob.目前動作 = "待機";
                         if (MainNob.待機)
@@ -209,8 +209,8 @@ namespace NOBApp.Sports
                                 移動倒掛網點();
                             }
 
-                            Debug.WriteLine($" 目前目標數量 : {MainWindow.目標IDs.Count}");
-                            if (MainWindow.目標IDs.Count == 0)
+                            Debug.WriteLine($" 目前目標數量 : {MainWindow.TargetsID.Count}");
+                            if (MainWindow.TargetsID.Count == 0)
                             {
                                 MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                             }
@@ -218,9 +218,9 @@ namespace NOBApp.Sports
                             {
                                 MainNob.目前動作 = $"尋找目標..SPCheck {spCheck}.";
                                 bool battleIn = false;
-                                for (int i = 0; i < MainWindow.目標IDs.Count; i++)
+                                for (int i = 0; i < MainWindow.TargetsID.Count; i++)
                                 {
-                                    var emID = MainWindow.目標IDs[i];
+                                    var emID = MainWindow.TargetsID[i];
                                     if (skipID.Contains(emID))
                                     {
                                         continue;
@@ -235,19 +235,20 @@ namespace NOBApp.Sports
                                     //岩石
                                     if (0 > emID || emID > 4261412000)
                                     {
-                                        if (MainWindow.cacheNPCID.ContainsKey(emID))
+                                        var npc = MainWindow.allNPCs.FirstOrDefault(npc => npc.ID == emID);
+                                        if (npc != null)
                                         {
-                                            Debug.WriteLine($"目標 : {emID} 範圍 : {MainWindow.cacheNPCID[emID]}");
-                                        }
-                                        MainNob.MoveToNPC((int)emID);
-                                        foreach (var nob in 隊員智能功能組)
-                                        {
-                                            if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                            Debug.WriteLine($"目標 : {emID} 範圍 : {npc.Distance}");
+
+                                            MainNob.MoveToNPC((int)emID);
+                                            foreach (var nob in 隊員智能功能組)
                                             {
-                                                nob.NOB.MoveToNPC((int)emID);
+                                                if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                                {
+                                                    nob.NOB.MoveToNPC((int)emID);
+                                                }
                                             }
                                         }
-
                                         Task.Delay(3500).Wait();
                                         dis = Dis(MainNob.PosX, MainNob.PosY, 掛網點.X, 掛網點.Y);
                                         if (dis > 4000)
@@ -300,8 +301,8 @@ namespace NOBApp.Sports
                                         }
                                         全部追隨();
                                         Task.Delay(2000).Wait();
-                                        if (MainWindow.忽略名單IDs.Contains(emID) == false)
-                                            MainWindow.忽略名單IDs.Add(emID);
+                                        if (MainWindow.IgnoredIDs.Contains(emID) == false)
+                                            MainWindow.IgnoredIDs.Add(emID);
                                     }
                                     else
                                     {
@@ -313,10 +314,6 @@ namespace NOBApp.Sports
                                             case 5:
                                             case 15:
                                                 int tryNum = 0;
-                                                if (MainWindow.cacheNPCID.ContainsKey(emID))
-                                                {
-                                                    Debug.WriteLine($"目標 : {emID} 範圍 : {MainWindow.cacheNPCID[emID]}");
-                                                }
                                                 while (MainWindow.CodeRun)
                                                 {
                                                     全部追隨();
@@ -353,8 +350,8 @@ namespace NOBApp.Sports
                                                         if (MainNob.戰鬥中)
                                                         {
                                                             Task.Delay(1000).Wait();
-                                                            if (MainWindow.忽略名單IDs.Contains(emID) == false)
-                                                                MainWindow.忽略名單IDs.Add(emID);
+                                                            if (MainWindow.IgnoredIDs.Contains(emID) == false)
+                                                                MainWindow.IgnoredIDs.Add(emID);
                                                             spCheck = 0;
                                                             tryFindNum = 0;
 
@@ -383,22 +380,22 @@ namespace NOBApp.Sports
                                                         if (tryNum > 6)
                                                         {
                                                             tryNum = 0;
-                                                            if (MainWindow.忽略名單IDs.Contains(emID) == false)
-                                                                MainWindow.忽略名單IDs.Add(emID);
+                                                            if (MainWindow.IgnoredIDs.Contains(emID) == false)
+                                                                MainWindow.IgnoredIDs.Add(emID);
                                                             break;
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        if (MainWindow.忽略名單IDs.Contains(emID) == false)
-                                                            MainWindow.忽略名單IDs.Add(emID);
+                                                        if (MainWindow.IgnoredIDs.Contains(emID) == false)
+                                                            MainWindow.IgnoredIDs.Add(emID);
                                                         break;
                                                     }
                                                 }
                                                 break;
                                             default:
-                                                if (MainWindow.忽略名單IDs.Contains(emID) == false)
-                                                    MainWindow.忽略名單IDs.Add(emID);
+                                                if (MainWindow.IgnoredIDs.Contains(emID) == false)
+                                                    MainWindow.IgnoredIDs.Add(emID);
                                                 continue;
                                         }
 

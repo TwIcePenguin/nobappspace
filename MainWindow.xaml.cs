@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using NOBApp.GoogleData;
+﻿using NOBApp.GoogleData;
 using NOBApp.Sports;
-using NPOI.SS.Formula.Functions;
 using RegisterDmSoftConsoleApp.Configs;
 using RegisterDmSoftConsoleApp.DmSoft;
 using System;
@@ -13,14 +11,10 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms.Integration;
-using System.Windows.Input;
 using System.Windows.Threading;
-using static NOBApp.MainWindow;
 
 namespace NOBApp
 {
@@ -55,7 +49,7 @@ namespace NOBApp
         public static bool 自動結束_B = false;
         public static bool 隊長希望取得 = false;
         public static bool 全隊追蹤 = false;
-        static bool isGoogleReg = false;
+        public static bool isGoogleReg = false;
         public static bool Enter點怪 = false;
         public static bool F5解無敵 = false;
         public static int 限點數量 = 2;
@@ -100,7 +94,7 @@ namespace NOBApp
             //设置全局路径,设置了此路径后,所有接口调用中,相关的文件都相对于此路径.比如图片,字库等
             dmSoft.SetPath(DmConfig.DmGlobalPath);
 
-            UIUpdate.RefreshNOBID_Sec(comboBoxes, nobList);
+            RefreshNOBID();
 
             var list = Tools.InitResolution();
             foreach (var item in list)
@@ -410,7 +404,7 @@ namespace NOBApp
             Enter點怪 = E點怪.IsChecked ?? false;
         }
 
-        private void 解無敵_Click(object sender, RoutedEventArgs e)    
+        private void 解無敵_Click(object sender, RoutedEventArgs e)
         {
             F5解無敵 = 解無敵.IsChecked ?? false;
         }
@@ -623,7 +617,7 @@ namespace NOBApp
                 { "冥宮", () => { useMenu = new 冥宮();  } },
                 { "鬼島", () => { useMenu = new 鬼島(); Btn_TargetA.Content = "村長-補符"; 黑槍Page.Visibility = Visibility.Visible; 自動鎖定PC.Visibility = 鎖定後自動黑槍.Visibility = 鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible; 其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
                 { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
-                { "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
+                //{ "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
 
                 { "地下町天地", () => { useMenu = new 地下町天地(); 武技設定頁面.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = Btn_TargetC.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility = Visibility.Visible; } },
                 { "刷大名物", () => { useMenu = new 刷大名物(); } },
@@ -638,7 +632,7 @@ namespace NOBApp
 
         void OnRefreshNOBID(object sender, RoutedEventArgs e)
         {
-            UIUpdate.RefreshNOBID_Sec(comboBoxes, nobList);
+            RefreshNOBID();
         }
 
         void RefreshNOBID()

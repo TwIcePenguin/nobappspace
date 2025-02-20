@@ -334,7 +334,7 @@ namespace NOBApp.Sports
         }
 
 
-        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, List<NPCType>? types = null, E_TargetColor eTC = E_TargetColor.藍NPC)
+        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, TargetTypes types = TargetTypes.None, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             int targetID = -1;
             if (MainNob != null)
@@ -377,7 +377,7 @@ namespace NOBApp.Sports
                     findCheck++;
                     if (findCheck > 3)
                     {
-                        allNPCIDs = MainWindow.GetFilteredNPCs(new List<NPCType> { NPCType.NPC }, minDistance, maxDistance + 2000); findCheck = 0;
+                        allNPCIDs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, minDistance, maxDistance + 2000); findCheck = 0;
                         skipIDs.Clear();
                     }
                 }

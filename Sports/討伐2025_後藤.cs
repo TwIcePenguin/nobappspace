@@ -153,7 +153,7 @@ namespace NOBApp.Sports
                         //搜尋目標
                         while (CodeRun)
                         {
-                            var allNPCIDs = GetNPCIDs();
+                            var allNPCIDs = GetAllNPCIDs();
                             foreach (var id in allNPCIDs)
                             {
                                 if (skipID.Contains(id))
@@ -282,7 +282,7 @@ namespace NOBApp.Sports
                         {
                             while (CodeRun)
                             {
-                                var allNPCIDs = GetNPCIDs();
+                                var allNPCIDs = GetAllNPCIDs();
                                 foreach (var id in allNPCIDs)
                                 {
                                     if (skipID.Contains(id))

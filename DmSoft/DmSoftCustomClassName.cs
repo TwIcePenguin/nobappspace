@@ -1001,29 +1001,6 @@ namespace RegisterDmSoftConsoleApp.DmSoft
             return result.ToString();
         }
 
-        public byte[] ReadDataByteArr(int hwnd, string addr, int size)
-        {
-            object[] args = new object[3];
-            object result;
-            args[0] = hwnd;
-            args[1] = addr;
-            args[2] = size;
-
-            result = obj.InvokeMember("ReadData", BindingFlags.InvokeMethod, null, obj_object, args);
-            byte[] byteArrayResult = null; // 初始化為 null
-            try
-            {
-                byteArrayResult = (byte[])result; // 直接強制轉換為 byte[]
-            }
-            catch (InvalidCastException castEx)
-            {
-                //Debug.WriteLine($"型別轉換例外 (InvalidCastException): 無法將 object 轉換為 byte[]。");
-                //Debug.WriteLine($"實際型別為: {result?.GetType().FullName}"); // 顯示實際型別，方便除錯
-                //Debug.WriteLine($"例外詳細資訊: {castEx.ToString()}");
-                return null; // 轉換失敗，返回 null 或拋出例外
-            }
-            return byteArrayResult;
-        }
 
         public int SetWordLineHeightNoDict(int line_height)
         {

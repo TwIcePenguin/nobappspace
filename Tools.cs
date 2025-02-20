@@ -268,7 +268,7 @@ namespace NOBApp
                     {
                         string content = await response.Content.ReadAsStringAsync();
                         Debug.WriteLine($"回傳訊息 -> \n{content}");
-                        MainWindow.讀取認證訊息Json(content);
+                        Authentication.讀取認證訊息Json(content);
                         // 處理回應內容
                     }
                 }

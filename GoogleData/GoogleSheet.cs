@@ -180,24 +180,6 @@ namespace NOBApp.GoogleData
             }
         }
     }
-
-    public class UseTime
-    {
-        public string FromName { get; set; } = string.Empty;
-        public string StartTimer { get; set; } = string.Empty;
-        public string EndTimer { get; set; } = string.Empty;
-        public string ISEND { get; set; } = string.Empty;
-        public string CheckC { get; set; } = string.Empty;
-    }
-
-    public class FPDATA
-    {
-        public string UserName { get; set; } = string.Empty;
-        public string Acc { get; set; } = string.Empty;
-        public string Pww { get; set; } = string.Empty;
-        public string SerialNumber { get; set; } = string.Empty;
-        public string LoginTimer { get; set; } = string.Empty;
-    }
     public static class ItemsMapper
     {
         public static List<UseTime> MapFromRangeData_UseTime(IList<IList<object>> values)
