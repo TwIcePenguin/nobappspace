@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Asn1.X509;
+﻿using NPOI.SS.Formula.Functions;
+using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -288,20 +289,20 @@ namespace NOBApp.Sports
                 };
                 int findCheck = 0;
 
-                var allNPCIDs = GetNPCIDs();
+                var allNPCIDs = GetAllNPCs();
                 while (CodeRun)
                 {
-                    foreach (var id in allNPCIDs)
+                    foreach (var npc in allNPCIDs)
                     {
-                        if (skipIDs.Contains(id))
+                        if (skipIDs.Contains((int)npc.ID))
                             continue;
 
-                        MainNob.鎖定NPC(id);
+                        MainNob.鎖定NPC((int)npc.ID);
                         Task.Delay(200).Wait();
                         var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), colorStr);
-                        if (c1 == colorMath && targets.Contains(id) == false)
+                        if (c1 == colorMath && targets.Contains((int)npc.ID) == false)
                         {
-                            targets.Add(id);
+                            targets.Add((int)npc.ID);
                         }
 
                         if (targets.Count >= needCount)
@@ -323,7 +324,7 @@ namespace NOBApp.Sports
                     findCheck++;
                     if (findCheck > 3)
                     {
-                        allNPCIDs = GetNPCIDs();
+                        allNPCIDs = GetAllNPCs();
                         findCheck = 0;
                         skipIDs.Clear();
                     }
@@ -333,7 +334,7 @@ namespace NOBApp.Sports
         }
 
 
-        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, int targetChid = 96, E_TargetColor eTC = E_TargetColor.藍NPC)
+        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, List<NPCType>? types = null, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             int targetID = -1;
             if (MainNob != null)
@@ -346,7 +347,7 @@ namespace NOBApp.Sports
                 };
                 int findCheck = 0;
 
-                var allNPCIDs = MainWindow.GetFilteredNPCs(minDistance, maxDistance);
+                var allNPCIDs = MainWindow.GetFilteredNPCs(types, minDistance, maxDistance);
                 while (CodeRun)
                 {
                     foreach (var npc in allNPCIDs)
@@ -376,8 +377,7 @@ namespace NOBApp.Sports
                     findCheck++;
                     if (findCheck > 3)
                     {
-                        allNPCIDs = MainWindow.GetFilteredNPCs(minDistance, maxDistance + 2000);
-                        findCheck = 0;
+                        allNPCIDs = MainWindow.GetFilteredNPCs(new List<NPCType> { NPCType.NPC }, minDistance, maxDistance + 2000); findCheck = 0;
                         skipIDs.Clear();
                     }
                 }

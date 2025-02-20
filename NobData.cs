@@ -688,10 +688,4 @@ namespace NOBApp
 
     }
 
-    public class NPCData
-    {
-        public long ID { get; set; }
-        public int Chid { get; set; }
-        public ushort Distance { get; set; }
-    }
 }

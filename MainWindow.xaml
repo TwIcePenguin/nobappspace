@@ -90,16 +90,13 @@
                     <CheckBox x:Name="CB_開打" Content="開打" Canvas.Left="0" Canvas.Top="140" HorizontalAlignment="Center" VerticalAlignment="Top"/>
                     <TextBox x:Name="搜尋範圍" TextWrapping="Wrap" Text="1000" Width="69" Canvas.Left="0" Canvas.Top="65" HorizontalAlignment="Left" VerticalAlignment="Top" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍"/>
                     <CheckBox x:Name="特搜" Content="特搜" Width="52" IsChecked="True" Visibility="Hidden" HorizontalAlignment="Left" Canvas.Left="4" Canvas.Top="32" VerticalAlignment="Top"/>
-                    <ListBox x:Name="鎖定排序" Height="107" Width="110" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="116" Canvas.Top="27" VerticalAlignment="Top" SelectionChanged="鎖定排序_SelectionChanged"/>
-                    <ListBox x:Name="目前名單" Height="87" Width="119" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="232" Canvas.Top="46" VerticalAlignment="Center" SelectionChanged="目前名單_SelectionChanged"/>
+                    <ListBox x:Name="鎖定名單" Height="107" Width="110" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="116" Canvas.Top="27" VerticalAlignment="Top" />
+                    <ListBox x:Name="目前名單" Height="87" Width="119" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="232" Canvas.Top="46" VerticalAlignment="Center" />
                     <CheckBox x:Name="自動鎖定PC" Content="自動鎖" Height="15" Width="63" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="30" VerticalAlignment="Top" />
                     <CheckBox x:Name="鎖定後自動黑槍" Content="F9黑" Height="15" Width="58" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="47" VerticalAlignment="Top"/>
                     <Button x:Name="添加名單" Content="++" Height="30" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="55" VerticalAlignment="Top"/>
                     <Button x:Name="移除名單" Content="--" Height="29" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="85" VerticalAlignment="Top"/>
-                    <Button x:Name="手添目標" Content="手添" Height="20" Width="30" HorizontalAlignment="Left" Canvas.Left="321" Canvas.Top="26" VerticalAlignment="Top"/>
                     <Button x:Name="鎖定目標添加" Content="鎖添" Height="27" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="27" VerticalAlignment="Top"/>
-
-                    <TextBox  x:Name="手動添加" Height="20" Canvas.Left="232" TextWrapping="Wrap" Text="" Canvas.Top="27" Width="89" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <ListBox x:Name="忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" SelectionChanged="目前名單_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <CheckBox x:Name="E點怪" Content="ENT點怪" Canvas.Left="130" Canvas.Top="140" Width="73" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <TextBox x:Name="其他選項A" TextWrapping="Wrap" Text="2" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
