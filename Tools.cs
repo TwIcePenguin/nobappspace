@@ -177,7 +177,7 @@ namespace NOBApp
         static uint transition = 0;
         static uint lParamDown;
         static uint lParamUp;
-        public static async void KeyPress(this IntPtr hProcess, VKeys keyCode, int ss = 100)
+        public static void KeyPress(this IntPtr hProcess, VKeys keyCode, int ss = 100)
         {
             repeatCount = 0;
             scanCode = 0;
@@ -254,7 +254,6 @@ namespace NOBApp
             return (int.Parse(str, NumberStyles.HexNumber) + i).ToString("X");
         }
 
-        static bool timeUpSetDone = false;
         static public bool timeUpUpdate = false;
         public static async void GetWebsiteData(Uri uri)
         {
@@ -428,7 +427,7 @@ namespace NOBApp
             RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc\Window");
             string value = registryKey.GetValue("DeviceRequirement")?.ToString();
             var array = value?.Split(',');
-            array[5] = array[8] = w;
+            array![5] = array[8] = w;
             array[6] = array[9] = h;
             registryKey.SetValue("DeviceRequirement", string.Join(',', array));
         }
@@ -485,7 +484,7 @@ namespace NOBApp
                     while (!tool.StandardOutput.EndOfStream)
                     {
                         string s = tool.StandardOutput.ReadLine();
-                        s = s.Replace(" ", "");
+                        s = s?.Replace(" ", "") ?? string.Empty;
                         var index1 = s.IndexOf("Mutant");
                         if (index1 > 0)
                         {

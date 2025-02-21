@@ -1,11 +1,6 @@
-﻿using NPOI.SS.Formula.Functions;
-using Org.BouncyCastle.Asn1.X509;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
 using System.Threading.Tasks;
 using static NOBApp.MainWindow;
 
@@ -334,7 +329,7 @@ namespace NOBApp.Sports
         }
 
 
-        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, TargetTypes types = TargetTypes.None, E_TargetColor eTC = E_TargetColor.藍NPC)
+        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, TargetTypes types = TargetTypes.NPC, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             int targetID = -1;
             if (MainNob != null)
@@ -540,6 +535,141 @@ namespace NOBApp.Sports
             }
         }
 
+        public void 尋找並清除目標(List<int> targetList)
+        {
+            int thisTargetID = 0;
+            int checkBattleDone = -1;
+            targetIDs = targetList;
+            while (CodeRun)
+            {
+                if (MainNob == null)
+                {
+                    return;
+                }
+
+                MainNob.目前動作 = $"目標數量 -> {targetIDs.Count}";
+                if (MainNob.戰鬥中)
+                {
+                    if (targetIDs.Contains(thisTargetID))
+                        targetIDs.Remove(thisTargetID);
+
+                    checkBattleDone = 0;
+                }
+
+                if (MainNob.待機)
+                {
+                    checkBattleDone = -1;
+                    //等待戰鬥
+                    if (targetIDs.Count > 0)
+                    {
+                        thisTargetID = targetIDs[0];
+                        MainNob.MoveToNPC(thisTargetID);
+                        Task.Delay(500).Wait();
+                    }
+
+                    if (targetIDs.Count == 0)
+                    {
+                        MainNob.目前動作 = "解決所有目標";
+                        break;
+                    }
+                }
+                if (MainNob.對話與結束戰鬥 && checkBattleDone > -1)
+                {
+                    checkBattleDone++;
+                    if (checkBattleDone < 3)
+                    {
+                        Task.Delay(500).Wait();
+                    }
+                    else
+                    {
+                        checkBattleDone = -1;
+                        if (NobTeams != null)
+                        {
+                            foreach (var item in NobTeams)
+                            {
+                                Debug.WriteLine($"{item.PlayerName} --> 離開戰鬥");
+                                Task.Run(item.離開戰鬥A);
+                            }
+
+                            while (CodeRun)
+                            {
+                                bool alldone = true;
+                                foreach (var item in NobTeams)
+                                {
+                                    if (item.離開戰鬥確認 == false)
+                                    {
+                                        alldone = false;
+                                        break;
+                                    }
+                                }
+                                if (alldone)
+                                    break;
+                            }
+                        }
+                        //MainNob.離開戰鬥B();
+                        //MainNob.KeyPress(VKeys.KEY_ESCAPE, 2);
+                    }
+                }
+                else if (MainNob.對話與結束戰鬥 && thisTargetID == MainNob.GetTargetIDINT())
+                {
+                    MainNob.KeyPress(VKeys.KEY_J);
+                    MainNob.KeyPress(VKeys.KEY_ENTER);
+                    Task.Delay(200).Wait();
+                }
+                else if (MainNob.對話與結束戰鬥)
+                {
+                    MainNob.KeyPress(VKeys.KEY_ESCAPE, 2);
+                }
+                Task.Delay(200).Wait();
+            }
+        }
+
+        public bool 尋找目標並對話(int talkID, int targetColorCheck, E_TargetColor targetNPCType = E_TargetColor.藍NPC)
+        {
+            int talkNPCID = talkID; // 目標NPC的ID，初始值為 -1 表示尚未找到
+            int findTargetTimeoutCounter = 0; // 尋找目標的超時計數器
+            int maxFindTargetTimeout = 100; // 最大尋找目標超時次數 (可根據需求調整)
+
+            while (MainWindow.CodeRun) // 當程式碼運行時持續執行
+            {
+                if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
+                {
+                    talkNPCID = 顏色尋目標前往(targetColorCheck, targetNPCType); // 呼叫顏色尋目標函數尋找目標
+
+                    if (talkNPCID == -1) // 如果顏色尋目標函數找不到目標
+                    {
+                        findTargetTimeoutCounter++; // 增加超時計數器
+                        if (findTargetTimeoutCounter > maxFindTargetTimeout) // 檢查是否超出最大超時次數
+                        {
+                            Debug.WriteLine($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
+                            MainWindow.MainState = $"尋找 {targetNPCType} 目標超時"; // 更新主視窗狀態 (如果需要)
+                            return false; // 返回 false 表示尋找目標失敗
+                        }
+                        Task.Delay(100).Wait(); // 短暫延遲，避免過度消耗 CPU
+                        continue; // 找不到目標，繼續下一次迴圈尋找
+                    }
+                    findTargetTimeoutCounter = 0; // 找到目標後重置超時計數器
+                }
+
+                // 條件判斷：是否已鎖定目標NPC且處於可以對話和結束戰鬥的狀態
+                bool canTalkToTargetNPC = (MainNob!.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
+
+                if (canTalkToTargetNPC) // 如果可以與目標NPC對話
+                {
+                    return true; // 返回 true 表示成功與NPC對話
+                }
+                else // 如果還不能與目標NPC對話
+                {
+                    MainNob!.MoveToNPC(talkNPCID); // 移動到目標NPC
+                    MainNob.KeyPress(VKeys.KEY_C);
+                    talkNPCID = MainNob!.GetTargetIDINT();
+                }
+                Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
+            }
+
+            return false; // 如果迴圈因為 MainWindow.CodeRun 為 false 而結束，也返回 false
+        }
+
         /// <summary>
         /// 尋找指定顏色的目標NPC並與之對話。
         /// </summary>
@@ -574,7 +704,7 @@ namespace NOBApp.Sports
                 }
 
                 // 條件判斷：是否已鎖定目標NPC且處於可以對話和結束戰鬥的狀態
-                bool canTalkToTargetNPC = (MainNob.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
+                bool canTalkToTargetNPC = (MainNob?.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
 
                 if (canTalkToTargetNPC) // 如果可以與目標NPC對話
                 {
@@ -582,7 +712,7 @@ namespace NOBApp.Sports
                 }
                 else // 如果還不能與目標NPC對話
                 {
-                    MainNob.MoveToNPC(talkNPCID); // 移動到目標NPC
+                    MainNob?.MoveToNPC(talkNPCID); // 移動到目標NPC
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }
@@ -618,7 +748,7 @@ namespace NOBApp.Sports
                 }
 
                 // 條件判斷：是否已鎖定目標NPC且處於可以對話和結束戰鬥的狀態
-                bool canTalkToTargetNPC = (MainNob.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
+                bool canTalkToTargetNPC = (MainNob?.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
 
                 if (canTalkToTargetNPC) // 如果可以與目標NPC對話
                 {
@@ -627,7 +757,7 @@ namespace NOBApp.Sports
                 }
                 else // 如果還不能與目標NPC對話
                 {
-                    MainNob.MoveToNPC(talkNPCID); // 移動到目標NPC
+                    MainNob?.MoveToNPC(talkNPCID); // 移動到目標NPC
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }

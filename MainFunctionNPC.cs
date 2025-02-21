@@ -181,5 +181,10 @@ namespace NOBApp
         public long ID { get; set; }
         public TargetTypes Type { get; set; }
         public ushort Distance { get; set; }
+
+        public override string ToString()
+        {
+            return $"{ID}-{Type.ToString()}-{Distance}";
+        }
     }
 }

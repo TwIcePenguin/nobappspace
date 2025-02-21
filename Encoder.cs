@@ -27,8 +27,8 @@ namespace NOBApp
 
     public class Encoder
     {
-        public string Key { get; set; }
-        public string IV { get; set; }
+        public string Key { get; set; } = string.Empty;
+        public string IV { get; set; } = string.Empty;
 
         /// <summary>
         /// 產生新的KEY
@@ -96,7 +96,7 @@ namespace NOBApp
         /// <param name="key">自訂金鑰</param>
         /// <param name="iv">自訂向量</param>
         /// <returns></returns>
-        public static string AesEncrypt(string original, string key = null, string iv = null)
+        public static string AesEncrypt(string original, string? key = null, string? iv = null)
         {
             key = string.IsNullOrEmpty(key) ? AesKey : key;
             iv = string.IsNullOrEmpty(iv) ? AesIv : iv;
@@ -125,7 +125,8 @@ namespace NOBApp
             }
             catch (Exception ex)
             {
-                //todo...
+                // Log the exception or handle it as needed
+                Console.WriteLine(ex.Message);
             }
 
             return encrypt;
@@ -138,7 +139,7 @@ namespace NOBApp
         /// <param name="key">自訂金鑰</param>
         /// <param name="iv">自訂向量</param>
         /// <returns></returns>
-        public static string AesDecrypt(string hexString, string key = null, string iv = null)
+        public static string AesDecrypt(string hexString, string? key = null, string? iv = null)
         {
             key = string.IsNullOrEmpty(key) ? AesKey : key;
             iv = string.IsNullOrEmpty(iv) ? AesIv : iv;
@@ -167,13 +168,13 @@ namespace NOBApp
             }
             catch (Exception ex)
             {
-                //todo...
+                // Log the exception or handle it as needed
+                Console.WriteLine(ex.Message);
             }
-
             return decrypt;
         }
 
-        public static bool TryAesDecrypt(string hexString, out string original, string key = null, string iv = null)
+        public static bool TryAesDecrypt(string hexString, out string original, string? key = null, string? iv = null)
         {
             return hexString != (original = AesDecrypt(hexString, key, iv));
         }

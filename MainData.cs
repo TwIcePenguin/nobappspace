@@ -1,5 +1,4 @@
 ﻿using NOBApp.GoogleData;
-using NtpClient;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

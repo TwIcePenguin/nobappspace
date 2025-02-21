@@ -13,18 +13,14 @@ namespace NOBApp.Sports
         public int mState = 0;
         public int 大黑天ID = 1610613226;
         public int 上覽小販 = 0;
-        public int Point = 0;
+        new int Point = 0;
         /// <summary>
         /// 計算戰鬥場次 10場販賣一次
         /// </summary>
         public int BattleNum = 0;
         public int 滿倉判別 = 0;
-        public int 選擇難度 = 6;
-        public int 線路 = 0;
         public bool 統計販賣戰鬥 = false;
         public bool 是否經過戰鬥 = false;
-        public bool 是否進入場內 = false;
-        int mBattleCheckDone = 0;
         private bool 入場正式NPC說話 = false;
         private int m進行官ID = 0;
         private int m目標ID = 0;
@@ -33,7 +29,6 @@ namespace NOBApp.Sports
         private int mTErrorCheck = 0;
         private int mENDCheck = 0;
         private int SPNUM = 0;
-        private bool isSPVer = false;
         public override void 初始化()
         {
             統計販賣戰鬥 = false;
@@ -42,7 +37,6 @@ namespace NOBApp.Sports
             {
                 大黑天ID = MainNob.CodeSetting.目標A;
                 上覽小販 = MainNob.CodeSetting.目標B;
-                線路 = MainNob.CodeSetting.線路;
             }
         }
         public override void 腳本運作()
@@ -113,7 +107,6 @@ namespace NOBApp.Sports
                 {
                     if (MainNob.戰鬥中)
                     {
-                        mBattleCheckDone = 0;
                         統計販賣戰鬥 = 是否經過戰鬥 = true;
                         Task.Delay(1000).Wait();
                         return false;
@@ -127,33 +120,7 @@ namespace NOBApp.Sports
 
                     return true;
                 }
-
                 MainNob.KeyPress(VKeys.KEY_ESCAPE, 10, 50);
-
-                //var index = MainNob.GetSStatus;
-                //switch (index)
-                //{
-                //    case 7:
-                //        Point = 0;
-                //        break;
-                //    case 9:
-                //        return true;
-                //    case 25:
-                //        //戰鬥結束
-                //        MainNob.KeyPress(VKeys.KEY_ESCAPE);
-                //        Task.Delay(100).Wait();
-                //        MainNob.KeyPress(VKeys.KEY_ENTER);
-                //        Task.Delay(100).Wait();
-                //        break;
-                //    case 105:
-                //        //戰鬥中
-                //        統計販賣戰鬥 = 是否經過戰鬥 = true;
-                //        Task.Delay(1000).Wait();
-                //        break;
-                //    default:
-                //        MainNob.KeyPress(VKeys.KEY_ESCAPE, 10, 50);
-                //        break;
-                //}
             }
 
             return false;
@@ -255,7 +222,7 @@ namespace NOBApp.Sports
                                 if (MainNob.取得最下面選項().Contains("妙院"))
                                 {
                                     Task.Delay(200).Wait();
-                                    MainNob.直向選擇(線路);
+                                    MainNob.直向選擇(MainNob.CodeSetting.線路);
                                     Task.Delay(200).Wait();
                                     for (int i = 0; i < 5; i++)
                                     {
@@ -345,23 +312,6 @@ namespace NOBApp.Sports
                     滿倉判別 = 0;
                     Point = 3;
                     mENDCheck = mENDCheck + 1;
-
-                    if (isSPVer)
-                    {
-                        SPNUM = SPNUM + 1;
-                        if (SPNUM > 5)
-                        {
-                            var rand = new Random();
-                            var iii = rand.Next(100);
-                            if (iii + SPNUM > 60)
-                            {
-                                SPNUM = 0;
-                                MainWindow.CodeRun = false;
-                                MainNob.CloseGame();
-                            }
-
-                        }
-                    }
                     return;
                 }
 
@@ -369,14 +319,14 @@ namespace NOBApp.Sports
                 {
                     MainWindow.CodeRun = false;
                     MainNob.CloseGame();
-                    MessageBox.Show($"{MainNob.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
+                    MessageBox.Show($"{MainWindow.UseLockNOB!.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
                     Environment.Exit(0);
                 }
                 MainNob.MoveToNPC(大黑天ID);
                 if (MainNob.出現直式選單)
                 {
                     //Debug.WriteLine("-----出現直式選單------ " + MainNob.取得最下面選項());
-
+                    Task.Delay(100).Wait();
                     if (入場正式NPC說話 == false && MainNob.出現左右選單)
                     {
                         MainNob.KeyPress(VKeys.KEY_ESCAPE);
@@ -403,7 +353,8 @@ namespace NOBApp.Sports
                     if (str.Contains("甲") || str.Contains("乙") || str.Contains("丙") || str.Contains("丁") ||
                         str.Contains("戊") || str.Contains("己") || str.Contains("庚") || str.Contains("辛"))
                     {
-                        MainNob.直向選擇(選擇難度);
+                        Debug.WriteLine("選擇難度 : " + MainNob.CodeSetting.選擇難度);
+                        MainNob.直向選擇(MainNob.CodeSetting.選擇難度);
                         Task.Delay(100).Wait();
                         MainNob.KeyPress(VKeys.KEY_ENTER, 10, 200);
                         Task.Delay(100).Wait();

@@ -15,8 +15,6 @@ namespace NOBApp.Sports
         private int mMaxErrorCheck = 40;
         int inBattleState = 0;
         bool inBattle = false;
-        static int checkDone = 0;
-        static NOBDATA mUseNOB;
         public override void 初始化()
         {
             Debug.WriteLine("明宮 最先運作");

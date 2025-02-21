@@ -13,7 +13,7 @@ namespace NOBApp
     {
         public static List<NOBDATA> useNobList = new List<NOBDATA>();
 
-        public void OnWebReg()
+        public static void OnWebReg()
         {
             try
             {
@@ -32,63 +32,57 @@ namespace NOBApp
                         };
                         lock (dataList)
                         {
+                            Debug.WriteLine($"dataList Add");
                             dataList.Add(fdata);
                         }
                     }
                 });
-
-                if (MainWindow.isGoogleReg)
+                Debug.WriteLine($"useNobList -> {useNobList.Count} dataList -> {dataList.Count}");
+                try
                 {
-                    GoogleSheet.Post(dataList);
-                }
-                else
-                {
-                    try
+                    using HttpClient client = new();
+                    List<Task> tasks = new();
+                    foreach (var data in dataList)
                     {
-                        using HttpClient client = new();
-                        List<Task> tasks = new();
-                        foreach (var data in dataList)
+                        tasks.Add(Task.Run(async () =>
                         {
-                            tasks.Add(Task.Run(async () =>
+                            try
                             {
-                                try
+                                Debug.WriteLine($"Web In {data.Acc}");
+                                var fdata = JsonSerializer.Serialize(data);
+                                var fdataStr = Encoder.AesEncrypt(fdata);
+
+                                var jdata = JsonSerializer.Serialize(new UData() { KeyStr = fdataStr });
+
+                                var content = new StringContent(jdata, Encoding.UTF8, "application/json");
+
+                                string url = @"https://ccnobapi20250213162427.azurewebsites.net/";
+
+                                HttpResponseMessage response = await client.PostAsync(url, content);
+
+                                Debug.WriteLine($"url => {url} response -> {response.IsSuccessStatusCode}");
+                                if (response.IsSuccessStatusCode)
                                 {
-                                    Debug.WriteLine($"Web In {data.Acc}");
-                                    var fdata = JsonSerializer.Serialize(data);
-                                    var fdataStr = Encoder.AesEncrypt(fdata);
-
-                                    var jdata = JsonSerializer.Serialize(new UData() { KeyStr = fdataStr });
-
-                                    var content = new StringContent(jdata, Encoding.UTF8, "application/json");
-
-                                    string url = @"https://ccnobapi20250213162427.azurewebsites.net/";
-
-                                    HttpResponseMessage response = await client.PostAsync(url, content);
-
-                                    Debug.WriteLine("response -> " + response.IsSuccessStatusCode);
-                                    if (response.IsSuccessStatusCode)
-                                    {
-                                        string responseContent = await response.Content.ReadAsStringAsync();
-                                        Debug.WriteLine($"回傳訊息 -> \n{responseContent}");
-                                        Authentication.讀取認證訊息Json(responseContent);
-                                    }
-                                    else
-                                    {
-                                        Debug.WriteLine($"Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
-                                    }
+                                    string responseContent = await response.Content.ReadAsStringAsync();
+                                    Debug.WriteLine($"回傳訊息 -> \n{responseContent}");
+                                    Authentication.讀取認證訊息Json(responseContent);
                                 }
-                                catch (Exception e)
+                                else
                                 {
-                                    Debug.WriteLine("Message :{0} ", e.Message);
+                                    Debug.WriteLine($"Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                                 }
-                            }));
-                        }
-                        Task.WaitAll(tasks.ToArray());
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.WriteLine("Message :{0} ", e.Message);
+                            }
+                        }));
                     }
-                    catch (Exception err)
-                    {
-                        Debug.WriteLine("Error : " + err.ToString());
-                    }
+                    Task.WaitAll(tasks.ToArray());
+                }
+                catch (Exception err)
+                {
+                    Debug.WriteLine("Error : " + err.ToString());
                 }
             }
             catch (Exception err)

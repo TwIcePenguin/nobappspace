@@ -73,7 +73,7 @@ namespace NOBApp
 
         public class GitLabRelease
         {
-            public string tag_name { get; set; }
+            public string? tag_name { get; set; }
         }
     }
 }
