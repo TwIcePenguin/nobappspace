@@ -146,12 +146,11 @@ namespace NOBApp
         public bool 特殊者 = false;
         public bool 贊助者 = false;
         public bool 驗證完成 = false;
-        public bool 再次驗證 = false;
         public float 比例 = 1;
         public bool 副本進入完成 = false;
         public bool 副本離開完成 = false;
         public string 目前動作 = "";
-        public BaseClass RunCode;
+        public BaseClass? RunCode;
         public List<BTData> MYTeamData = new List<BTData>();
         public List<BTData> EMTeamData = new List<BTData>();
         public List<long> SetSkillsID = new List<long>();
@@ -263,7 +262,7 @@ namespace NOBApp
 
                                         if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
                                         {
-                                            setNum = check(UseLockNOB.MYTeamData, AutoSkillSet.施放A);
+                                            setNum = check(UseLockNOB!.MYTeamData, AutoSkillSet.施放A);
                                             直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度);
                                         }
                                         else
@@ -316,7 +315,7 @@ namespace NOBApp
                                     {
                                         if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
                                         {
-                                            setNum = check(UseLockNOB.MYTeamData, AutoSkillSet.施放C);
+                                            setNum = check(UseLockNOB!.MYTeamData, AutoSkillSet.施放C);
                                             直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度);
                                         }
                                         else
@@ -373,7 +372,7 @@ namespace NOBApp
                         已經放過一次 = false;
                         進入過戰鬥畫面 = false;
 
-                        if (UseLockNOB.MYTeamData.Count > 0)
+                        if (UseLockNOB!.MYTeamData.Count > 0)
                         {
                             UseLockNOB.ClearBTData();
                         }
@@ -404,7 +403,7 @@ namespace NOBApp
                                 {
                                     希望完成 = true;
                                     Task.Delay(1000).Wait();
-                                    UseLockNOB.KeyPress(VKeys.KEY_ENTER, 6, 300);
+                                    UseLockNOB!.KeyPress(VKeys.KEY_ENTER, 6, 300);
                                     Task.Delay(100).Wait();
                                 }
 
@@ -430,18 +429,18 @@ namespace NOBApp
 
         public void MoveToNPC(int npcID)
         {
-            MainWindow.dmSoft.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
-            MainWindow.dmSoft.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
-            MainWindow.dmSoft.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
         }
         public void 鎖定NPC(int npcID)
         {
-            MainWindow.dmSoft.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
-            MainWindow.dmSoft.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
         }
         public void 直向選擇(int num, int delay = 300, bool passCheck = false)
         {
-            MainWindow.dmSoft.WriteInt(Hwnd, "[<nobolHD.bng>+4C4C154] + C4", 0, num);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "[<nobolHD.bng>+4C4C154] + C4", 0, num);
             Task.Delay(delay).Wait();
             if (passCheck)
                 KeyPressPP(VKeys.KEY_ENTER);
@@ -464,7 +463,7 @@ namespace NOBApp
             for (int i = 0; i < 7; i++)
             {
                 baseStr = AddressData.戰鬥可輸隊員.AddressAdd(4 * i);
-                l = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4);
+                l = MainWindow.dmSoft?.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4) ?? 0;
                 if (l > 0)
                 {
                     MYTeamData.Add(new BTData(l));
@@ -473,8 +472,8 @@ namespace NOBApp
             for (int i = 0; i < 24; i++)
             {
                 baseStr = AddressData.戰鬥技能編號起.AddressAdd(80 * i);
-                l = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4);
-                n = MainWindow.dmSoft.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(34), 1, 10);
+                l = MainWindow.dmSoft?.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4) ?? 0;
+                n = MainWindow.dmSoft?.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(34), 1, 10);
                 n = i + "_" + n;
                 if (l > 0)
                 {
@@ -487,10 +486,10 @@ namespace NOBApp
             {
                 baseStr = AddressData.戰鬥列隊.AddressAdd(44 * (i - 1));
                 //string nid = MainWindow.dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(8), 6); //Proc.Handle.ReadData(UseAddress(baseStr), new byte[4]);
-                long ln = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4);
+                long ln = MainWindow.dmSoft?.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4) ?? 0;
 
-                string name1 = MainWindow.dmSoft.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(8), 1, 6); // Proc.Handle.ReadStr(UseAddress(baseStr.AddressAdd(8)), new byte[8]);
-                string name2 = MainWindow.dmSoft.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(26), 1, 6); //Proc.Handle.ReadStr(UseAddress(baseStr.AddressAdd(26)), new byte[8]);
+                string name1 = MainWindow.dmSoft?.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(8), 1, 6) ?? string.Empty; // Proc.Handle.ReadStr(UseAddress(baseStr.AddressAdd(8)), new byte[8]);
+                string name2 = MainWindow.dmSoft?.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(26), 1, 6) ?? string.Empty; //Proc.Handle.ReadStr(UseAddress(baseStr.AddressAdd(26)), new byte[8]);
                 var data = MYTeamData.Find(d => d.UID == ln);
                 if (data != null)
                 {

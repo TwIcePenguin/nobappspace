@@ -188,15 +188,13 @@ namespace NOBApp.Sports
             if (MainNob != null)
             {
                 var str = AddressData.搜尋身邊NPCID起始;
-                long findID, chid, nID;
+                long findID, chid;
 
                 List<long> skipIDs = new();
                 for (int i = 0; i < 150; i++)
                 {
-                    findID = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4);
-                    //nID = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 1);
-                    chid = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(3), 2);
-                    //Debug.WriteLine(findID + "*----*" + chid);
+                    findID = MainWindow.dmSoft?.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4) ?? 0;
+                    chid = MainWindow.dmSoft?.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(3), 2) ?? 0;
                     if (chid != 254 || findID == -1)
                     {
                         skipIDs.Add(findID);

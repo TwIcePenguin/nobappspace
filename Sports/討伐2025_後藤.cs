@@ -15,12 +15,7 @@ namespace NOBApp.Sports
         public int 起始地圖 = 7800; //白石 地圖 -10015
         public int 接任務NPCID = 0;
         static int 出場NPCID = 0;
-        List<int> targetIDs = new();
         List<int> skipID = new();
-
-        int checkIDC1 = 35;     //軍史番
-        int checkIDC2 = 16;     //朝比奈
-        int checkIDC3 = 41;     //水滴
 
         public override void 初始化()
         {

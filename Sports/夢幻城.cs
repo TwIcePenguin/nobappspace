@@ -13,9 +13,7 @@ namespace NOBApp.Sports
     {
 
         int anyDoCheck = 0;
-        private int mErrorCheck = 0;
         int mPoint = 0;
-        bool 十層 = false;
         int checkRoomIndex = 0;
         List<long> skipID = new();
         bool 進行任務 = false;
@@ -23,7 +21,6 @@ namespace NOBApp.Sports
         {
             Debug.WriteLine("夢幻城 最先運作");
             MainNob!.KeyPress(VKeys.KEY_W);
-            mErrorCheck = 0;
             MainNob!.選擇目標類型(1);
             for (int i = 0; i < FIDList.Count; i++)
             {
@@ -119,7 +116,6 @@ namespace NOBApp.Sports
             if (mPoint == 0 && MainNob!.CamX > 0.97 && MainNob.CamX < 1.01 && MainNob.CamY < 0.05 && MainNob.CamY > -0.05)
             {
                 Debug.WriteLine("進入十層階段");
-                十層 = true;
                 mPoint = 8;
             }
 
@@ -185,7 +181,6 @@ namespace NOBApp.Sports
                         Debug.WriteLine("完成 該樓");
                         mPoint = 0;
                         Task.Delay(3000).Wait();
-                        十層 = false;
                         break;
                     }
 
@@ -232,20 +227,6 @@ namespace NOBApp.Sports
                     Task.Delay(100).Wait();
                 }
             }
-
-            //移動點.Add(new(12957, 14464)); //第一個門
-
-            //移動點.Add(new(14991, 12783)); //第一房間出口
-            //移動點.Add(new(15011, 6542));  //第二個門
-            //移動點.Add(new(13072, 4493)); //第二房間出口
-
-            //移動點.Add(new(7042, 4509));  //第三個門
-            //移動點.Add(new(5005, 6427)); //第三房間出口
-
-            //移動點.Add(new(5016, 12457));  //第四個門
-            //移動點.Add(new(6937, 14484));  //第四房間出口
-
-            //移動點.Add(new(8392, 14512));  //第四房間出口
         }
 
         public void 選擇()

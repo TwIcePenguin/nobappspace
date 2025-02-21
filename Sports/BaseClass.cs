@@ -1,11 +1,6 @@
-﻿using NPOI.SS.Formula.Functions;
-using Org.BouncyCastle.Asn1.X509;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
 using System.Threading.Tasks;
 using static NOBApp.MainWindow;
 
@@ -574,7 +569,7 @@ namespace NOBApp.Sports
                 }
 
                 // 條件判斷：是否已鎖定目標NPC且處於可以對話和結束戰鬥的狀態
-                bool canTalkToTargetNPC = (MainNob.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
+                bool canTalkToTargetNPC = (MainNob?.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
 
                 if (canTalkToTargetNPC) // 如果可以與目標NPC對話
                 {
@@ -582,7 +577,7 @@ namespace NOBApp.Sports
                 }
                 else // 如果還不能與目標NPC對話
                 {
-                    MainNob.MoveToNPC(talkNPCID); // 移動到目標NPC
+                    MainNob?.MoveToNPC(talkNPCID); // 移動到目標NPC
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }
@@ -618,7 +613,7 @@ namespace NOBApp.Sports
                 }
 
                 // 條件判斷：是否已鎖定目標NPC且處於可以對話和結束戰鬥的狀態
-                bool canTalkToTargetNPC = (MainNob.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
+                bool canTalkToTargetNPC = (MainNob?.GetTargetIDINT() == talkNPCID && MainNob.對話與結束戰鬥);
 
                 if (canTalkToTargetNPC) // 如果可以與目標NPC對話
                 {
@@ -627,7 +622,7 @@ namespace NOBApp.Sports
                 }
                 else // 如果還不能與目標NPC對話
                 {
-                    MainNob.MoveToNPC(talkNPCID); // 移動到目標NPC
+                    MainNob?.MoveToNPC(talkNPCID); // 移動到目標NPC
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }

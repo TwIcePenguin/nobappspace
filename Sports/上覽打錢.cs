@@ -13,7 +13,7 @@ namespace NOBApp.Sports
         public int mState = 0;
         public int 大黑天ID = 1610613226;
         public int 上覽小販 = 0;
-        public int Point = 0;
+        new int Point = 0;
         /// <summary>
         /// 計算戰鬥場次 10場販賣一次
         /// </summary>
@@ -23,8 +23,6 @@ namespace NOBApp.Sports
         public int 線路 = 0;
         public bool 統計販賣戰鬥 = false;
         public bool 是否經過戰鬥 = false;
-        public bool 是否進入場內 = false;
-        int mBattleCheckDone = 0;
         private bool 入場正式NPC說話 = false;
         private int m進行官ID = 0;
         private int m目標ID = 0;
@@ -113,7 +111,6 @@ namespace NOBApp.Sports
                 {
                     if (MainNob.戰鬥中)
                     {
-                        mBattleCheckDone = 0;
                         統計販賣戰鬥 = 是否經過戰鬥 = true;
                         Task.Delay(1000).Wait();
                         return false;

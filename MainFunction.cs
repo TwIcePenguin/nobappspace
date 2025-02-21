@@ -1,15 +1,5 @@
-﻿using NOBApp.GoogleData;
-using NtpClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace NOBApp
 {

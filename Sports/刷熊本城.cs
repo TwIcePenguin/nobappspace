@@ -20,9 +20,6 @@ namespace NOBApp.Sports
         /// </summary>
         int checkIDC1 = 16;
 
-        int checkIDC2 = 21;     //酒井
-        int checkIDC3 = 41;     //水滴
-
         public override void 初始化()
         {
             移動點 = new();
@@ -89,7 +86,6 @@ namespace NOBApp.Sports
                         break;
                     case 檢查點.找目標:
                         Task.Delay(100).Wait();
-                        int findCheck = 0;
                         //if (false)
                         {
 

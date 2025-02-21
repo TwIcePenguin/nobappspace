@@ -9,8 +9,7 @@ namespace NOBApp.Sports
 {
     internal class 隨機打怪 : BaseClass
     {
-        public Action UpdateUI = null;
-        bool 進戰鬥結束 = false;
+        public Action? UpdateUI = null;
         bool F5解無敵 = false;
         int mBCHCount = 0;
         public override void 初始化() { }
@@ -109,7 +108,6 @@ namespace NOBApp.Sports
                     {
                         cacheIGID.Clear();
                         F5解無敵 = false;
-                        進戰鬥結束 = true;
                         mBCHCount = 0;
                     }
 

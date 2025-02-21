@@ -10,7 +10,7 @@ namespace NOBApp.Sports
 {
     internal class 鬼島 : BaseClass
     {
-        public Action UpdateUI = null;
+        public Action? UpdateUI = null;
 
         bool F5解無敵 = false;
         bool 補符 = true;
@@ -53,7 +53,7 @@ namespace NOBApp.Sports
         Dictionary<int, int> cacheIGID = new();
 
         static int waitDone = 0;
-        public override async void 腳本運作()
+        public override void 腳本運作()
         {
             if (MainNob != null)
             {
