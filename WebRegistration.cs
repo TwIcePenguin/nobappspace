@@ -37,7 +37,6 @@ namespace NOBApp
                         }
                     }
                 });
-                Debug.WriteLine($"useNobList -> {useNobList.Count} dataList -> {dataList.Count}");
                 try
                 {
                     using HttpClient client = new();
@@ -56,7 +55,7 @@ namespace NOBApp
 
                                 var content = new StringContent(jdata, Encoding.UTF8, "application/json");
 
-                                string url = @"https://ccnobapi20250213162427.azurewebsites.net/";
+                                string url = @"https://nobcdkfunctionappt202502241545.azurewebsites.net/api/GetNOBCDK?code=4yEpLUcI6oiYCOj6mwS0x3Rqe7pqdDHiRE_5Co8zyzQiAzFu2iWLlw==";
 
                                 HttpResponseMessage response = await client.PostAsync(url, content);
 
