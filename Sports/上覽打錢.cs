@@ -28,7 +28,6 @@ namespace NOBApp.Sports
         private int mErrorCheck = 0;
         private int mTErrorCheck = 0;
         private int mENDCheck = 0;
-        private int SPNUM = 0;
         public override void 初始化()
         {
             統計販賣戰鬥 = false;

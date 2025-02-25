@@ -391,7 +391,7 @@ namespace NOBApp
         /// <summary>
         /// 確認使用角色
         /// </summary>
-        private void LockButton_Click(object sender, RoutedEventArgs e)
+        private async void LockButton_Click(object sender, RoutedEventArgs e)
         {
             isGoogleReg = 認證2CB.IsChecked == false;
             bool reset = LockBtn.Content.ToString()!.Contains("解除");
@@ -431,15 +431,36 @@ namespace NOBApp
                             {
                                 if (string.IsNullOrEmpty(認證TBox.Text))
                                 {
-                                    MessageBox.Show("請輸入認證碼");
+                                    GoogleSheet.GoogleSheetInit();
+                                    GoogleSheet.CheckDonate(UseLockNOB);
+                                    Authentication.讀取認證訊息Json(認證TBox.Text);
+                                }
+                                else
+                                {
+                                    Authentication.讀取認證訊息Json(認證TBox.Text);
+                                }
+                            }
+
+                            int checkCount = 0;
+                            while (true)
+                            {
+                                if (UseLockNOB.驗證完成)
+                                {
+                                    MainState = "驗證完成!";
+                                    break;
+                                }
+                                else
+                                {
+                                    MainState = $"驗證中! 嘗試連線等待中 -- {checkCount}";
+                                    checkCount++;
+                                }
+                                if (checkCount >= 5)
+                                {
+                                    isNetRun = false;
+                                    MainState = "等待超時 請重新點選驗證";
                                     return;
                                 }
-                                Authentication.讀取認證訊息Json(認證TBox.Text);
-                            }
-                            else
-                            {
-                                GoogleSheet.GoogleSheetInit();
-                                GoogleSheet.CheckDonate(UseLockNOB);
+                                await Task.Delay(500);
                             }
                         }
 
@@ -680,8 +701,6 @@ namespace NOBApp
             bool autoCheckin = string.IsNullOrEmpty(idstr) == false && Authentication.讀取認證訊息Name(idstr) && string.IsNullOrEmpty(CUCDKEY) == false;
 
             認證TBox.Text = autoCheckin ? CUCDKEY : string.Empty;
-            認證2CB.IsChecked = autoCheckin;
-            認證2CB.UpdateLayout();
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -974,12 +993,7 @@ namespace NOBApp
 
                 SaveSetting();
 
-                if (useMenu is 隨機打怪)
-                {
-
-                }
-
-                if (useMenu != null)
+                if (useMenu != null && list != null)
                 {
                     NobTeams = list;
                     UseLockNOB.RunCode = useMenu;

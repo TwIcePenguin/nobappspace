@@ -40,7 +40,7 @@ namespace NOBApp
         public string? CheckC { get; set; }
         public override string ToString()
         {
-            return $"{Acc} {StartTimer} {ISEND}";
+            return $"{Acc} {StartTimer} {ISEND} {CheckC}";
         }
     }
 

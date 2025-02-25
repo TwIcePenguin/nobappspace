@@ -32,7 +32,7 @@ namespace NOBApp
                 using StreamReader reader = new($@"{name}_CDK.nob");
                 if (reader == null)
                 {
-                    Debug.WriteLine("reader == null");
+                    Debug.WriteLine("沒有該資料");
                     return false;
                 }
                 string jsonString = reader.ReadToEnd();
