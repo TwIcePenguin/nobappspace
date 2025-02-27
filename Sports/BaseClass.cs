@@ -289,11 +289,8 @@ namespace NOBApp.Sports
                 {
                     foreach (var npc in allNPCIDs)
                     {
-                        if (skipIDs.Contains((int)npc.ID))
-                            continue;
-
                         MainNob.鎖定NPC((int)npc.ID);
-                        Task.Delay(200).Wait();
+                        Task.Delay(300).Wait();
                         var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), colorStr);
                         if (c1 == colorMath && targets.Contains((int)npc.ID) == false)
                         {
@@ -319,9 +316,11 @@ namespace NOBApp.Sports
                     findCheck++;
                     if (findCheck > 3)
                     {
+                        Debug.WriteLine($"超出搜尋次數 增加搜尋範圍 {NpcCountToRead}");
+                        NpcCountToRead = Math.Min(NpcCountToRead + 5, 150);
+                        IgnoredIDs.Clear();
                         allNPCIDs = GetAllNPCs();
                         findCheck = 0;
-                        skipIDs.Clear();
                     }
                 }
             }
@@ -347,9 +346,6 @@ namespace NOBApp.Sports
                 {
                     foreach (var npc in allNPCIDs)
                     {
-                        if (skipIDs.Contains((int)npc.ID))
-                            continue;
-
                         MainNob.鎖定NPC((int)npc.ID);
                         Task.Delay(200).Wait();
                         var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), colorStr);
@@ -372,8 +368,8 @@ namespace NOBApp.Sports
                     findCheck++;
                     if (findCheck > 3)
                     {
+                        findCheck = 0;
                         allNPCIDs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, minDistance, maxDistance + 2000); findCheck = 0;
-                        skipIDs.Clear();
                     }
                 }
             }
@@ -629,7 +625,7 @@ namespace NOBApp.Sports
             int talkNPCID = talkID; // 目標NPC的ID，初始值為 -1 表示尚未找到
             int findTargetTimeoutCounter = 0; // 尋找目標的超時計數器
             int maxFindTargetTimeout = 100; // 最大尋找目標超時次數 (可根據需求調整)
-
+            int moveIndex = 0;
             while (MainWindow.CodeRun) // 當程式碼運行時持續執行
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
@@ -661,7 +657,12 @@ namespace NOBApp.Sports
                 else // 如果還不能與目標NPC對話
                 {
                     MainNob!.MoveToNPC(talkNPCID); // 移動到目標NPC
-                    MainNob.KeyPress(VKeys.KEY_C);
+                    Task.Delay(500).Wait();
+                    if (moveIndex % 10 == 0)
+                    {
+                        MainNob.KeyPress(VKeys.KEY_C);
+                    }
+                    moveIndex++;
                     talkNPCID = MainNob!.GetTargetIDINT();
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)

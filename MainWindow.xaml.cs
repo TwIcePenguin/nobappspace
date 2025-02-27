@@ -417,7 +417,7 @@ namespace NOBApp
                         isNetRun = true;
                         WebRegistration.useNobList = nobList;
                         Debug.WriteLine($"Web Reg {WebRegistration.useNobList.Count} {nobList.Count}");
-                        Task.Run(() => WebRegistration.OnWebReg());
+                        await Task.Run(() => WebRegistration.OnWebReg());
                     }
 
                     if (UseLockNOB != null)
