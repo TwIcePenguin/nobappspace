@@ -418,6 +418,8 @@ namespace NOBApp
                         WebRegistration.useNobList = nobList;
                         Debug.WriteLine($"Web Reg {WebRegistration.useNobList.Count} {nobList.Count}");
                         Task.Run(() => WebRegistration.OnWebReg());
+
+                        Debug.WriteLine("Await ---------- ");
                     }
 
                     if (UseLockNOB != null)
@@ -433,7 +435,6 @@ namespace NOBApp
                                 {
                                     GoogleSheet.GoogleSheetInit();
                                     GoogleSheet.CheckDonate(UseLockNOB);
-                                    Authentication.讀取認證訊息Json(認證TBox.Text);
                                 }
                                 else
                                 {
@@ -444,26 +445,27 @@ namespace NOBApp
                             int checkCount = 0;
                             while (true)
                             {
+                                Debug.WriteLine($"UseLockNOB 驗證 {UseLockNOB.驗證完成} Count {checkCount}");
                                 if (UseLockNOB.驗證完成)
                                 {
-                                    MainState = "驗證完成!";
+                                    所有人狀態.Text = "驗證完成!";
+                                    checkCount = 0;
                                     break;
                                 }
                                 else
                                 {
-                                    MainState = $"驗證中! 嘗試連線等待中 -- {checkCount}";
                                     checkCount++;
+                                    所有人狀態.Text = $"驗證中! -- {checkCount}";
                                 }
-                                if (checkCount >= 5)
+                                if (checkCount >= 10)
                                 {
                                     isNetRun = false;
-                                    MainState = "等待超時 請重新點選驗證";
+                                    所有人狀態.Text = "等待超時 請重新點選驗證";
                                     return;
                                 }
-                                await Task.Delay(500);
+                                await Task.Delay(400);
                             }
                         }
-
                         所有人狀態.AppendText("取得相關資料 比對中..\n");
                         try
                         {
@@ -485,7 +487,7 @@ namespace NOBApp
                         }
 
                         Tools.SetTimeUp();
-                        所有人狀態.AppendText($"驗證完成.. 檢測到期時間\n");
+                        所有人狀態.AppendText($"驗證完成.. 更新時間 -> {到期日}\n");
                         到期計時.Content = $"到期日:{到期日}";
 
                         if (DateTime.Now > 到期日)
@@ -515,7 +517,8 @@ namespace NOBApp
                     else
                     {
                         isNetRun = false;
-                        UseLockNOB = null;
+                        StartCode.IsChecked = false;
+                        StartCode.UpdateLayout();
                         MessageBox.Show("選擇異常 不存在的角色資料 或著該角色被關閉請刷新後 請重新嘗試驗證");
                     }
                 }
@@ -531,6 +534,9 @@ namespace NOBApp
                     LockBtn.UpdateLayout();
                 }
             }
+            else
+                MessageBox.Show("請選擇角色 ，　如果清單沒有角色名稱，開啟遊戲登入選擇完角色後點［刷新］");
+
         }
 
         private void UpdateSelectMenu()
@@ -701,6 +707,7 @@ namespace NOBApp
             bool autoCheckin = string.IsNullOrEmpty(idstr) == false && Authentication.讀取認證訊息Name(idstr) && string.IsNullOrEmpty(CUCDKEY) == false;
 
             認證TBox.Text = autoCheckin ? CUCDKEY : string.Empty;
+            認證2CB.IsChecked = autoCheckin;
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -913,7 +920,7 @@ namespace NOBApp
 
         //啟動腳本
         bool isNetRun = false;
-        private void StartCode_Checked(bool mChecked)
+        private async void StartCode_Checked(bool mChecked)
         {
             CodeRun = mChecked;
             if (mChecked && useMenu != null)
@@ -1332,6 +1339,7 @@ namespace NOBApp
             if (sender is ListBox)
             {
                 var lbx = (ListBox)sender;
+                Debug.WriteLine(lbx.SelectedValue.ToString());
                 if (lbx.SelectedValue != null && string.IsNullOrEmpty(lbx.SelectedValue.ToString()))
                 {
                     if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
@@ -1508,7 +1516,7 @@ namespace NOBApp
                 {
                     Debug.WriteLine("saveSkillUserList Error -> " + e.ToString());
                 }
-            }
+            }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
 
             UseLockNOB.CodeSetting.隊伍技能 = m隊伍技能紀錄;
             string jsonString = JsonSerializer.Serialize(UseLockNOB.CodeSetting);

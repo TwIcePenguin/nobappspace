@@ -59,11 +59,11 @@ namespace NOBApp
 
                                 HttpResponseMessage response = await client.PostAsync(url, content);
 
-                                Debug.WriteLine($"url => {url} response -> {response.IsSuccessStatusCode}");
+                                //Debug.WriteLine($"url => {url} response -> {response.IsSuccessStatusCode}");
                                 if (response.IsSuccessStatusCode)
                                 {
                                     string responseContent = await response.Content.ReadAsStringAsync();
-                                    Debug.WriteLine($"回傳訊息 -> \n{responseContent}");
+                                    //Debug.WriteLine($"回傳訊息 -> \n{responseContent}");
                                     Authentication.讀取認證訊息Json(responseContent);
                                 }
                                 else
