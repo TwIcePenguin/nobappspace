@@ -116,7 +116,7 @@ namespace NOBApp.Sports
         void 尋找目標()
         {
             int findCheck = 0;
-            NpcCountToRead = 20;
+            NpcCountToRead = 30;
             var allNPCIDs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, 0, 70000);
             對手目標ID = -1;
             出場NPCID = -1;
@@ -125,7 +125,7 @@ namespace NOBApp.Sports
                 foreach (var npc in allNPCIDs)
                 {
                     MainNob!.鎖定NPC((int)npc.ID);
-                    Task.Delay(200).Wait();
+                    Task.Delay(300).Wait();
                     //32 九鬼水軍 九鬼13
                     var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
                     if (對手目標ID == -1 && c1 > 0 && (c1 != 32 && c1 != 13))
@@ -197,7 +197,7 @@ namespace NOBApp.Sports
                             {
                                 Task.Delay(100).Wait();
 
-                                if (useNOB.取得最下面選項().Contains("解放"))
+                                if (useNOB.取得最下面選項(24).Contains("解放"))
                                 {
                                     if (nowInCount >= inMaxLoopCount)
                                     {
@@ -312,7 +312,9 @@ namespace NOBApp.Sports
                 int x = 0;
                 int y = 0;
                 int map = 0;
+                
                 尋找目標並對話(出場NPCID, 32);
+                int moveIndex = 0;
                 while (MainWindow.CodeRun)
                 {
                     Task.Delay(200).Wait();
@@ -345,8 +347,13 @@ namespace NOBApp.Sports
                     }
                     else
                     {
-                        useNOB.KeyPress(VKeys.KEY_C);
+                        moveIndex++;
+                        if (moveIndex % 5 == 0)
+                        {
+                            useNOB.KeyPress(VKeys.KEY_C);
+                        }
                         useNOB!.MoveToNPC(出場NPCID);
+                        Task.Delay(500).Wait();
                     }
 
                 }

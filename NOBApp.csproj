@@ -12,7 +12,7 @@
 		<PackageIcon>SteamPGIN.png</PackageIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<BaseOutputPath>F:\NOBOnline\BOT3</BaseOutputPath>
+		<BaseOutputPath>F:\NOBOnline\BOT</BaseOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -146,10 +146,10 @@
 		<Delete Files="@(OldZipFiles)" />
 
 		<!-- 確保所有檔案已釋放 -->
-		<Exec Command='powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\CheckFileLock.ps1" -FilePath "$(OutputDir)NOBApp.exe" -MaxRetries 5 -DelaySeconds 2' />
+		<Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\CheckFileLock.ps1&quot; -FilePath &quot;$(OutputDir)NOBApp.exe&quot; -MaxRetries 5 -DelaySeconds 2" />
 
 		<!-- 使用 7-Zip 壓縮發佈目錄 -->
-		<Exec Command='$(SevenZipPath) a -tzip "$(ZipFilePath)" "$(OutputDir)*"' />
+		<Exec Command="$(SevenZipPath) a -tzip &quot;$(ZipFilePath)&quot; &quot;$(OutputDir)*&quot;" />
 	</Target>
 
 </Project>
