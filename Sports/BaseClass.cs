@@ -726,7 +726,7 @@ namespace NOBApp.Sports
             int talkNPCID = -1; // 目標NPC的ID，初始值為 -1 表示尚未找到
             int findTargetTimeoutCounter = 0; // 尋找目標的超時計數器
             int maxFindTargetTimeout = 100; // 最大尋找目標超時次數 (可根據需求調整)
-
+            int talkcheckMax = 0;
             while (MainWindow.CodeRun) // 當程式碼運行時持續執行
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
@@ -759,6 +759,15 @@ namespace NOBApp.Sports
                 else // 如果還不能與目標NPC對話
                 {
                     MainNob?.MoveToNPC(talkNPCID); // 移動到目標NPC
+                }
+                talkcheckMax++;
+                if (talkcheckMax > 200)
+                {
+                    talkcheckMax = 0;
+                    MainNob?.KeyPress(VKeys.KEY_ESCAPE);
+                    IgnoredIDs.Add(talkNPCID);
+                    talkNPCID = -1;
+                    Debug.WriteLine($"{talkNPCID} 對話超時");
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }

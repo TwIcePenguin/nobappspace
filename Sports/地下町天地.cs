@@ -317,8 +317,10 @@ namespace NOBApp.Sports
                         checkTime = checkTime + 1;
                     }
                     Debug.WriteLine($"內部大會嚮導ID 判斷 : {內部大會嚮導ID}");
+                    int moveErrorCheck = 0;
                     while (MainWindow.CodeRun)
                     {
+                        MainNob.目前動作 = $"找大會對話 前往下一個 {moveErrorCheck}";
                         if (MainNob.GetTargetIDINT() == -1)
                         {
                             尋找目標並對話(17, E_TargetColor.藍NPC, ref 內部大會嚮導ID);
@@ -343,7 +345,16 @@ namespace NOBApp.Sports
                             MainNob.MoveToNPC(內部大會嚮導ID);
                             Task.Delay(200).Wait();
                         }
+                        moveErrorCheck++;
+                        if (moveErrorCheck > 20)
+                        {
+                            moveErrorCheck = 0;
+                            IgnoredIDs.Add(內部大會嚮導ID);
+                            MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
+                            尋找目標並對話(17, E_TargetColor.藍NPC, ref 內部大會嚮導ID);
+                        }
                     }
+                    Debug.WriteLine($"找新目標 !!");
                     Point = 檢查點.找目標;
                 }
                 else

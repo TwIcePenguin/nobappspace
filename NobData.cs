@@ -673,6 +673,17 @@ namespace NOBApp
             MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, NowWidth, NowHeight, true);
         }
 
+        public void FoucsNobApp(Process proc)
+        {
+            if (proc.MainWindowHandle != IntPtr.Zero)
+            {
+                GetWindowRect(Proc.MainWindowHandle, out RECT rect);
+                var nowPos = rect;
+                MoveWindow(proc.MainWindowHandle, nowPos.Left - 100, nowPos.Top, (int)WindowsRoot.Width, (int)WindowsRoot.Height, true);
+                SetForegroundWindow(proc.MainWindowHandle);
+            }
+        }
+
         public void 還原(string str = "")
         {
             比例 = 1;

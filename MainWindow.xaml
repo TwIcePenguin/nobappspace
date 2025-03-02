@@ -91,16 +91,16 @@
                     <TextBox x:Name="TBX搜尋範圍" TextWrapping="Wrap" Text="1000" Width="69" Canvas.Left="0" Canvas.Top="65" HorizontalAlignment="Left" VerticalAlignment="Top" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍"/>
                     <CheckBox x:Name="特搜" Content="特搜" Width="52" IsChecked="True" Visibility="Hidden" HorizontalAlignment="Left" Canvas.Left="4" Canvas.Top="32" VerticalAlignment="Top"/>
                     <ListBox x:Name="List_鎖定名單" Height="107" Width="110" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="116" Canvas.Top="27" VerticalAlignment="Top" />
-                    <ListBox x:Name="List_目前名單" Height="87" Width="119" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="232" Canvas.Top="46" VerticalAlignment="Center" />
+                    <ListBox x:Name="List_目前名單" Height="106" Width="119" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Center" Canvas.Left="232" Canvas.Top="27" VerticalAlignment="Top" />
                     <CheckBox x:Name="CB自動鎖定PC" Content="自動鎖" Height="15" Width="63" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="30" VerticalAlignment="Top" />
                     <CheckBox x:Name="CB鎖定後自動黑槍" Content="F9黑" Height="15" Width="58" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="47" VerticalAlignment="Top"/>
-                    <Button x:Name="Btn添加名單" Content="++" Height="30" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="55" VerticalAlignment="Top"/>
+                    <Button x:Name="Btn添加名單" Content="切換" Height="30" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="55" VerticalAlignment="Top"/>
                     <Button x:Name="Btn移除名單" Content="--" Height="29" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="85" VerticalAlignment="Top"/>
                     <Button x:Name="Btn鎖定目標添加" Content="鎖添" Height="27" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="27" VerticalAlignment="Top"/>
                     <ListBox x:Name="List_忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" SelectionChanged="目前名單_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <CheckBox x:Name="E點怪" Content="ENT點怪" Canvas.Left="130" Canvas.Top="140" Width="73" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <TextBox x:Name="其他選項A" TextWrapping="Wrap" Text="2" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
-                    <TextBox x:Name="其他選項B" TextWrapping="Wrap" Text="2" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
+                    <TextBox x:Name="其他選項B" TextWrapping="Wrap" Text="2" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="限制點怪 就是指打最上面搜尋到的 0 等於全部搜尋" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
                 </Canvas>
                 <Canvas x:Name="有目標類Page" d:IsHidden="True">
                     <TextBox x:Name="後退時間" Height="20" TextWrapping="Wrap" Text="8000" Width="60" HorizontalAlignment="Left" Canvas.Left="62" Canvas.Top="26" VerticalAlignment="Top"/>

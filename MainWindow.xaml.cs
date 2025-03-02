@@ -34,6 +34,7 @@ namespace NOBApp
         List<SkillData> skillList = new();
         static List<NOBDATA> nobList = new();
         public static List<NOBDATA> NobList => nobList;
+        static List<Process> nobAppList = new();
         /// <summary>
         /// 本次一起掛網的隊伍 包含隊長自己
         /// </summary>
@@ -53,11 +54,11 @@ namespace NOBApp
         public static bool Enter點怪 = false;
         public static bool F5解無敵 = false;
         public static int 限點數量 = 2;
-
         public static bool CodeRun = false;
         public static DmSoftCustomClassName? dmSoft;
         public static DateTime 到期日 = DateTime.Now.AddYears(99);
         public static string CUCDKEY = string.Empty;
+        public static Window WindowsRoot;
         public ComboBox[] comboBoxes;
         static bool UpdateNPCDataUI = false;
         Thickness oThickness;
@@ -71,6 +72,7 @@ namespace NOBApp
             AdminRelauncher();
             企鵝之野望.Title = $"企鵝之野望 {VersionInfo.Version} KEY = {Tools.GetSerialNumber()}";
 
+            WindowsRoot = 企鵝之野望;
             var registerDmSoftDllResult = RegisterDmSoft.RegisterDmSoftDll();
             if (!registerDmSoftDllResult)
             {
@@ -155,6 +157,10 @@ namespace NOBApp
 
         void UIDefault()
         {
+
+            其他選項A.Visibility =
+            Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
+            List_鎖定名單.Visibility =
             企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility =
             CB_定位點.Visibility = 武技設定頁面.Visibility =
             SMENU2.Visibility = 後退時間.Visibility = TargetViewPage.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility =
@@ -167,8 +173,8 @@ namespace NOBApp
             RegValue();
             StartCode.Checked += (o, e) => StartCode_Checked(true);
             StartCode.Unchecked += (o, e) => StartCode_Checked(false);
-            Btn添加名單.Click += 添加名單_Click;
-            Btn移除名單.Click += 移除名單_Click;
+            Btn添加名單.Click += 切換名單_Click;
+            Btn移除名單.Click += 切換名單_Click;
             Btn鎖定目標添加.Click += 鎖定目標添加_Click;
             UseSkill_CB.Click += UseSkill_CB_Click;
             Btn_上.Click += (s, e) => { 同步所有需要功能(VKeys.KEY_I); };
@@ -530,6 +536,10 @@ namespace NOBApp
                     UseSkill_CB.IsEnabled = isPass;
                     ControlGrid.IsEnabled = isPass;
                     CB_HID.IsEnabled = !isPass;
+                    if (isPass)
+                        企鵝之野望.Title = $"{UseLockNOB?.PlayerName} - 企鵝之野望 {VersionInfo.Version} KEY = {Tools.GetSerialNumber()}";
+                    else
+                        企鵝之野望.Title = $"企鵝之野望 {VersionInfo.Version} KEY = {Tools.GetSerialNumber()}";
                     LockBtn.Content = isPass ? "解除" : "驗證";
                     LockBtn.UpdateLayout();
                 }
@@ -581,8 +591,8 @@ namespace NOBApp
 
                 { "地下町天地", () => { useMenu = new 地下町天地(); 武技設定頁面.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = Btn_TargetC.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility = Visibility.Visible; } },
                 { "超級打怪", () => { useMenu = new 超級打怪(); Btn_TargetA.Content = "鎖定目標"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "黑槍特搜", () => { useMenu = new 黑槍特搜(); CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; } },
-                { "隨機打怪", () => { useMenu = new 隨機打怪(); UpdateNPCDataUI = true; CB自動鎖定PC.Visibility = List_目前名單.Visibility =  TargetViewPage.Visibility = Visibility.Visible; CB鎖定後自動黑槍.Visibility = Visibility.Hidden; } }
+                //{ "黑槍特搜", () => { useMenu = new 黑槍特搜(); CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; } },
+                { "隨機打怪", () => { useMenu = new 隨機打怪(); UpdateNPCDataUI = true; CB自動鎖定PC.Visibility = List_目前名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB鎖定後自動黑槍.Visibility = Visibility.Hidden; } }
             };
 
             SelectMenu.UpdateLayout();
@@ -599,8 +609,10 @@ namespace NOBApp
             nobList.Clear();
             CB_HID.Items.Clear();
             快速切換.Items.Clear();
+            nobAppList.Clear();
             foreach (var item in localByName)
             {
+                Debug.WriteLine($"Name : {item.ProcessName} Title : {item.MainWindowTitle}");
                 if (item.ProcessName.Contains("nobolHD"))
                 {
                     var data = new NOBDATA(item);
@@ -686,7 +698,7 @@ namespace NOBApp
             {
                 List_忽略名單.ItemsSource = IgnoredIDs;
                 List_鎖定名單.ItemsSource = TargetsID;
-                List_目前名單.ItemsSource = allNPCs;
+                List_目前名單.ItemsSource = AllNPCIDs;
                 List_鎖定名單.Items.Refresh();
                 List_目前名單.Items.Refresh();
                 List_忽略名單.Items.Refresh();
@@ -1047,17 +1059,44 @@ namespace NOBApp
             }
         }
 
-        private void 移除名單_Click(object sender, RoutedEventArgs e)
+        private void 切換名單_Click(object sender, RoutedEventArgs e)
         {
-            UpdateList(List_鎖定名單, TargetsID, false);
-            UpdateList(List_目前名單, IgnoredIDs, true);
-            UpdateList(List_忽略名單, IgnoredIDs, false);
+            if (List_目前名單 == null || List_鎖定名單 == null || List_忽略名單 == null)
+                return;
 
-            filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
+            if (List_目前名單 != null && List_目前名單.SelectedValue != null)
+            {
+                if (string.IsNullOrEmpty(List_目前名單.SelectedValue.ToString()) == false)
+                {
+                    if (int.TryParse(List_目前名單.SelectedValue.ToString(), out int id))
+                    {
+                        if (IgnoredIDs.Contains(id) == false)
+                            IgnoredIDs.Add(id);
+                        if (AllNPCIDs.Contains(id))
+                            AllNPCIDs.Remove(id);
+                    }
+                }
+            }
+
+            if (List_忽略名單 != null && List_忽略名單.SelectedValue != null)
+            {
+                if (string.IsNullOrEmpty(List_忽略名單.SelectedValue.ToString()) == false)
+                {
+                    if (int.TryParse(List_忽略名單.SelectedValue.ToString(), out int id))
+                    {
+                        if (IgnoredIDs.Contains(id))
+                            IgnoredIDs.Remove(id);
+                        if (AllNPCIDs.Contains(id) == false)
+                            AllNPCIDs.Add(id);
+                    }
+                }
+            }
+
+            //filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
             // 更新列表顯示
-            List_鎖定名單.ItemsSource = TargetsID;
-            List_目前名單.ItemsSource = filteredNPCs;
-            List_忽略名單.ItemsSource = IgnoredIDs;
+            List_鎖定名單!.ItemsSource = TargetsID;
+            List_目前名單!.ItemsSource = AllNPCIDs;
+            List_忽略名單!.ItemsSource = IgnoredIDs;
             List_忽略名單.Items.Refresh();
             List_目前名單.Items.Refresh();
             List_鎖定名單.Items.Refresh();
@@ -1065,35 +1104,46 @@ namespace NOBApp
 
         private void 添加名單_Click(object sender, RoutedEventArgs e)
         {
-            UpdateList(List_目前名單, TargetsID, true);
-            filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
-            List_目前名單.ItemsSource = filteredNPCs;
-            List_鎖定名單.ItemsSource = TargetsID;
-            List_鎖定名單.Items.Refresh();
-            List_目前名單.Items.Refresh();
-        }
+            if (List_目前名單 == null || List_鎖定名單 == null || List_忽略名單 == null)
+                return;
 
-        void UpdateList(ListBox listBox, List<long> list, bool add)
-        {
-            if (listBox.SelectedIndex > -1 && listBox.SelectedValue != null)
+            if (List_目前名單 != null && List_目前名單.SelectedValue != null)
             {
-                long num = (long)listBox.SelectedValue;
-                if (add)
+                if (string.IsNullOrEmpty(List_目前名單.SelectedValue.ToString()) == false)
                 {
-                    if (!list.Contains(num))
+                    if (int.TryParse(List_目前名單.SelectedValue.ToString(), out int id))
                     {
-                        list.Add(num);
-                    }
-                }
-                else
-                {
-                    if (list.Contains(num))
-                    {
-                        list.Remove(num);
+                        if (IgnoredIDs.Contains(id) == false)
+                            IgnoredIDs.Add(id);
+                        if (AllNPCIDs.Contains(id))
+                            AllNPCIDs.Remove(id);
                     }
                 }
             }
+
+            if (List_忽略名單 != null && List_忽略名單.SelectedValue != null)
+            {
+                if (string.IsNullOrEmpty(List_忽略名單.SelectedValue.ToString()) == false)
+                {
+                    if (int.TryParse(List_忽略名單.SelectedValue.ToString(), out int id))
+                    {
+                        if (IgnoredIDs.Contains(id))
+                            IgnoredIDs.Remove(id);
+                        if (AllNPCIDs.Contains(id) == false)
+                            AllNPCIDs.Add(id);
+                    }
+                }
+            }
+
+            //filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
+            List_鎖定名單!.ItemsSource = TargetsID;
+            List_目前名單!.ItemsSource = AllNPCIDs;
+            List_忽略名單!.ItemsSource = IgnoredIDs;
+            List_忽略名單.Items.Refresh();
+            List_目前名單.Items.Refresh();
+            List_鎖定名單.Items.Refresh();
         }
+
         #endregion
 
         private void 目前名單_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1326,7 +1376,7 @@ namespace NOBApp
         private void 限制點怪_TextChanged(object sender, TextChangedEventArgs e)
         {
             int.TryParse(其他選項A.Text, out int num);
-            限點數量 = num;
+            限點數量 = Math.Abs(num);
         }
 
         private void Button_Click_手把(object sender, RoutedEventArgs e)
@@ -1339,8 +1389,12 @@ namespace NOBApp
             if (sender is ListBox)
             {
                 var lbx = (ListBox)sender;
-                Debug.WriteLine(lbx.SelectedValue.ToString());
-                if (lbx.SelectedValue != null && string.IsNullOrEmpty(lbx.SelectedValue.ToString()))
+                if (lbx.SelectedValue == null)
+                {
+                    return;
+                }
+                Debug.WriteLine($"鎖定 -> {lbx.SelectedValue.ToString()}");
+                if (lbx.SelectedValue != null && string.IsNullOrEmpty(lbx.SelectedValue.ToString()) == false)
                 {
                     if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
                     {
@@ -1354,9 +1408,18 @@ namespace NOBApp
         {
             var name = 快速切換.SelectedItem.ToString();
             var unob = nobList.Find(r => r.PlayerName == name);
-            if (unob != null)
+            if (unob != null && string.IsNullOrEmpty(name) == false)
             {
                 SetForegroundWindow(unob.Proc.MainWindowHandle);
+                foreach (var item in Process.GetProcesses())
+                {
+                    Debug.WriteLine($"item -> {item.MainWindowTitle}");
+                    if (item.MainWindowTitle.Contains(name))
+                    {
+                        unob.FoucsNobApp(item);
+                        break;
+                    }
+                }
             }
         }
 
@@ -1516,7 +1579,7 @@ namespace NOBApp
                 {
                     Debug.WriteLine("saveSkillUserList Error -> " + e.ToString());
                 }
-            }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+            }
 
             UseLockNOB.CodeSetting.隊伍技能 = m隊伍技能紀錄;
             string jsonString = JsonSerializer.Serialize(UseLockNOB.CodeSetting);

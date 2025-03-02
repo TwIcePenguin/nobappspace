@@ -12,6 +12,8 @@ namespace NOBApp
         public static List<NPCData> allNPCs = new();
         public static int NpcCountToRead = 150;
         public static List<NPCData> filteredNPCs = new();
+        //顯示 TargetView清單用
+        public static List<long> AllNPCIDs = new();
         public static List<long> TargetsID = new();
         public static List<long> IgnoredIDs = new();   // 忽略的 IDs
 
@@ -55,7 +57,7 @@ namespace NOBApp
             var result = query.ToList();
 
             // 更新 TargetsID
-            TargetsID = result.Select(npc => npc.ID).ToList();
+            AllNPCIDs = result.Select(npc => npc.ID).ToList();
 
             return result;
         }
@@ -112,10 +114,11 @@ namespace NOBApp
                 ushort dis = BitConverter.ToUInt16(npcDataBytes, offset + 4); // 讀取距離
 
                 // 忽略 IgnoredIDs 名單中的 NPC
-                if (IgnoredIDs.Any(npc => npc == findID))
+                if (IgnoredIDs.Any(npc => npc == findID) || allNPCs.Any(npc => npc.ID == findID))
                 {
                     continue;
                 }
+
                 TargetTypes type = TargetTypes.None;
                 switch (chid)
                 {

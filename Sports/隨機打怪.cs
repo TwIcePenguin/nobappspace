@@ -9,7 +9,6 @@ namespace NOBApp.Sports
 {
     internal class 隨機打怪 : BaseClass
     {
-        public Action? UpdateUI = null;
         bool F5解無敵 = false;
         int mBCHCount = 0;
         public override void 初始化() { }
@@ -21,14 +20,17 @@ namespace NOBApp.Sports
             {
                 if (MainNob.待機)
                 {
-                    Task.Delay(500).Wait();
-                    UpdateUI?.Invoke();
                     Task.Delay(100).Wait();
+                    var npcs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, 4, MainNob.CodeSetting.搜尋範圍);
+                    if (npcs.Count > 0)
+                    {
+                        MainWindow.AllNPCIDs = npcs.Select(x => x.ID)
+                            .Where(id => !MainWindow.TargetsID.Contains(id))
+                            .Where(id => !MainWindow.IgnoredIDs.Contains(id)).ToList();
+                    }
                 }
-                var npcs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, 4, MainNob.CodeSetting.搜尋範圍);
-                MainWindow.allNPCs = npcs;
-                MainWindow.TargetsID = npcs.Select(x => x.ID).ToList();
-                if (MainWindow.TargetsID != null && MainWindow.開打)
+
+                if (MainWindow.AllNPCIDs != null && MainWindow.開打)
                 {
                     if (MainNob.待機)
                     {
@@ -40,26 +42,27 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
                         }
 
-                        Debug.WriteLine($"{MainWindow.TargetsID.Count}");
-                        if (MainWindow.TargetsID.Count == 0)
+                        Debug.WriteLine($"目標數量 ==> {MainWindow.AllNPCIDs.Count}");
+                        if (MainWindow.AllNPCIDs.Count == 0)
                         {
                             MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                         }
                         else
                         {
-                            for (int i = 0; i < MainWindow.TargetsID.Count; i++)
+                            for (int i = 0; i < MainWindow.AllNPCIDs.Count; i++)
                             {
                                 if (MainWindow.開打 == false || !MainNob.待機)
                                 {
                                     break;
                                 }
 
-                                if (i >= MainWindow.限點數量)
+                                if (MainWindow.限點數量 != 0 && i >= MainWindow.限點數量)
                                 {
                                     break;
                                 }
 
-                                var id = (int)MainWindow.TargetsID[i];
+                                var id = (int)MainWindow.AllNPCIDs[i];
+                                Debug.WriteLine($"鎖定打怪 => {id}");
                                 if (MainWindow.Enter點怪)
                                 {
                                     MainNob.鎖定NPC(id);
@@ -121,16 +124,7 @@ namespace NOBApp.Sports
                         if (mBCHCount > 2)
                         {
                             mBCHCount = 0;
-                            do
-                            {
-                                MainNob.KeyPress(VKeys.KEY_ESCAPE);
-                                Task.Delay(100).Wait();
-                                MainNob.KeyPress(VKeys.KEY_ENTER);
-                                Task.Delay(100).Wait();
-                                if (MainNob.待機)
-                                    break;
-                            }
-                            while (MainWindow.CodeRun);
+                            MainNob.離開戰鬥B();
                         }
                     }
                 }
