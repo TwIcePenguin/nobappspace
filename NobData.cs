@@ -673,14 +673,8 @@ namespace NOBApp
 
         public void MoveWindowTool(int tlIndex)
         {
-            var width = 原視窗.Right - 原視窗.Left;
-            var height = 原視窗.Bottom - 原視窗.Top;
-
-            NowWidth = (int)((width + 16) * 比例);
-            NowHeight = (int)((height + 39) * 比例);
-
-            int TopPos = 0 * tlIndex * 80;
-            int LeftPos = 0 * tlIndex * 120;
+            int TopPos = tlIndex * 80;
+            int LeftPos =  tlIndex * 120;
 
             MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, NowWidth, NowHeight, true);
         }

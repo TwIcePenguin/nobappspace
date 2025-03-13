@@ -55,7 +55,7 @@ namespace NOBApp
 
                                 var content = new StringContent(jdata, Encoding.UTF8, "application/json");
 
-                                string url = @"https://nobccdk20250311164541.azurewebsites.net/api/GetNOBCDK?code=JigZLn99DQYHkNM01xi7heVaClpTtnKIjtRoMWRwoijIAzFuM0BcVg==";
+                                string url = @"https://nobccdk20250311164541.azurewebsites.net/api/GetNOBCDK?code=hSpVurL7QaSgsUeIIV6afXJ6RECVzYdOPr05QYgtORr9AzFuPyyKpA==";
 
                                 HttpResponseMessage response = await client.PostAsync(url, content);
 
