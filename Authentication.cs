@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Windows;
 
 namespace NOBApp
 {
@@ -12,9 +13,9 @@ namespace NOBApp
             string jsonString = JsonSerializer.Serialize(nobUseData);
             try
             {
-                using (StreamWriter outputFile = new StreamWriter($@"{MainWindow.UseLockNOB!.PlayerName}_CDK.nob"))
+                using (StreamWriter outputFile = new StreamWriter($@"{MainWindow.UseLockNOB!.Account}_CDK.nob"))
                 {
-                    string dJson = Encoder.AesEncrypt(jsonString);
+                    string dJson = Encoder.AesEncrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
                     outputFile.WriteLine(dJson);
                 }
             }
@@ -24,12 +25,12 @@ namespace NOBApp
             }
         }
 
-        public static bool 讀取認證訊息Name(string playerName)
+        public static bool 讀取認證訊息Name(string account)
         {
-            var name = string.IsNullOrEmpty(playerName) ? MainWindow.UseLockNOB!.PlayerName : playerName;
-            if (File.Exists($@"{name}_CDK.nob"))
+            var acc = string.IsNullOrEmpty(account) ? MainWindow.UseLockNOB!.Account : account;
+            if (File.Exists($@"{acc}_CDK.nob"))
             {
-                using StreamReader reader = new($@"{name}_CDK.nob");
+                using StreamReader reader = new($@"{acc}_CDK.nob");
                 if (reader == null)
                 {
                     Debug.WriteLine("沒有該資料");
@@ -52,19 +53,26 @@ namespace NOBApp
 
         public static void 讀取認證訊息Json(string json)
         {
-            string dJson = Encoder.AesDecrypt(json);
-            Debug.WriteLine(dJson);
+            string dJson = Encoder.AesDecrypt(json, "CHECKNOBPENGUIN", "CHECKNOB");
             PNobUserData nobUseData = JsonSerializer.Deserialize<PNobUserData>(dJson);
             if (nobUseData != null && string.IsNullOrEmpty(nobUseData.Acc) == false &&
                 string.IsNullOrEmpty(MainWindow.UseLockNOB?.Account) == false)
             {
                 DateTime getOnlineTime = NetworkTime.GetNetworkTimeAsync();
-                if (DateTime.TryParse(nobUseData.StartTimer, out MainWindow.到期日) && MainWindow.到期日 > getOnlineTime)
+                if (DateTime.TryParse(nobUseData.StartTimer, out MainWindow.到期日) && MainWindow.到期日.AddDays(1) > getOnlineTime)
                 {
                     MainWindow.UseLockNOB!.驗證完成 = true;
                     MainWindow.UseLockNOB!.特殊者 = true;
                     儲存認證訊息(nobUseData);
                 }
+                else
+                {
+                    MessageBox.Show("驗證失敗，時間到期 請找企鵝延長時間");
+                }
+            }
+            else
+            {
+                MessageBox.Show("驗證失敗，請確認認證碼是否正確");
             }
         }
     }

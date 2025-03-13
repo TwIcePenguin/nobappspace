@@ -46,8 +46,8 @@
 	<ItemGroup>
 		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.68.0.3624" />
 		<PackageReference Include="MSBuildTasks" Version="1.5.0.235">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.Management" Version="8.0.0" />
 	</ItemGroup>
@@ -103,12 +103,12 @@
 		</None>
 	</ItemGroup>
 
-
-	<Target Name="PreBuild" BeforeTargets="Publish">
+	<Target Name="BeforeBuild" BeforeTargets="BeforeBuild">
 		<Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File UpdateVersion.ps1" />
 	</Target>
 
-	<Target Name="ReadVersion" BeforeTargets="Publish">
+	<Target Name="CustomActionsBeforePublish" AfterTargets="Publish">
+
 		<ReadLinesFromFile File="$(MSBuildProjectDirectory)\VersionInfo.cs">
 			<Output TaskParameter="Lines" ItemName="VersionFileLines" />
 		</ReadLinesFromFile>
@@ -127,10 +127,7 @@
 		<!-- 調試輸出 -->
 		<Message Importance="High" Text="版號資料夾: $(VersionFileContent)" />
 		<Message Importance="High" Text="版號: $(VersionNumber)" />
-
-	</Target>
-
-	<Target Name="CustomActionsBeforePublish" AfterTargets="Publish">
+		
 		<PropertyGroup>
 			<OutputDir>$(PublishDir)</OutputDir>
 			<ZipFilePath>$(PublishDir)企鵝之野望$(VersionNumber).zip</ZipFilePath>

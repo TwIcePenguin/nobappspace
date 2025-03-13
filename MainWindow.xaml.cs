@@ -32,9 +32,11 @@ namespace NOBApp
         public static string MainState = "";
         BaseClass? useMenu = null;
         List<SkillData> skillList = new();
+        /// <summary>
+        /// 所有視窗
+        /// </summary>
         static List<NOBDATA> nobList = new();
         public static List<NOBDATA> NobList => nobList;
-        static List<Process> nobAppList = new();
         /// <summary>
         /// 本次一起掛網的隊伍 包含隊長自己
         /// </summary>
@@ -161,7 +163,7 @@ namespace NOBApp
             其他選項A.Visibility =
             Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
             List_鎖定名單.Visibility =
-            企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility =
+            企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility =
             CB_定位點.Visibility = 武技設定頁面.Visibility =
             SMENU2.Visibility = 後退時間.Visibility = TargetViewPage.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility =
             FNPCID.Visibility = SMENU1.Visibility =
@@ -212,6 +214,8 @@ namespace NOBApp
             List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
             List_忽略名單.SelectionChanged += 排序_SelectionChanged;
             List_目前名單.SelectionChanged += 排序_SelectionChanged;
+
+            Btn_AutoRefresh.Click += Btn_AutoRefresh_Click;
         }
 
         void RegValue()
@@ -289,8 +293,17 @@ namespace NOBApp
 
         }
 
+        private void Btn_AutoRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < nobList.Count; i++)
+            {
+                nobList[i].MoveWindowTool(i);
+            }
+        }
+
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
         {
+            //WebRegistration.TestOnWebReg();
             if (UseLockNOB != null)
             {
                 Debug.WriteLine(sender.ToString());
@@ -424,8 +437,6 @@ namespace NOBApp
                         WebRegistration.useNobList = nobList;
                         Debug.WriteLine($"Web Reg {WebRegistration.useNobList.Count} {nobList.Count}");
                         Task.Run(() => WebRegistration.OnWebReg());
-
-                        Debug.WriteLine("Await ---------- ");
                     }
 
                     if (UseLockNOB != null)
@@ -463,7 +474,7 @@ namespace NOBApp
                                     checkCount++;
                                     所有人狀態.Text = $"驗證中! -- {checkCount}";
                                 }
-                                if (checkCount >= 10)
+                                if (checkCount >= 60)
                                 {
                                     isNetRun = false;
                                     所有人狀態.Text = "等待超時 請重新點選驗證";
@@ -609,7 +620,6 @@ namespace NOBApp
             nobList.Clear();
             CB_HID.Items.Clear();
             快速切換.Items.Clear();
-            nobAppList.Clear();
             foreach (var item in localByName)
             {
                 Debug.WriteLine($"Name : {item.ProcessName} Title : {item.MainWindowTitle}");
@@ -932,7 +942,7 @@ namespace NOBApp
 
         //啟動腳本
         bool isNetRun = false;
-        private async void StartCode_Checked(bool mChecked)
+        private void StartCode_Checked(bool mChecked)
         {
             CodeRun = mChecked;
             if (mChecked && useMenu != null)
@@ -1037,6 +1047,7 @@ namespace NOBApp
                 }
             }
 
+            Btn_Refresh.IsEnabled = !mChecked;
         }
 
         #region 目標選擇UI

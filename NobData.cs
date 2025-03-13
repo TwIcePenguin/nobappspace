@@ -521,7 +521,6 @@ namespace NOBApp
         public void BT_Cmd()
         {
             MainWindow.dmSoft!.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 1, 6);
-            // Proc.Handle.WriteInt(UseAddress(AddressData.戰鬥輸入), 4);
         }
 
         public void MR_Clik(int x, int y)
@@ -631,7 +630,6 @@ namespace NOBApp
                 int y = centerY + random.Next(-rangeY, rangeY);
                 return (x, y);
             }
-
         }
 
         public NOBDATA(Process proc)
@@ -671,6 +669,20 @@ namespace NOBApp
             NowWidth = (int)((width + 16) * f);
             NowHeight = (int)((height + 39) * f);
             MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, NowWidth, NowHeight, true);
+        }
+
+        public void MoveWindowTool(int tlIndex)
+        {
+            var width = 原視窗.Right - 原視窗.Left;
+            var height = 原視窗.Bottom - 原視窗.Top;
+
+            NowWidth = (int)((width + 16) * 比例);
+            NowHeight = (int)((height + 39) * 比例);
+
+            int TopPos = 0 * tlIndex * 80;
+            int LeftPos = 0 * tlIndex * 120;
+
+            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, NowWidth, NowHeight, true);
         }
 
         public void FoucsNobApp(Process proc)

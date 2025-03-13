@@ -56,6 +56,7 @@
                 <Image Source="/support_me_on_kofi_dark.png" />
             </Button>
             <Button x:Name="手把" Content="手把" Height="18" Width="29" Click="Button_Click_手把" HorizontalAlignment="Left" Canvas.Left="358" Canvas.Top="6" VerticalAlignment="Center" Visibility="Visible"/>
+            <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Height="24" Width="56" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
         </Canvas>
 
