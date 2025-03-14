@@ -1,7 +1,8 @@
 public class VersionInfo
 {
-    public const string Version = "v0.65.4";
+    public const string Version = "v0.65.5";
 }
+
 
 
 

@@ -1,4 +1,5 @@
-﻿using NOBApp.GoogleData;
+﻿using Microsoft.Web.WebView2.Core;
+using NOBApp.GoogleData;
 using NOBApp.Sports;
 using RegisterDmSoftConsoleApp.Configs;
 using RegisterDmSoftConsoleApp.DmSoft;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text.Json;
@@ -90,6 +92,7 @@ namespace NOBApp
             腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
             UIDefault();
             RegButtonEvent();
+            InitializeWebView();
             #region 註冊UI 給其他物件使用
             comboBoxes = new ComboBox[] { SelectFID_1, SelectFID_2, SelectFID_3, SelectFID_4, SelectFID_5, SelectFID_6, SelectFID_7 };
             #endregion  
@@ -112,6 +115,44 @@ namespace NOBApp
             Tools.UpdateTimer(到期計時);
         }
 
+        private async void InitializeWebView()
+        {
+            try
+            {
+                await BloggerWebView.EnsureCoreWebView2Async(null);
+                BloggerWebView.CoreWebView2.Navigate("https://icetwpenguin.blogspot.com");
+
+                // 註冊 WebMessageReceived 事件
+                BloggerWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+
+                // 注入 JavaScript 偵測點擊事件
+                string script = @"
+                    document.addEventListener('click', function(event) {
+                        var target = event.target;
+                        // 根據廣告的特徵修改條件
+                        if (target.closest('.ad-class') || target.closest('iframe[src*=""ads""]')) {
+                            window.chrome.webview.postMessage('AdClicked');
+                        }
+                    });
+                ";
+                await BloggerWebView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(script);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"WebView2 初始化失敗: {ex.Message}");
+            }
+        }
+
+        private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            var message = e.TryGetWebMessageAsString();
+            if (message == "AdClicked")
+            {
+                // 處理廣告點擊事件
+                MessageBox.Show("使用者點擊了廣告！");
+                // 您可以在此處添加更多邏輯，例如記錄點擊、觸發其他功能等
+            }
+        }
 
         private void AdminRelauncher()
         {
@@ -228,13 +269,14 @@ namespace NOBApp
 
         private void 戰鬥輔助面_LayoutUpdated(object? sender, EventArgs e)
         {
+            int offsetY = 100;
             if (PB_isExpanded != 腳本展區.IsExpanded || PA_isExpanded != 戰鬥輔助面.IsExpanded)
             {
                 PB_isExpanded = 腳本展區.IsExpanded;
                 PA_isExpanded = 戰鬥輔助面.IsExpanded;
 
-                double tA = PB_isExpanded ? 300 : 0;
-                double tB = PA_isExpanded ? 370 : 0;
+                double tA = PB_isExpanded ? 300 + offsetY : 0;
+                double tB = PA_isExpanded ? 370 + offsetY : 0;
                 Thickness nThickness = oThickness;
                 //Debug.WriteLine($"{nThickness} {oThickness}");
                 nThickness.Top = oThickness.Top + tA;
@@ -1607,7 +1649,5 @@ namespace NOBApp
                 Debug.WriteLine($@"{UseLockNOB.PlayerName}_LoadSK.sk write Error -> {e.ToString()}");
             }
         }
-
     }
-
 }
