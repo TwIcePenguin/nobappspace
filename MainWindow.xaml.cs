@@ -622,7 +622,7 @@ namespace NOBApp
             快速切換.Items.Clear();
             foreach (var item in localByName)
             {
-                Debug.WriteLine($"Name : {item.ProcessName} Title : {item.MainWindowTitle}");
+                //Debug.WriteLine($"Name : {item.ProcessName} Title : {item.MainWindowTitle}");
                 if (item.ProcessName.Contains("nobolHD"))
                 {
                     var data = new NOBDATA(item);
@@ -632,7 +632,7 @@ namespace NOBApp
                     CB_HID.Items.Add(data.PlayerName);
                 }
             }
-            Debug.WriteLine("共有 : " + nobList.Count);
+            //Debug.WriteLine("共有 : " + nobList.Count);
             UIUpdate.RefreshNOBID_Sec(comboBoxes, nobList);
         }
 

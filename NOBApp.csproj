@@ -14,7 +14,7 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<BaseOutputPath>F:\NOBOnline\BOT</BaseOutputPath>
 	</PropertyGroup>
-
+	
 	<ItemGroup>
 		<None Remove="448545149_994763355983896_6737183326767466195_n.jpg" />
 		<None Remove="6f90a860dd47c4bafb631f2fa7930e50.png" />
@@ -103,12 +103,14 @@
 		</None>
 	</ItemGroup>
 
-	<Target Name="BeforeBuild" BeforeTargets="BeforeBuild">
+	<Target Name="CustomActionsBeforePublish" BeforeTargets="Publish">
+		<Message Text="BeforePublish 開始執行" Importance="high" />
 		<Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File UpdateVersion.ps1" />
+		<Message Text="BeforePublish 執行完畢" Importance="high" />
 	</Target>
 
-	<Target Name="CustomActionsBeforePublish" AfterTargets="Publish">
-
+	<Target Name="CustomActionsAfterPublish" AfterTargets="Publish">
+		<Message Text="AfterTargets 開始執行" Importance="high" />
 		<ReadLinesFromFile File="$(MSBuildProjectDirectory)\VersionInfo.cs">
 			<Output TaskParameter="Lines" ItemName="VersionFileLines" />
 		</ReadLinesFromFile>

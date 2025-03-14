@@ -673,7 +673,7 @@ namespace NOBApp
 
         public void MoveWindowTool(int tlIndex)
         {
-            int TopPos = tlIndex * 80;
+            int TopPos = tlIndex * 40;
             int LeftPos =  tlIndex * 120;
 
             MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, NowWidth, NowHeight, true);
