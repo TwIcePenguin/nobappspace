@@ -93,7 +93,7 @@ namespace NOBApp
             腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
             UIDefault();
             RegButtonEvent();
-            InitializeWebView();
+            //InitializeWebView();
             #region 註冊UI 給其他物件使用
             comboBoxes = new ComboBox[] { SelectFID_1, SelectFID_2, SelectFID_3, SelectFID_4, SelectFID_5, SelectFID_6, SelectFID_7 };
             #endregion  

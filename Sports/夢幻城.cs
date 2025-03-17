@@ -112,8 +112,25 @@ namespace NOBApp.Sports
                     Debug.WriteLine("沒做任何事情卡住了 -- ");
                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 2);
                 }
-                if (hasBox && boxGetCheck > 5)
+                if (hasBox && boxGetCheck > 10)
                 {
+                    while (CodeRun)
+                    {
+                        MainNob.MoveToNPC(MainNob.GetTargetIDINT());
+                        Task.Delay(1000).Wait();
+
+                        if (MainNob.出現左右選單)
+                        {
+                            for (int i = 0; i < 2; i++)
+                            {
+                                MainNob!.KeyPress(VKeys.KEY_J);
+                                Task.Delay(300).Wait();
+                                MainNob!.KeyPress(VKeys.KEY_ENTER);
+                            }
+                            break;
+                        }
+                        Task.Delay(300).Wait();
+                    }
                     Debug.WriteLine("外部確認 拿完已經拿完寶相");
                     boxGetCheck = 0;
                     進行任務 = false;
@@ -122,7 +139,9 @@ namespace NOBApp.Sports
                 }
 
                 if (hasBox)
+                {
                     boxGetCheck++;
+                }
                 anyDoCheck++;
                 Task.Delay(100).Wait();
             }
@@ -165,7 +184,6 @@ namespace NOBApp.Sports
                     break;
                 case 5:
                     Debug.WriteLine($"第三房間出口");
-
                     移動點.Add(new(5051, 4770)); //第三房間出口
                     移動點.Add(new(5005, 6427)); //第三房間出口
                     break;
@@ -224,8 +242,10 @@ namespace NOBApp.Sports
                 {
                     if (MainNob!.有觀察對象)
                     {
-                        MainNob!.KeyPress(VKeys.KEY_ENTER, 5);
+                        MainNob!.KeyPress(VKeys.KEY_ENTER, 7, 200);
                         進行任務 = mPoint == 0 || mPoint == 2 || mPoint == 4 || mPoint == 6;
+
+                        Debug.WriteLine($"進行開門-->{mPoint}");
 
                         if (進行任務 == false)
                             mPoint = mPoint + 1;
@@ -272,7 +292,7 @@ namespace NOBApp.Sports
                 if (MainNob.GetTargetIDINT() != -1)
                 {
                     //Check寶相
-                    Debug.WriteLine("Class " + MainNob.GetTargetClass());
+                    //Debug.WriteLine("Class " + MainNob.GetTargetClass());
                     checkRoomIndex = 0;
                     hasBox = false;
                     if (!skipID.Contains(MainNob.GetTargetIDINT()) && MainNob.GetTargetClass() == 254)
@@ -283,9 +303,10 @@ namespace NOBApp.Sports
 
                     MainNob.MoveToNPC(MainNob.GetTargetIDINT());
                     Task.Delay(1000).Wait();
-                    if (hasBox && MainNob.對話與結束戰鬥)
+                    if (hasBox && MainNob.對話與結束戰鬥 || MainNob.出現左右選單)
                     {
-                        for (int i = 0; i < 2; i++)
+                        Debug.WriteLine($"檢測寶相 準備打開");
+                        for (int i = 0; i < 3; i++)
                         {
                             MainNob!.KeyPress(VKeys.KEY_J);
                             Task.Delay(300).Wait();
