@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text.Json;
@@ -63,6 +62,8 @@ namespace NOBApp
         public static DateTime 到期日 = DateTime.Now.AddYears(99);
         public static string CUCDKEY = string.Empty;
         public static Window WindowsRoot;
+        public static int OrinX = 0;
+        public static int OrinY = 0;
         public ComboBox[] comboBoxes;
         static bool UpdateNPCDataUI = false;
         Thickness oThickness;
@@ -200,7 +201,6 @@ namespace NOBApp
 
         void UIDefault()
         {
-
             其他選項A.Visibility =
             Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
             List_鎖定名單.Visibility =
@@ -337,10 +337,24 @@ namespace NOBApp
 
         private void Btn_AutoRefresh_Click(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < nobList.Count; i++)
+            if (OrinX == 0 || OrinY == 0)
             {
-                nobList[i].MoveWindowTool(i);
+                string str = CMB_Resolution.Text;
+                var array = str.Split(',');
+                if (array.Length == 2)
+                {
+                    int.TryParse(array[0], out OrinX);
+                    int.TryParse(array[1], out OrinY);
+                    OrinX = OrinX + 16;
+                    OrinY = OrinY + 39;
+                }
             }
+
+            if (OrinX > 0 || OrinY > 0)
+                for (int i = 0; i < nobList.Count; i++)
+                {
+                    nobList[i].MoveWindowTool(i);
+                }
         }
 
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
@@ -768,7 +782,12 @@ namespace NOBApp
                 return;
 
             string idstr = CB_HID.SelectedValue.ToString();
-            bool autoCheckin = string.IsNullOrEmpty(idstr) == false && Authentication.讀取認證訊息Name(idstr) && string.IsNullOrEmpty(CUCDKEY) == false;
+
+            if (string.IsNullOrEmpty(idstr))
+                return;
+
+            string acc = nobList.Find(r => r.PlayerName == idstr)?.Account ?? string.Empty;
+            bool autoCheckin = Authentication.讀取認證訊息Name(acc) && string.IsNullOrEmpty(CUCDKEY) == false;
 
             認證TBox.Text = autoCheckin ? CUCDKEY : string.Empty;
             認證2CB.IsChecked = autoCheckin;
@@ -894,12 +913,6 @@ namespace NOBApp
         {
             Process.Start("NOBApp.exe");
         }
-        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
-        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        private static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         private void FollowLeadLockTarget_Click(object sender, RoutedEventArgs e)
         {
@@ -923,23 +936,25 @@ namespace NOBApp
         {
             string str = CMB_Resolution.Text;
             var array = str.Split(',');
+            int width = 0;
+            int height = 0;
+            if (array.Length > 1)
+            {
+                int.TryParse(array[0], out width);
+                int.TryParse(array[1], out height);
+            }
+
             foreach (var nob in NobTeams)
             {
                 if (nob != null)
                 {
-                    if (array.Length > 1)
-                    {
-                        int.TryParse(array[0], out int width);
-                        int.TryParse(array[1], out int height);
-                        int inPosX = width / 2;
-                        int inPosY = (height / 2) - 50;
-                        nob.MR_Clik(inPosX + 16, inPosY);
-                        Task.Delay(50).Wait();
-                        nob.MR_Clik(inPosX - 100, inPosY);
-                        Task.Delay(50).Wait();
-                        nob.MR_Clik(inPosX - 100, inPosY + 100);
-                    }
-
+                    int inPosX = width / 2;
+                    int inPosY = (height / 2) - 50;
+                    nob.MR_Clik(inPosX + 16, inPosY);
+                    Task.Delay(50).Wait();
+                    nob.MR_Clik(inPosX - 100, inPosY);
+                    Task.Delay(50).Wait();
+                    nob.MR_Clik(inPosX - 100, inPosY + 100);
                 }
             }
         }

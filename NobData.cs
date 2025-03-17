@@ -635,11 +635,18 @@ namespace NOBApp
         public NOBDATA(Process proc)
         {
             Proc = proc;
-            GetWindowRect(Proc.MainWindowHandle, out RECT rect);
-            原視窗 = rect;
-            NowWidth = rect.Right - rect.Left;
-            NowHeight = rect.Bottom - rect.Top;
-            //Debug.WriteLine($"W : {width} H : {height} - {rect}");
+            bool _initWH = true;
+            while (_initWH)
+            {
+                if (GetWindowRect(Proc.MainWindowHandle, out RECT rect))
+                {
+                    原視窗 = rect;
+                    NowWidth = rect.Right - rect.Left;
+                    NowHeight = rect.Bottom - rect.Top;
+                    _initWH = false;
+                }
+                Task.Delay(100).Wait();
+            }
         }
 
         public void 縮小(string str = "")
@@ -674,9 +681,9 @@ namespace NOBApp
         public void MoveWindowTool(int tlIndex)
         {
             int TopPos = tlIndex * 40;
-            int LeftPos =  tlIndex * 120;
+            int LeftPos = tlIndex * 120;
 
-            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, NowWidth, NowHeight, true);
+            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, OrinX , OrinY, true);
         }
 
         public void FoucsNobApp(Process proc)
