@@ -62,27 +62,36 @@ namespace NOBApp.Sports
             if (MainNob != null)
             {
                 //Debug.WriteLine($" Point : {mPoint}");
-                MainNob.目前動作 = $"Point -> {mPoint}";
-                if (MainNob.待機 && 進行任務)
+                MainNob.目前動作 = $"P:{mPoint}Q:{進行任務}";
+                if (進行任務)
                 {
-                    anyDoCheck = 0;
-                    尋找任務();
-                }
-
-                if (進行任務 && MainNob.對話與結束戰鬥)
-                {
-                    for (int i = 0; i < 2; i++)
+                    if (MainNob.待機)
                     {
-                        MainNob!.KeyPress(VKeys.KEY_J);
-                        Task.Delay(300).Wait();
-                        MainNob!.KeyPress(VKeys.KEY_ENTER);
+                        anyDoCheck = 0;
+                        尋找任務();
                     }
-                    尋找任務();
+
+                    if (MainNob.對話與結束戰鬥)
+                    {
+                        if (hasBox == false)
+                        {
+                            for (int i = 0; i < 2; i++)
+                            {
+                                MainNob!.KeyPress(VKeys.KEY_J);
+                                Task.Delay(300).Wait();
+                                MainNob!.KeyPress(VKeys.KEY_ENTER);
+                            }
+                        }
+                        尋找任務();
+                    }
                 }
 
                 if (MainNob.待機 && 進行任務 == false)
                 {
+                    boxGetCheck = 0;
                     anyDoCheck = 0;
+                    skipID.Clear();
+                    hasBox = false;
                     夢幻成移動();
                 }
 
@@ -103,7 +112,17 @@ namespace NOBApp.Sports
                     Debug.WriteLine("沒做任何事情卡住了 -- ");
                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 2);
                 }
+                if (hasBox && boxGetCheck > 5)
+                {
+                    Debug.WriteLine("外部確認 拿完已經拿完寶相");
+                    boxGetCheck = 0;
+                    進行任務 = false;
+                    hasBox = false;
+                    mPoint = mPoint + 1;
+                }
 
+                if (hasBox)
+                    boxGetCheck++;
                 anyDoCheck++;
                 Task.Delay(100).Wait();
             }
@@ -240,6 +259,8 @@ namespace NOBApp.Sports
             }
         }
 
+        bool hasBox = false;
+        int boxGetCheck = 0;
         //寶相 第四碼 FE
         void 尋找任務()
         {
@@ -250,10 +271,10 @@ namespace NOBApp.Sports
                 Task.Delay(100).Wait();
                 if (MainNob.GetTargetIDINT() != -1)
                 {
-                    //寶相
-                    //Debug.WriteLine("Class " + MainNob.GetTargetClass());
+                    //Check寶相
+                    Debug.WriteLine("Class " + MainNob.GetTargetClass());
                     checkRoomIndex = 0;
-                    bool hasBox = false;
+                    hasBox = false;
                     if (!skipID.Contains(MainNob.GetTargetIDINT()) && MainNob.GetTargetClass() == 254)
                     {
                         Debug.WriteLine("找到寶相");
