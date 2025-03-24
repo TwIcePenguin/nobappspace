@@ -85,7 +85,7 @@ namespace NOBApp.Sports
             MainNob?.KeyPressT(VKeys.KEY_S, time);
         }
 
-        public void 移動到定點()
+        public bool 移動到定點(int maxTry = 10000)
         {
             if (MainNob != null)
             {
@@ -96,7 +96,7 @@ namespace NOBApp.Sports
                 MoveIndex = 0;
                 int moveErrorCheck = 0;
                 int battleCheckDone = -1;
-
+                int tryError = 0;
                 while (MainWindow.CodeRun && 移動點.Count > MoveIndex)
                 {
                     if (MainNob.戰鬥中)
@@ -180,8 +180,7 @@ namespace NOBApp.Sports
                         MainNob.KeyUp(VKeys.KEY_W); // 角度偏差大時，先停止前進，專注調整角度
                     }
 
-
-                    int oold = oldDistance == int.MaxValue ? oldDistance : oldDistance + 10;
+                    int oold = oldDistance == int.MaxValue ? oldDistance : oldDistance + 30;
                     if (oold > dis) // 距離持續縮短，重置 moveErrorCheck
                     {
                         moveErrorCheck = 0;
@@ -190,6 +189,7 @@ namespace NOBApp.Sports
                     else
                     {
                         moveErrorCheck++;
+                        MainNob.Log($"{MainNob.PlayerName} 移動前進過短 {moveErrorCheck} {oold} {dis}");
                         if (moveErrorCheck > MoveErrorCheckLimit) // 移動停滯過久，觸發錯誤處理
                         {
                             moveErrorCheck = 0;
@@ -206,14 +206,35 @@ namespace NOBApp.Sports
                         }
                     }
 
+
+                    tryError++;
+                    if (tryError > maxTry)
+                    {
+                        MainNob.Log($"嘗試過多次依然沒有到下一個點位");
+                        tryError = 0;
+                        if (MoveIndex > 0)
+                            MoveIndex--;
+                        else if (MoveIndex == 0)
+                        {
+                            MainNob.Log($"MoveIndex == 0 還是異常");
+                            return false;
+                        }
+                        continue;
+                    }
+
                     Task.Delay(LoopDelayMs).Wait(); // 迴圈延遲
                 }
+
 
                 moveMode = 0; // 重置移動模式
                 MoveIndex = 0; // 重置移動索引
                 MainNob.KeyUp(VKeys.KEY_W); // 移動結束，抬起 W 鍵
-            }
+                return true;
+            }
+
+            return false;
         }
+
 
         public int 夾角(int a, int b)
         {
@@ -231,7 +252,7 @@ namespace NOBApp.Sports
         {
             double dx = x2 - x1;
             double dy = y2 - y1;
-            //Debug.WriteLine($"x1:{x1} y1:{y1} x2:{x2} y2:{y2}");
+            //  MainNob.Log($"x1:{x1} y1:{y1} x2:{x2} y2:{y2}");
             return (int)Math.Sqrt(dx * dx + dy * dy);
         }
 
@@ -299,14 +320,14 @@ namespace NOBApp.Sports
 
                         if (targets.Count >= needCount)
                         {
-                            Debug.WriteLine($"敵人搜尋完成");
+                            MainNob.Log($"敵人搜尋完成");
                             break;
                         }
                     }
 
                     if (targets.Count >= needCount)
                     {
-                        Debug.WriteLine($"敵人搜尋完成");
+                        MainNob.Log($"敵人搜尋完成");
                         break;
                     }
                     else
@@ -316,7 +337,7 @@ namespace NOBApp.Sports
                     findCheck++;
                     if (findCheck > 3)
                     {
-                        Debug.WriteLine($"超出搜尋次數 增加搜尋範圍 {NpcCountToRead}");
+                        MainNob.Log($"超出搜尋次數 增加搜尋範圍 {NpcCountToRead}");
                         NpcCountToRead = Math.Min(NpcCountToRead + 5, 150);
                         IgnoredIDs.Clear();
                         allNPCIDs = GetAllNPCs();
@@ -358,7 +379,7 @@ namespace NOBApp.Sports
 
                     if (targetID != -1)
                     {
-                        Debug.WriteLine($"敵人搜尋完成");
+                        MainNob.Log($"敵人搜尋完成");
                         return targetID;
                     }
                     else
@@ -494,7 +515,7 @@ namespace NOBApp.Sports
                         {
                             foreach (var item in NobTeams)
                             {
-                                Debug.WriteLine($"{item.PlayerName} --> 離開戰鬥");
+                                MainNob.Log($"{item.PlayerName} --> 離開戰鬥");
                                 Task.Run(item.離開戰鬥A);
                             }
 
@@ -583,7 +604,7 @@ namespace NOBApp.Sports
                         {
                             foreach (var item in NobTeams)
                             {
-                                Debug.WriteLine($"{item.PlayerName} --> 離開戰鬥");
+                                MainNob.Log($"{item.PlayerName} --> 離開戰鬥");
                                 Task.Run(item.離開戰鬥A);
                             }
 
@@ -637,7 +658,7 @@ namespace NOBApp.Sports
                         findTargetTimeoutCounter++; // 增加超時計數器
                         if (findTargetTimeoutCounter > maxFindTargetTimeout) // 檢查是否超出最大超時次數
                         {
-                            Debug.WriteLine($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
+                            MainNob.Log($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
                             MainWindow.MainState = $"尋找 {targetNPCType} 目標超時"; // 更新主視窗狀態 (如果需要)
                             return false; // 返回 false 表示尋找目標失敗
                         }
@@ -694,7 +715,7 @@ namespace NOBApp.Sports
                         findTargetTimeoutCounter++; // 增加超時計數器
                         if (findTargetTimeoutCounter > maxFindTargetTimeout) // 檢查是否超出最大超時次數
                         {
-                            Debug.WriteLine($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
+                            MainNob.Log($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
                             MainWindow.MainState = $"尋找 {targetNPCType} 目標超時"; // 更新主視窗狀態 (如果需要)
                             return false; // 返回 false 表示尋找目標失敗
                         }
@@ -738,7 +759,7 @@ namespace NOBApp.Sports
                         findTargetTimeoutCounter++; // 增加超時計數器
                         if (findTargetTimeoutCounter > maxFindTargetTimeout) // 檢查是否超出最大超時次數
                         {
-                            Debug.WriteLine($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
+                            MainNob.Log($"尋找 {targetNPCType} 目標超時，可能發生異常。檢查碼: {targetColorCheck}");
                             MainWindow.MainState = $"尋找 {targetNPCType} 目標超時"; // 更新主視窗狀態 (如果需要)
                             return false; // 返回 false 表示尋找目標失敗
                         }
@@ -767,7 +788,7 @@ namespace NOBApp.Sports
                     MainNob?.KeyPress(VKeys.KEY_ESCAPE);
                     IgnoredIDs.Add(talkNPCID);
                     talkNPCID = -1;
-                    Debug.WriteLine($"{talkNPCID} 對話超時");
+                    MainNob.Log($"{talkNPCID} 對話超時");
                 }
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }

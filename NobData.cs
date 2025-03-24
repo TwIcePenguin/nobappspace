@@ -65,7 +65,7 @@ namespace NOBApp
         public bool 出現直式選單 => ReadInt("<nobolHD.bng> + " + AddressData.直選框, 0) == 1;
         public int GetSStatus => ReadInt("<nobolHD.bng> + " + AddressData.特殊狀態判斷, 2);
         public string StateA => ReadData("<nobolHD.bng> + " + AddressData.判別狀態A, 2);
-
+        public bool ResetPoint = false;
         public bool 驗證國家
         {
             get // 明確加上 get 關鍵字，雖然自動屬性可省略，但加上更清晰
@@ -158,7 +158,19 @@ namespace NOBApp
         public bool 離開戰鬥確認 = false;
         public bool 完成必須對話 = false;
         public bool 啟動自動輔助中 = false;
+        public bool 準備完成 = false;
 
+        string cacheLog = string.Empty;
+        public void Log(string str)
+        {
+            if (cacheLog == str || cacheLog.Contains(str))
+            {
+                return;
+            }
+
+            cacheLog = str;
+            Debug.WriteLine($"{PlayerName}->{str}");
+        }
         public void CloseGame()
         {
             Proc.Kill();
@@ -513,8 +525,8 @@ namespace NOBApp
                     EData.LastName = name2;
                     EMTeamData.Add(EData);
                 }
-                //Debug.WriteLine($"baseStr {baseStr} {baseStr.AddressAdd(8)} {baseStr.AddressAdd(26)} {name1} {name2} ID : {data.UID} FName : {data.FullName} SID : {data.SortID} ");
-                //Debug.WriteLine("\n");
+                //  MainNob.Log($"baseStr {baseStr} {baseStr.AddressAdd(8)} {baseStr.AddressAdd(26)} {name1} {name2} ID : {data.UID} FName : {data.FullName} SID : {data.SortID} ");
+                //  MainNob.Log("\n");
             }
         }
 
@@ -605,7 +617,7 @@ namespace NOBApp
             do
             {
                 if (戰鬥中) { break; }
-                //Debug.WriteLine($"結算中 : {checkDoneCount}");
+                //  MainNob.Log($"結算中 : {checkDoneCount}");
                 if (對話與結束戰鬥)
                 {
                     checkDoneCount = 0;
@@ -683,7 +695,7 @@ namespace NOBApp
             int TopPos = tlIndex * 40;
             int LeftPos = tlIndex * 120;
 
-            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, OrinX , OrinY, true);
+            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, OrinX, OrinY, true);
         }
 
         public void FoucsNobApp(Process proc)

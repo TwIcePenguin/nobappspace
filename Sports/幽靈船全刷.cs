@@ -45,7 +45,7 @@ namespace NOBApp.Sports
                     case 檢查點.入場:
                         mUseNOB = UseLockNOB;
                         Task.Run(接任務);
-                        Debug.WriteLine($"---- {mUseNOB!.PlayerName}");
+                          MainNob.Log($"---- {mUseNOB!.PlayerName}");
                         Task.Delay(5000).Wait();
                         for (int i = 0; i < FIDList.Count; i++)
                         {
@@ -143,7 +143,7 @@ namespace NOBApp.Sports
                 }
                 if (對手目標ID != -1 && 出場NPCID != -1)
                 {
-                    Debug.WriteLine($"找到目標 {對手目標ID} 出場 {出場NPCID}");
+                      MainNob.Log($"找到目標 {對手目標ID} 出場 {出場NPCID}");
                     break;
                 }
 
@@ -162,7 +162,7 @@ namespace NOBApp.Sports
         {
             var useNOB = mUseNOB;
             bool 領完獎勵 = false;
-            Debug.WriteLine("接任務 " + useNOB!.PlayerName);
+              MainNob.Log("接任務 " + useNOB!.PlayerName);
             int mErrorCheck = 0;
             if (useNOB != null)
             {
@@ -234,7 +234,7 @@ namespace NOBApp.Sports
                                         continue;
                                     }
                                 }
-                                Debug.WriteLine(useNOB.取得最下面選項());
+                                  MainNob.Log(useNOB.取得最下面選項());
                                 if (useNOB.取得最下面選項(24).Contains("財寶"))
                                 {
                                     useNOB.直向選擇(0);
@@ -252,7 +252,7 @@ namespace NOBApp.Sports
                         mErrorCheck++;
                         if (mErrorCheck > 20)
                         {
-                            Debug.WriteLine(" ErrorCheck ");
+                              MainNob.Log(" ErrorCheck ");
                             mErrorCheck = 0;
                             useNOB.KeyPress(VKeys.KEY_ESCAPE, 10, 200);
                             useNOB.KeyPress(VKeys.KEY_ENTER);
@@ -304,7 +304,7 @@ namespace NOBApp.Sports
         private void 離開副本()
         {
             var useNOB = mUseNOB;
-            Debug.WriteLine($"{useNOB != null} 離開副本 " + useNOB?.PlayerName);
+              MainNob.Log($"{useNOB != null} 離開副本 " + useNOB?.PlayerName);
             if (useNOB != null)
             {
                 useNOB.副本離開完成 = false;
@@ -319,7 +319,7 @@ namespace NOBApp.Sports
                 {
                     Task.Delay(200).Wait();
                     useNOB.目前動作 = $"出去中 {useNOB.StateA} {useNOB.MAPID} {useNOB.副本離開完成}";
-                    Debug.WriteLine($"{出場NPCID} - {x} {useNOB.PosX} {y} {useNOB.PosY}");
+                      MainNob.Log($"{出場NPCID} - {x} {useNOB.PosX} {y} {useNOB.PosY}");
                     if ((map > 0) && (map != useNOB.MAPID))
                     {
                         useNOB.副本離開完成 = true;

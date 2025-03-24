@@ -1,5 +1,4 @@
-﻿using Microsoft.Web.WebView2.Core;
-using NOBApp.GoogleData;
+﻿using NOBApp.GoogleData;
 using NOBApp.Sports;
 using RegisterDmSoftConsoleApp.Configs;
 using RegisterDmSoftConsoleApp.DmSoft;
@@ -56,6 +55,8 @@ namespace NOBApp
         public static bool isGoogleReg = false;
         public static bool Enter點怪 = false;
         public static bool F5解無敵 = false;
+        public static bool 準備進入下一階段 = false;
+        public static bool 完成進入下一階段 = false;
         public static int 限點數量 = 2;
         public static bool CodeRun = false;
         public static DmSoftCustomClassName? dmSoft;
@@ -93,7 +94,7 @@ namespace NOBApp
             腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
             UIDefault();
             RegButtonEvent();
-            //InitializeWebView();
+
             #region 註冊UI 給其他物件使用
             comboBoxes = new ComboBox[] { SelectFID_1, SelectFID_2, SelectFID_3, SelectFID_4, SelectFID_5, SelectFID_6, SelectFID_7 };
             #endregion  
@@ -114,45 +115,6 @@ namespace NOBApp
             _timer.Tick += CustomUpdate;
 
             Tools.UpdateTimer(到期計時);
-        }
-
-        private async void InitializeWebView()
-        {
-            try
-            {
-                await BloggerWebView.EnsureCoreWebView2Async(null);
-                BloggerWebView.CoreWebView2.Navigate("https://icetwpenguin.blogspot.com");
-
-                // 註冊 WebMessageReceived 事件
-                BloggerWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-
-                // 注入 JavaScript 偵測點擊事件
-                string script = @"
-                    document.addEventListener('click', function(event) {
-                        var target = event.target;
-                        // 根據廣告的特徵修改條件
-                        if (target.closest('.ad-class') || target.closest('iframe[src*=""ads""]')) {
-                            window.chrome.webview.postMessage('AdClicked');
-                        }
-                    });
-                ";
-                await BloggerWebView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(script);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"WebView2 初始化失敗: {ex.Message}");
-            }
-        }
-
-        private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
-        {
-            var message = e.TryGetWebMessageAsString();
-            if (message == "AdClicked")
-            {
-                // 處理廣告點擊事件
-                MessageBox.Show("使用者點擊了廣告！");
-                // 您可以在此處添加更多邏輯，例如記錄點擊、觸發其他功能等
-            }
         }
 
         private void AdminRelauncher()
@@ -278,7 +240,7 @@ namespace NOBApp
                 double tA = PB_isExpanded ? 300 + offsetY : 0;
                 double tB = PA_isExpanded ? 370 + offsetY : 0;
                 Thickness nThickness = oThickness;
-                //Debug.WriteLine($"{nThickness} {oThickness}");
+                //  MainNob.Log($"{nThickness} {oThickness}");
                 nThickness.Top = oThickness.Top + tA;
                 戰鬥輔助面.Margin = nThickness;
 
@@ -356,6 +318,13 @@ namespace NOBApp
                     nobList[i].MoveWindowTool(i);
                 }
         }
+        public int Dis(int x1, int y1, int x2, int y2)
+        {
+            double dx = x2 - x1;
+            double dy = y2 - y1;
+            //  MainNob.Log($"x1:{x1} y1:{y1} x2:{x2} y2:{y2}");
+            return (int)Math.Sqrt(dx * dx + dy * dy);
+        }
 
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
         {
@@ -369,6 +338,11 @@ namespace NOBApp
                         Debug.WriteLine("NPC ID=>" + UseLockNOB.GetTargetIDINT());
 
                     //GetNPCIDs();
+
+                    Debug.WriteLine($"1- {Dis(UseLockNOB.PosX, UseLockNOB.PosY, 14986, 14281)}");
+                    Debug.WriteLine($"2- {Dis(UseLockNOB.PosX, UseLockNOB.PosY, 14716, 4492)}");
+                    Debug.WriteLine($"3- {Dis(UseLockNOB.PosX, UseLockNOB.PosY, 5051, 4770)}");
+                    Debug.WriteLine($"4- {Dis(UseLockNOB.PosX, UseLockNOB.PosY, 5246, 14497)}");
 
                     //效能測試
                     //PerformanceTest.TestGetColorCopNum(UseLockNOB.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
@@ -650,7 +624,13 @@ namespace NOBApp
                 { "夢幻城", () => { useMenu = new 夢幻城(); } },
                 { "採集輔助", () => { useMenu = new 採集輔助(); } },
                 { "生產輔助", () => { useMenu = new 生產輔助(); CB_定位點.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "製造大砲", () => { useMenu = new 戰場製炮(); Btn_TargetA.Content = "目付"; Btn_TargetB.Content = "砲基座"; Btn_TargetC.Content = "生砲道具"; CB_定位點.Visibility = 後退時間.Visibility = Btn_TargetC.Visibility = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
+                { "戰場製炮", () => {
+                    useMenu = new 戰場製炮();
+                    Btn_TargetA.Content = "目付";
+                    Btn_TargetB.Content = "砲基座";
+                    Btn_TargetC.Content = "生砲道具";
+                    CB_定位點.Visibility = 後退時間.Visibility = Btn_TargetC.Visibility
+                    = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "冥宮", () => { useMenu = new 冥宮();  } },
                 { "鬼島", () => { useMenu = new 鬼島(); Btn_TargetA.Content = "村長-補符"; TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible; 其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
                 { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
@@ -678,7 +658,7 @@ namespace NOBApp
             快速切換.Items.Clear();
             foreach (var item in localByName)
             {
-                //Debug.WriteLine($"Name : {item.ProcessName} Title : {item.MainWindowTitle}");
+                //  MainNob.Log($"Name : {item.ProcessName} Title : {item.MainWindowTitle}");
                 if (item.ProcessName.Contains("nobolHD"))
                 {
                     var data = new NOBDATA(item);
@@ -688,7 +668,7 @@ namespace NOBApp
                     CB_HID.Items.Add(data.PlayerName);
                 }
             }
-            //Debug.WriteLine("共有 : " + nobList.Count);
+            //  MainNob.Log("共有 : " + nobList.Count);
             UIUpdate.RefreshNOBID_Sec(comboBoxes, nobList);
         }
 
@@ -1085,13 +1065,31 @@ namespace NOBApp
                     UseLockNOB.RunCode = useMenu;
                     Task.Run(UseLockNOB.CodeRunUpdate);
 
+
+                    if (useMenu is 夢幻城)
+                    {
+                        Task.Delay(200).Wait();
+                        //  MainNob.Log("隊員智能功能組 : " + 隊員智能功能組.Count);
+                        foreach (var user in 隊員智能功能組)
+                        {
+                            //  MainNob.Log($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
+                            if (user.同步 && !user.NOB.PlayerName.Contains(UseLockNOB.PlayerName))
+                            {
+                                user.NOB.RunCode = new 夢幻城();
+                                user.NOB.CodeSetting = UseLockNOB.CodeSetting;
+                                Task.Run(user.NOB.CodeRunUpdate);
+                                Task.Delay(200).Wait();
+                            }
+                        }
+                    }
+
                     if (useMenu is 戰場製炮)
                     {
                         Task.Delay(200).Wait();
-                        //Debug.WriteLine("隊員智能功能組 : " + 隊員智能功能組.Count);
+                        //  MainNob.Log("隊員智能功能組 : " + 隊員智能功能組.Count);
                         foreach (var user in 隊員智能功能組)
                         {
-                            //Debug.WriteLine($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
+                            //  MainNob.Log($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
                             if (user.同步 && !user.NOB.PlayerName.Contains(UseLockNOB.PlayerName))
                             {
                                 user.NOB.RunCode = new 戰場製炮();
@@ -1221,7 +1219,7 @@ namespace NOBApp
                 var lbx = (ListBox)sender;
                 if (lbx.SelectedValue != null)
                 {
-                    // Debug.WriteLine("lbx " + lbx.SelectedValue.ToString());
+                    //   MainNob.Log("lbx " + lbx.SelectedValue.ToString());
                     if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
                     {
                         UseLockNOB!.鎖定NPC(id);
@@ -1600,18 +1598,18 @@ namespace NOBApp
             //        var i = SkillComTitle.Items.Add(skDefName.Trim());
             //        SkillComTitle.SelectedIndex = i;
             //    }
-            //    Debug.WriteLine("----------skDefName------------");
+            //      MainNob.Log("----------skDefName------------");
             //    using StreamReader reader2 = new($@"{skDefName.Trim()}.sJson");
             //    // Read the stream as a string.
             //    string jsonString = reader2.ReadToEnd();
             //    var sk2 = JsonSerializer.Deserialize<List<SkillData>>(jsonString);
             //    SkillDataGird.ItemsSource = sk2;
-            //    Debug.WriteLine("----------jsonString------------ : " + jsonString);
+            //      MainNob.Log("----------jsonString------------ : " + jsonString);
             //}
 
             //if (SkillDataGird.Items == null || SkillDataGird.Items.Count == 0)
             //{
-            //    Debug.WriteLine("-----SkillDataGird Add--------");
+            //      MainNob.Log("-----SkillDataGird Add--------");
             //    List<SkillData> sklist = new() { };
             //    SkillDataGird.ItemsSource = sklist;
             //}

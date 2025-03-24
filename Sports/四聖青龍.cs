@@ -45,7 +45,7 @@ namespace NOBApp.Sports
                         {
                             mUseNOB = UseLockNOB;
                             Task.Run(接任務);
-                            Debug.WriteLine($"---- {mUseNOB!.PlayerName}");
+                              MainNob.Log($"---- {mUseNOB!.PlayerName}");
                             Task.Delay(5000).Wait();
                             for (int i = 0; i < FIDList.Count; i++)
                             {
@@ -353,7 +353,7 @@ namespace NOBApp.Sports
                             while (MainWindow.CodeRun)
                             {
                                 Task.Delay(500);
-                                Debug.WriteLine($"離開 尋找絕ID = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
+                                  MainNob.Log($"離開 尋找絕ID = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
                                 MainNob.目前動作 = $"離開 尋找絕 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
                                 if (絕ID == -1)
                                 {
@@ -389,7 +389,7 @@ namespace NOBApp.Sports
 
                             foreach (var nob in FIDList)
                             {
-                                //Debug.WriteLine($"{nob.PlayerName} 副本離開 -> {nob.MAPID} -> {cache地圖}");
+                                //  MainNob.Log($"{nob.PlayerName} 副本離開 -> {nob.MAPID} -> {cache地圖}");
                                 nob.目前動作 = $"副本離開 -> {nob.MAPID} -> {cache地圖}";
                                 if (nob.MAPID == cache地圖)
                                 {
@@ -408,7 +408,7 @@ namespace NOBApp.Sports
                                     while (MainWindow.CodeRun)
                                     {
                                         Task.Delay(500).Wait();
-                                        Debug.WriteLine($"離開 尋找信長 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
+                                          MainNob.Log($"離開 尋找信長 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
                                         MainNob.目前動作 = $"離開 尋找信長 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
                                         if (MainNob.GetTargetIDINT() == 絕ID && MainNob.對話與結束戰鬥)
                                         {
@@ -449,7 +449,7 @@ namespace NOBApp.Sports
             int mErrorCheck = 0;
             if (useNOB != null)
             {
-                Debug.WriteLine("接任務 " + useNOB?.PlayerName);
+                  MainNob.Log("接任務 " + useNOB?.PlayerName);
                 useNOB.副本進入完成 = false;
                 useNOB.目前動作 = "尋找NPC對話..";
                 //入場對話
@@ -517,7 +517,7 @@ namespace NOBApp.Sports
                         mErrorCheck++;
                         if (mErrorCheck > 20)
                         {
-                            Debug.WriteLine(" ErrorCheck ");
+                              MainNob.Log(" ErrorCheck ");
                             mErrorCheck = 0;
                             if (useNOB.出現左右選單)
                             {

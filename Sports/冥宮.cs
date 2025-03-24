@@ -17,7 +17,7 @@ namespace NOBApp.Sports
         bool inBattle = false;
         public override void 初始化()
         {
-            Debug.WriteLine("明宮 最先運作");
+              MainNob.Log("明宮 最先運作");
             MainNob?.KeyPress(VKeys.KEY_W);
             mErrorCheck = 0;
             for (int i = 0; i < FIDList.Count; i++)
@@ -37,7 +37,7 @@ namespace NOBApp.Sports
 
         public void 對話與結束戰鬥()
         {
-            Debug.WriteLine($"戰鬥結束 - {inBattle}");
+              MainNob.Log($"戰鬥結束 - {inBattle}");
             if (MainNob != null)
             {
                 Task.Delay(200).Wait();

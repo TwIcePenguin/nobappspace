@@ -4,14 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NOBApp"
-        xmlns:webview2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:core="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="企鵝之野望" Height="450" Icon="/448545149_994763355983896_6737183326767466195_n.jpg" Width="700">
 
     <Grid x:Name="Root" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <webview2:WebView2 x:Name="BloggerWebView" VerticalAlignment="Bottom" Height="100" />
-
         <ListView x:Name="快速切換" HorizontalAlignment="Left" Height="126" Margin="570,8,0,0" VerticalAlignment="Top" Width="69"  SelectionChanged="QuickSelectShowList_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VerticalContentAlignment="Top" Grid.RowSpan="1" Grid.Column="5">
             <GridView>
                 <GridViewColumn/>
@@ -55,7 +52,7 @@
             <Button Content="全體f8跟隨" Height="24" Width="72" Click="Button_Click_全隊員跟隨" Canvas.Left="257" Canvas.Top="52" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <TextBox x:Name="全體選擇" Height="22" TextWrapping="Wrap" Width="33" Text="1" FontSize="14" MaxLength="1" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Left" Canvas.Left="199" Canvas.Top="78" VerticalAlignment="Top"/>
             <TextBox x:Name="TB_GamePadName" Height="17" TextWrapping="Wrap" Width="55" Cursor="" HorizontalAlignment="Left" Canvas.Left="296" Canvas.Top="7" VerticalAlignment="Center" Visibility="Visible"/>
-          
+
             <Button x:Name="手把" Content="手把" Height="18" Width="29" Click="Button_Click_手把" HorizontalAlignment="Left" Canvas.Left="358" Canvas.Top="6" VerticalAlignment="Center" Visibility="Visible"/>
             <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Height="24" Width="56" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 

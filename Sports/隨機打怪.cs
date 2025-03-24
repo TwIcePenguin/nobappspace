@@ -42,7 +42,7 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
                         }
 
-                        Debug.WriteLine($"目標數量 ==> {MainWindow.AllNPCIDs.Count}");
+                          MainNob.Log($"目標數量 ==> {MainWindow.AllNPCIDs.Count}");
                         if (MainWindow.AllNPCIDs.Count == 0)
                         {
                             MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
@@ -62,7 +62,7 @@ namespace NOBApp.Sports
                                 }
 
                                 var id = (int)MainWindow.AllNPCIDs[i];
-                                Debug.WriteLine($"鎖定打怪 => {id}");
+                                  MainNob.Log($"鎖定打怪 => {id}");
                                 if (MainWindow.Enter點怪)
                                 {
                                     MainNob.鎖定NPC(id);

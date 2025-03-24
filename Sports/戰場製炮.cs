@@ -31,7 +31,7 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                Debug.WriteLine(" - " + MainNob.PlayerName + " : " + mPoint + " : " + MainNob.CodeSetting.目標A);
+                  MainNob.Log(" - " + MainNob.PlayerName + " : " + mPoint + " : " + MainNob.CodeSetting.目標A);
                 if (mPoint == 0)
                 {
                     MainNob.目前動作 = mPoint + "前往目";
@@ -145,7 +145,7 @@ namespace NOBApp.Sports
                     }
                     skipCID.Add(MainNob.CodeSetting.目標C);
                     skipCID.Add(MainNob.CodeSetting.目標B);
-                    //Debug.WriteLine("*----*");
+                    //  MainNob.Log("*----*");
                     var ccid = MainNob.CodeSetting.目標B;
                     尋找下一門砲();
                     Task.Delay(100).Wait();

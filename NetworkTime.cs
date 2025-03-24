@@ -73,7 +73,7 @@ namespace NOBApp
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error getting time from {server}: {ex.Message}");
+                      Debug.WriteLine($"Error getting time from {server}: {ex.Message}");
                 }
             }
 

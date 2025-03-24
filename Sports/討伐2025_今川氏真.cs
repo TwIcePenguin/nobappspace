@@ -191,7 +191,7 @@ namespace NOBApp.Sports
                                     continue;
                                 }
 
-                                //Debug.WriteLine($"離開 尋找信長 = {talkID_1} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
+                                //  MainNob.Log($"離開 尋找信長 = {talkID_1} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
                                 MainNob.目前動作 = $"離開 尋找信長 = {talkID_1} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
                                 if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                 {
@@ -254,7 +254,7 @@ namespace NOBApp.Sports
             int mErrorCheck = 0;
             if (MainWindow.CodeRun && useNOB != null)
             {
-                Debug.WriteLine("接任務 " + useNOB!.PlayerName);
+                  MainNob.Log("接任務 " + useNOB!.PlayerName);
                 useNOB.副本進入完成 = false;
                 useNOB.目前動作 = "尋找NPC對話..";
                 //入場對話
@@ -322,7 +322,7 @@ namespace NOBApp.Sports
                         mErrorCheck++;
                         if (mErrorCheck > 20)
                         {
-                            Debug.WriteLine(" ErrorCheck ");
+                              MainNob.Log(" ErrorCheck ");
                             mErrorCheck = 0;
                             if (useNOB.出現左右選單)
                             {

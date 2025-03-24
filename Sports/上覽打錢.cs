@@ -297,7 +297,7 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                Debug.WriteLine($"上覽入場中 {mErrorCheck} {BattleNum} MAP : {MainNob.MAPID}");
+                  MainNob.Log($"上覽入場中 {mErrorCheck} {BattleNum} MAP : {MainNob.MAPID}");
                 MainNob.目前動作 = $"上覽入場中 {mErrorCheck} {BattleNum}  MAP : {MainNob.MAPID}";
                 Task.Delay(300).Wait();
                 if (統計販賣戰鬥)
@@ -324,7 +324,7 @@ namespace NOBApp.Sports
                 MainNob.MoveToNPC(大黑天ID);
                 if (MainNob.出現直式選單)
                 {
-                    //Debug.WriteLine("-----出現直式選單------ " + MainNob.取得最下面選項());
+                    //  MainNob.Log("-----出現直式選單------ " + MainNob.取得最下面選項());
                     Task.Delay(100).Wait();
                     if (入場正式NPC說話 == false && MainNob.出現左右選單)
                     {
@@ -352,7 +352,7 @@ namespace NOBApp.Sports
                     if (str.Contains("甲") || str.Contains("乙") || str.Contains("丙") || str.Contains("丁") ||
                         str.Contains("戊") || str.Contains("己") || str.Contains("庚") || str.Contains("辛"))
                     {
-                        Debug.WriteLine("選擇難度 : " + MainNob.CodeSetting.選擇難度);
+                          MainNob.Log("選擇難度 : " + MainNob.CodeSetting.選擇難度);
                         MainNob.直向選擇(MainNob.CodeSetting.選擇難度);
                         Task.Delay(100).Wait();
                         MainNob.KeyPress(VKeys.KEY_ENTER, 10, 200);

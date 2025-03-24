@@ -42,7 +42,7 @@ namespace NOBApp.Sports
         {
             全部追隨();
             移動點 = new();
-            Debug.WriteLine($"回村長定位 掛網點 :  {掛網點.X} , {掛網點.Y}");
+              MainNob.Log($"回村長定位 掛網點 :  {掛網點.X} , {掛網點.Y}");
             //移動點.Add(new(21987, 24883));
             移動點.Add(掛網點);
             Task.Delay(100).Wait();
@@ -61,9 +61,9 @@ namespace NOBApp.Sports
                 {
                     initPos = true;
                     掛網點 = new(MainNob.PosX, MainNob.PosY);
-                    Debug.WriteLine($"A 掛網點 : {掛網點.X} , {掛網點.Y}");
+                      MainNob.Log($"A 掛網點 : {掛網點.X} , {掛網點.Y}");
                     休息回合 = MainNob.CodeSetting.其他選項A == 0 ? 80 : MainNob.CodeSetting.其他選項A;
-                    Debug.WriteLine($"休息回合 {休息回合}");
+                      MainNob.Log($"休息回合 {休息回合}");
                     全部追隨();
                 }
 
@@ -91,7 +91,7 @@ namespace NOBApp.Sports
                             Task.Delay(200).Wait();
                         }
                     }
-                    Debug.WriteLine($"隊員智能功能組 -> {隊員智能功能組.Count}");
+                      MainNob.Log($"隊員智能功能組 -> {隊員智能功能組.Count}");
                     while (MainWindow.CodeRun)
                     {
                         Task.Delay(500).Wait();
@@ -110,19 +110,19 @@ namespace NOBApp.Sports
                         }
                         if (全部完成)
                         {
-                            Debug.WriteLine("補符正常完成");
+                              MainNob.Log("補符正常完成");
                             break;
                         }
                         tryDone = tryDone + 1;
                         if (tryDone > 60)
                         {
-                            Debug.WriteLine("強制結束");
+                              MainNob.Log("強制結束");
                             break;
                         }
 
                     }
 
-                    Debug.WriteLine("全部補完");
+                      MainNob.Log("全部補完");
                     MainWindow.IgnoredIDs.Clear();
                     全部追隨();
                     Task.Delay(1000).Wait();
@@ -132,7 +132,7 @@ namespace NOBApp.Sports
                     void 村長補符()
                     {
                         NOBDATA user = useUser;
-                        Debug.WriteLine($"{user.PlayerName} 補符");
+                          MainNob.Log($"{user.PlayerName} 補符");
                         int tryNum = 0;
                         user.完成必須對話 = false;
                         while (MainWindow.CodeRun)
@@ -148,7 +148,7 @@ namespace NOBApp.Sports
                                     Task.Delay(100);
                                     user.KeyPress(VKeys.KEY_ESCAPE, 5);
                                     waitDone = waitDone + 1;
-                                    Debug.WriteLine($"{user.PlayerName} 補符 完成");
+                                      MainNob.Log($"{user.PlayerName} 補符 完成");
                                     user.完成必須對話 = true;
                                     break;
                                 }
@@ -165,7 +165,7 @@ namespace NOBApp.Sports
                             Task.Delay(200);
                             if (tryNum > 200 && 補符 == false)
                             {
-                                Debug.WriteLine($"{user.PlayerName} 補符過程出現異常 強制結束");
+                                  MainNob.Log($"{user.PlayerName} 補符過程出現異常 強制結束");
                                 break;
                             }
                         }
@@ -175,7 +175,7 @@ namespace NOBApp.Sports
                 {
                     if (MainNob.待機)
                     {
-                        Debug.WriteLine($"搜尋新敵人");
+                          MainNob.Log($"搜尋新敵人");
                         MainNob.目前動作 = "搜尋新敵人";
                         MainWindow.TargetsID.Clear();
                         Task.Delay(300).Wait();
@@ -209,7 +209,7 @@ namespace NOBApp.Sports
                                 移動倒掛網點();
                             }
 
-                            Debug.WriteLine($" 目前目標數量 : {MainWindow.TargetsID.Count}");
+                              MainNob.Log($" 目前目標數量 : {MainWindow.TargetsID.Count}");
                             if (MainWindow.TargetsID.Count == 0)
                             {
                                 MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
@@ -238,7 +238,7 @@ namespace NOBApp.Sports
                                         var npc = MainWindow.allNPCs.FirstOrDefault(npc => npc.ID == emID);
                                         if (npc != null)
                                         {
-                                            Debug.WriteLine($"目標 : {emID} 範圍 : {npc.Distance}");
+                                              MainNob.Log($"目標 : {emID} 範圍 : {npc.Distance}");
 
                                             MainNob.MoveToNPC((int)emID);
                                             foreach (var nob in 隊員智能功能組)
@@ -410,7 +410,7 @@ namespace NOBApp.Sports
                                     }
                                 }
 
-                                Debug.WriteLine("選轉尋找目標");
+                                  MainNob.Log("選轉尋找目標");
                                 MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                             }
 
@@ -450,7 +450,7 @@ namespace NOBApp.Sports
                             if (mBCHCount > 3)
                             {
                                 mBCHCount = 0;
-                                Debug.WriteLine($"隊員智能功能組 {隊員智能功能組.Count}");
+                                  MainNob.Log($"隊員智能功能組 {隊員智能功能組.Count}");
                                 foreach (var user in 隊員智能功能組)
                                 {
                                     if (user != null)

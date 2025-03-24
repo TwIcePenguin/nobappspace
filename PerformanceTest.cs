@@ -16,7 +16,7 @@ namespace NOBApp
             long timeBefore = stopwatch.ElapsedMilliseconds;
 
             // 打印結果
-            Debug.WriteLine($"優化前的執行時間: {timeBefore} 毫秒, 匹配的顏色數量: {resultBefore}");
+              Debug.WriteLine($"優化前的執行時間: {timeBefore} 毫秒, 匹配的顏色數量: {resultBefore}");
 
             // 測量優化後的方法執行時間
             stopwatch.Restart();
@@ -25,10 +25,10 @@ namespace NOBApp
             long timeAfter = stopwatch.ElapsedMilliseconds;
 
             // 打印結果
-            Debug.WriteLine($"優化後的執行時間: {timeAfter} 毫秒, 匹配的顏色數量: {resultAfter}");
+              Debug.WriteLine($"優化後的執行時間: {timeAfter} 毫秒, 匹配的顏色數量: {resultAfter}");
 
             // 比較結果
-            Debug.WriteLine($"性能改進: {(timeBefore - timeAfter) / (double)timeBefore * 100}%");
+              Debug.WriteLine($"性能改進: {(timeBefore - timeAfter) / (double)timeBefore * 100}%");
         }
     }
 }

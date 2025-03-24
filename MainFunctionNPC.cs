@@ -72,7 +72,7 @@ namespace NOBApp
 
             if (UseLockNOB == null)
             {
-                Debug.WriteLine("UseLockNOB 為 null，無法搜尋 NPC。");
+                  Debug.WriteLine("UseLockNOB 為 null，無法搜尋 NPC。");
                 return allNPCs; // 如果 NOB 未鎖定，返回空列表
             }
 
@@ -94,13 +94,13 @@ namespace NOBApp
             }
             catch (FormatException ex)
             {
-                Debug.WriteLine($"轉換 Hex 字串時發生錯誤: {ex.Message}");
+                  Debug.WriteLine($"轉換 Hex 字串時發生錯誤: {ex.Message}");
                 return allNPCs; // 處理 Hex 字串格式錯誤
             }
 
             if (npcDataBytes == null || npcDataBytes.Length != bytesToRead)
             {
-                Debug.WriteLine("讀取 NPC 資料區塊時發生錯誤。 ReadData 返回 null 或不正確的大小。");
+                  Debug.WriteLine("讀取 NPC 資料區塊時發生錯誤。 ReadData 返回 null 或不正確的大小。");
                 return allNPCs; // 處理記憶體讀取失敗
             }
 
@@ -127,7 +127,7 @@ namespace NOBApp
                     case 254: type = TargetTypes.TreasureBox; break;
                     default: break;
                 }
-                //Debug.WriteLine($"NPC ID: {findID}, Type: {type}, Distance: {dis}");
+                //  MainNob.Log($"NPC ID: {findID}, Type: {type}, Distance: {dis}");
                 allNPCs.Add(new NPCData
                 {
                     ID = findID,

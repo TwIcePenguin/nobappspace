@@ -9,6 +9,7 @@ using System.Linq;
 using System.Management;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -75,7 +76,7 @@ namespace NOBApp
             ReadProcessMemory(hProcess, address, buffer, buffer.Length, ref bytesRead);
             return Encoding.Unicode.GetString(buffer).TrimEnd('\0');
 
-            //Debug.WriteLine("buffer : " + string.Join( " ", buffer) + " - " + buffer.Length);
+            //  MainNob.Log("buffer : " + string.Join( " ", buffer) + " - " + buffer.Length);
             //return Encoding.Unicode.GetString(buffer,0,6);
         }
         public static string SubStringByBytes(byte[] source, int NumberOfBytes, string suffix = "")
@@ -202,12 +203,12 @@ namespace NOBApp
                 | (transition << 31);
 
             PostMessage(hProcess, WM_KEYDOWN, (int)keyCode, unchecked((int)lParamDown));
-            //Debug.WriteLine(keyCode + " - ss - 1 " + ss);
+            //  MainNob.Log(keyCode + " - ss - 1 " + ss);
             Task.Delay(ss).Wait();
-            //Debug.WriteLine(keyCode + " - ss - 2 " + ss);
+            //  MainNob.Log(keyCode + " - ss - 2 " + ss);
             PostMessage(hProcess, WM_KEYUP, (int)keyCode, unchecked((int)lParamUp)); //
                                                                                      //SendMessage(hProcess, WM_KEYDOWN, (IntPtr)0x41, (IntPtr)0); // A鍵
-                                                                                     //Debug.WriteLine("keyCode-->" + keyCode);
+                                                                                     //  MainNob.Log("keyCode-->" + keyCode);
         }
 
 
@@ -266,14 +267,14 @@ namespace NOBApp
                     if (response.IsSuccessStatusCode)
                     {
                         string content = await response.Content.ReadAsStringAsync();
-                        Debug.WriteLine($"回傳訊息 -> \n{content}");
+                          Debug.WriteLine($"回傳訊息 -> \n{content}");
                         Authentication.讀取認證訊息Json(content);
                         // 處理回應內容
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine("Message :{0} ", e.Message);
+                      Debug.WriteLine("Message :{0} ", e.Message);
                 }
             }
         }
@@ -351,7 +352,7 @@ namespace NOBApp
 
         private static string? ExecuteCMD(string cmd, Func<string, string?> filterFunc)
         {
-            //Debug.WriteLine($"ExecuteCMD - CMD:{cmd}");
+            //  MainNob.Log($"ExecuteCMD - CMD:{cmd}");
             using var process = new Process();
             process.StartInfo.FileName = "cmd.exe";
             process.StartInfo.UseShellExecute = false;
@@ -360,13 +361,13 @@ namespace NOBApp
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.CreateNoWindow = true;
             process.Start();
-            //Debug.WriteLine($"Start - CMD:{cmd}");
+            //  MainNob.Log($"Start - CMD:{cmd}");
             process.StandardInput.WriteLine(cmd + " &exit");
             process.StandardInput.AutoFlush = true;
             var output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
             process.Close();
-            //Debug.WriteLine($"CMD:{cmd} output:{output.ToString()}");
+            //  MainNob.Log($"CMD:{cmd} output:{output.ToString()}");
             return filterFunc(output);
         }
 
@@ -466,7 +467,7 @@ namespace NOBApp
                 string path = @"./libs/handle.exe";
                 if (!System.IO.File.Exists(path))
                 {
-                    Debug.WriteLine("Handle Error !!");
+                      Debug.WriteLine("Handle Error !!");
                     return;
                 }
 

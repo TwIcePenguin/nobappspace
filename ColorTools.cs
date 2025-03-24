@@ -56,7 +56,7 @@ namespace NOBApp
 
                 var index = 0;
                 var builder = new StringBuilder();
-                Debug.WriteLine($"{data.Height} {data.Width}");
+                  Debug.WriteLine($"{data.Height} {data.Width}");
                 for (var y = 0; y < data.Height; y++)
                 {
                     for (var x = 0; x < data.Width; x++)
@@ -79,7 +79,7 @@ namespace NOBApp
 
                     index += padding;
                 }
-                Debug.WriteLine($"{builder}");
+                  Debug.WriteLine($"{builder}");
             }
 
             return Color.White;
@@ -114,11 +114,11 @@ namespace NOBApp
                     targetColorInt = ConvertABGRtoARGB(ColorTranslator.FromHtml("#" + colorStr).ToArgb());
                     _cachedTargetColorInt = targetColorInt;
                     _cachedColorStr = colorStr;
-                    //Debug.WriteLine($"Import {targetColorInt:X8}"); // 保留調試輸出，但可以考慮條件編譯
+                    //  MainNob.Log($"Import {targetColorInt:X8}"); // 保留調試輸出，但可以考慮條件編譯
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine($"Color conversion error for colorStr: {colorStr}, Error: {e.Message}");
+                      Debug.WriteLine($"Color conversion error for colorStr: {colorStr}, Error: {e.Message}");
                     return 0; // 顏色轉換失敗，直接返回 0 或拋出異常，根據您的錯誤處理策略
                 }
             }
@@ -126,7 +126,7 @@ namespace NOBApp
             {
                 targetColorInt = _cachedTargetColorInt;
             }
-            //Debug.WriteLine($"Import {targetColorInt:X8}");
+            //  MainNob.Log($"Import {targetColorInt:X8}");
 
             using (Bitmap screenPixel = new Bitmap(WeHi.X, WeHi.Y, PixelFormat.Format32bppArgb))
             using (Graphics gdest = Graphics.FromImage(screenPixel))

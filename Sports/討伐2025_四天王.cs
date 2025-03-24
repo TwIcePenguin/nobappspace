@@ -52,7 +52,7 @@ namespace NOBApp.Sports
                     case 檢查點.入場:
                         mUseNOB = UseLockNOB;
                         Task.Run(接任務);
-                        Debug.WriteLine($"---- {mUseNOB!.PlayerName}");
+                          MainNob.Log($"---- {mUseNOB!.PlayerName}");
                         Task.Delay(5000).Wait();
                         for (int i = 0; i < FIDList.Count; i++)
                         {
@@ -346,7 +346,7 @@ namespace NOBApp.Sports
 
                                         foreach (var nob in FIDList)
                                         {
-                                            Debug.WriteLine($"{nob.PlayerName} 副本離開完成 -> {nob.副本離開完成}");
+                                              MainNob.Log($"{nob.PlayerName} 副本離開完成 -> {nob.副本離開完成}");
                                             if (nob.副本離開完成 == false)
                                             {
                                                 done = false;
@@ -394,7 +394,7 @@ namespace NOBApp.Sports
         private void 接任務()
         {
             var useNOB = mUseNOB;
-            Debug.WriteLine("接任務 " + useNOB!.PlayerName);
+              MainNob.Log("接任務 " + useNOB!.PlayerName);
             int mErrorCheck = 0;
             if (useNOB != null)
             {
@@ -458,7 +458,7 @@ namespace NOBApp.Sports
                         mErrorCheck++;
                         if (mErrorCheck > 20)
                         {
-                            Debug.WriteLine(" ErrorCheck ");
+                              MainNob.Log(" ErrorCheck ");
                             mErrorCheck = 0;
                             useNOB.KeyPress(VKeys.KEY_ESCAPE, 10, 200);
                             Task.Delay(200).Wait();
@@ -512,7 +512,7 @@ namespace NOBApp.Sports
         private void 離開副本()
         {
             var useNOB = mUseNOB;
-            Debug.WriteLine("離開副本 " + useNOB!.PlayerName);
+              MainNob.Log("離開副本 " + useNOB!.PlayerName);
             if (useNOB != null)
             {
                 useNOB.副本離開完成 = false;

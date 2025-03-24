@@ -145,7 +145,7 @@ namespace NOBApp.GoogleData
                 {
                     foreach (var item in ItemsMapper.MapFromRangeData(valueRange.Values))
                     {
-                        Debug.WriteLine($"{item.UserName}, {item.Acc}, {item.Pww}, {item.SerialNumber}, {item.LoginTimer}");
+                          Debug.WriteLine($"{item.UserName}, {item.Acc}, {item.Pww}, {item.SerialNumber}, {item.LoginTimer}");
                     }
                     var appendRequest = GoogleSheetValues.Append(valueRange, SpreadsheetId, range);
                     appendRequest.ValueInputOption = AppendRequest.ValueInputOptionEnum.USERENTERED;

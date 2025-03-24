@@ -20,7 +20,7 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                Debug.WriteLine("StateA : " + MainNob.StateA);
+                  MainNob.Log("StateA : " + MainNob.StateA);
                 switch (MainNob.StateA)
                 {
                     //戰鬥中
@@ -42,7 +42,7 @@ namespace NOBApp.Sports
                     case "F0 F8":
                         if (inBattleState)
                         {
-                            Debug.WriteLine("inBattleState : ---");
+                              MainNob.Log("inBattleState : ---");
                             inBattleState = false;
                             checkDone = 0;
                             foreach (var nob in FIDList)
@@ -59,7 +59,7 @@ namespace NOBApp.Sports
                         }
                         else
                         {
-                            Debug.WriteLine("F0 F8 : ---");
+                              MainNob.Log("F0 F8 : ---");
                             Task.Delay(200).Wait();
                             MainNob.KeyPress(VKeys.KEY_J);
                             Task.Delay(100).Wait();
