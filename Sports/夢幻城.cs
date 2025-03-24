@@ -22,7 +22,7 @@ namespace NOBApp.Sports
         bool 進行任務 = false;
         public override void 初始化()
         {
-            MainNob.Log("夢幻城 最先運作");
+            MainNob!.Log("夢幻城 最先運作");
             MainNob!.KeyPress(VKeys.KEY_W);
             MainNob!.選擇目標類型(1);
             for (int i = 0; i < FIDList.Count; i++)
@@ -385,9 +385,32 @@ namespace NOBApp.Sports
             else
             {
                 MainNob.Log($"Point {mPoint} 移動失敗 重新嘗試");
+                errorResetCheck();
             }
         }
 
+        void errorResetCheck()
+        {
+            if (MainNob != null)
+            {
+                var targetPositions = new List<(int X, int Y, int MPoint)>
+                   {
+                       (14986, 14281, 0),
+                       (14716, 4492, 2),
+                       (5051, 4770, 4),
+                       (5246, 14497, 6)
+                   };
+
+                var closestPosition = targetPositions
+                                     .OrderBy(pos => Dis(MainNob.PosX, MainNob.PosY, pos.X, pos.Y))
+                                     .First();
+                if (mPoint != closestPosition.MPoint)
+                {
+                    MainNob.Log($"Point 最接近的點位進行修改 {mPoint} => {closestPosition.MPoint}");
+                    mPoint = closestPosition.MPoint;
+                }
+            }
+        }
 
         public void 選擇()
         {

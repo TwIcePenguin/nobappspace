@@ -92,15 +92,6 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_W, 3);
                             Task.Delay(500).Wait();
                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
-                            //foreach (var nob in FIDList)
-                            //{
-                            //    if (nob != null)
-                            //    {
-                            //        nob.KeyPress(VKeys.KEY_F8, 2);
-                            //        Task.Delay(50).Wait();
-                            //    }
-                            //}
-                            ////清正說話
 
                             while (MainWindow.CodeRun)
                             {
@@ -114,6 +105,7 @@ namespace NOBApp.Sports
                                     break;
                                 }
                             }
+
                             目標地移動(new List<座標> {
                                 new(26822 , 69544),
                                 new(28117 , 70814),
@@ -139,6 +131,8 @@ namespace NOBApp.Sports
                              });
                             Task.Delay(2000).Wait();
                             確認開門(new 座標(44953, 57837));
+
+                            //第二階段
                             //開門後往下一個
                             目標地移動(new List<座標> {
                                 new(46012, 57369),
@@ -151,6 +145,7 @@ namespace NOBApp.Sports
                              });
                             //點門
                             確認開門(new 座標(29686, 45318));
+                            //第二階段-B
                             //前往目標點
                             目標地移動(new List<座標> {
                                 new(35332, 44644),
@@ -162,6 +157,7 @@ namespace NOBApp.Sports
                             //11 藍 飯田
                             尋找並清除目標(11, 1, E_TargetColor.藍NPC);
                             //回到第二門點
+                            //第二階段-C
                             目標地移動(new List<座標> {
                                 new(40977, 30944),
                                 new(41117, 33248),
@@ -180,7 +176,7 @@ namespace NOBApp.Sports
                              });
                             確認開門(new 座標(42942, 27872));
 
-
+                            //第三階段-B
                             //找NPC 森本 -24
                             尋找並清除目標(24, 1, E_TargetColor.藍NPC);
                             //打完回去 點開門
