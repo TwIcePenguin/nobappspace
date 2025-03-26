@@ -56,11 +56,52 @@ namespace NOBApp
         public float CamY => ReadFloat("<nobolHD.bng> +" + AddressData.攝影機角度B);
         public string 取得最下面選項(int num = 4) => ReadString("<nobolHD.bng> + " + AddressData.直選框文字, 1, num);
         public bool 對話與結束戰鬥 => StateA.Contains("F0 F8");
-        public bool 待機 => StateA.Contains("F0 B8");
-        public bool 戰鬥中 => StateA.Contains("A0 98");
-        public bool 結算中 => ReadInt("<nobolHD.bng> + " + AddressData.戰鬥結算UI, 0) > 0;
+
+        public bool 待機
+        {
+            get
+            {
+                bool isIdel = StateA.Contains("F0 B8");
+                if (isIdel)
+                {
+                    戰鬥中判定 = -1;
+                }
+
+                return isIdel;
+            }
+        }
+        public bool 戰鬥中
+        {
+            get
+            {
+                bool inBattle = StateA.Contains("A0 98");
+                if (inBattle)
+                {
+                    戰鬥中判定 = 0;
+                }
+                return StateA.Contains("A0 98");
+            }
+        }
+        public int 戰鬥中判定 = -1;
+        public bool 進入結算
+        {
+            get
+            {
+                if (戰鬥中判定 >= 0 && 對話與結束戰鬥)
+                {
+                    戰鬥中判定++;
+                    Task.Delay(50).Wait();
+                }
+
+                return 戰鬥中判定 > 3;
+            }
+        }
+        public bool 第三人稱 => ReadInt("<nobolHD.bng> +" + AddressData.視角, 0) == 0;
+
         public string 觀察對象Str => ReadData("<nobolHD.bng> + " + AddressData.是否有觀察對象, 2);
         public bool 有觀察對象 => !ReadData("<nobolHD.bng> + " + AddressData.是否有觀察對象, 2).Contains("FF FF");
+        public int 確認選單 => ReadInt("<nobolHD.bng> + " + AddressData.直選框, 1);
+
         public bool 出現左右選單 => ReadInt("<nobolHD.bng> + " + AddressData.直選框, 0) == 2;
         public bool 出現直式選單 => ReadInt("<nobolHD.bng> + " + AddressData.直選框, 0) == 1;
         public int GetSStatus => ReadInt("<nobolHD.bng> + " + AddressData.特殊狀態判斷, 2);
@@ -168,7 +209,7 @@ namespace NOBApp
                 return;
             }
 
-            cacheLog = str;
+            目前動作 = cacheLog = str;
             Debug.WriteLine($"{PlayerName}->{str}");
         }
         public void CloseGame()
@@ -596,6 +637,7 @@ namespace NOBApp
                 }
                 if (待機)
                 {
+                    戰鬥中判定 = -1;
                     離開戰鬥確認 = true;
                     break;
                 }
@@ -630,6 +672,7 @@ namespace NOBApp
                     checkDoneCount++;
                     if (checkDoneCount > 3)
                     {
+                        戰鬥中判定 = -1;
                         離開戰鬥確認 = true;
                         break;
                     }

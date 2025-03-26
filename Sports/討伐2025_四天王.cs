@@ -151,7 +151,7 @@ namespace NOBApp.Sports
                             {
                                 離開結算 = false;
                             }
-                            if (MainNob.結算中)
+                            if (MainNob.進入結算)
                             {
                                 if (離開結算 == false)
                                 {
@@ -232,7 +232,7 @@ namespace NOBApp.Sports
                                 battleIn = 1;
                                 離開結算 = false;
                             }
-                            if (MainNob.結算中)
+                            if (MainNob.進入結算)
                             {
                                 foreach (var item in FIDList)
                                 {

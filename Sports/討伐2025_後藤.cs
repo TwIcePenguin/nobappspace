@@ -192,7 +192,7 @@ namespace NOBApp.Sports
 
                         while (CodeRun)
                         {
-                            MainNob.目前動作 = $"小兵數量 -> {targetIDs.Count} 結算中 -> {MainNob.結算中}";
+                            MainNob.目前動作 = $"小兵數量 -> {targetIDs.Count} 結算中 -> {MainNob.進入結算}";
                             if (MainNob.戰鬥中)
                             {
                                 if (targetIDs.Contains(thisTargetID))
@@ -202,7 +202,7 @@ namespace NOBApp.Sports
 
                             }
 
-                            if (MainNob.結算中)
+                            if (MainNob.進入結算)
                             {
                                 MainNob.目前動作 = $"結算中 -> {離開結算} 小兵數量 -> {targetIDs.Count}";
                                 if (離開結算 == false)
@@ -333,7 +333,7 @@ namespace NOBApp.Sports
                                 battleIn = 1;
                                 離開結算 = false;
                             }
-                            if (MainNob.結算中)
+                            if (MainNob.進入結算)
                             {
                                 MainNob.目前動作 = $"結算中 -> {離開結算} 目標數量 -> {targetIDs.Count}";
 
