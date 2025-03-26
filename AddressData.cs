@@ -8,11 +8,11 @@ namespace NOBApp
 {
     public static class AddressData
     {
-        public static string Acc = "5B69908";
+        public static string Acc = "5B69918";
         public static string Pas = Acc.AddressAdd(21);
         public static string 角色名稱 = "4C4D210";
-        public static string 地圖座標X = "5B695BC";
-        public static string 地圖位置 = "4C4BC34";
+        public static string 地圖座標X = "5B695CC";
+        public static string 地圖位置 = "4C4BC44";
         public static string 地圖座標Y = 地圖座標X.AddressAdd(8);
         public static string 快捷F8 = "5C33812";  //差222
         public static string 快捷F9 = 快捷F8.AddressAdd(222);  //差222
