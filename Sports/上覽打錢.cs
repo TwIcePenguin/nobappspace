@@ -56,7 +56,7 @@ namespace NOBApp.Sports
                             狀態刷新判斷();
                             return;
                         }
-                        MainNob.目前動作 = $"{Point} - 尋找戰鬥";
+                        MainNob.Log($"{Point} - 尋找戰鬥");
                         尋找戰鬥();
                         break;
                     case 3:
@@ -76,7 +76,7 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                MainNob.目前動作 = $@"MAP : {MainNob.MAPID} {Point}";
+                //MainNob.Log($@"狀態刷新判斷2 MAP : {MainNob.MAPID} {Point}");
                 //外面
                 if (MainNob.MAPID > 3200 && MainNob.MAPID < 3500)
                 {
@@ -98,22 +98,25 @@ namespace NOBApp.Sports
             {
                 if (MainNob.MAPID > 3200 && MainNob.MAPID < 3500)
                 {
+                    MainNob.Log($"狀態刷新判斷 房外 MAPID {MainNob.MAPID}");
                     Point = 0;
                     return false;
                 }
                 //房間內
                 if (MainNob.MAPID > 6300 && MainNob.MAPID < 6500)
                 {
-                    if (MainNob.戰鬥中)
+                    if (MainNob.進入結算)
                     {
-                        統計販賣戰鬥 = 是否經過戰鬥 = true;
-                        Task.Delay(1000).Wait();
+                        MainNob.Log($"狀態刷新判斷 進入結算");
+                        Task.Run(MainNob.離開戰鬥B).Wait();
                         return false;
                     }
 
-                    if (MainNob.結算中)
+                    if (MainNob.戰鬥中 || MainNob.戰鬥中判定 >= 0)
                     {
-                        Task.Run(MainNob.離開戰鬥B).Wait();
+                        MainNob.Log($"狀態刷新判斷 戰鬥中");
+                        統計販賣戰鬥 = 是否經過戰鬥 = true;
+                        Task.Delay(1000).Wait();
                         return false;
                     }
 
@@ -129,11 +132,14 @@ namespace NOBApp.Sports
         int 對象數字檢查 = 6;
         void 尋找戰鬥()
         {
+            Debug.WriteLine("尋找戰鬥 --- ");
             if (MainNob != null)
             {
-                MainNob.目前動作 = "尋找戰鬥:" + MainNob.GetSStatus + " : " + MainNob.MAPID;
-                if (狀態刷新判斷())
+                bool c = 狀態刷新判斷();
+                MainNob.Log($"狀態刷新判斷:{c}");
+                if (c)
                 {
+                    MainNob.Log("尋找戰鬥:" + MainNob.GetSStatus + " : " + MainNob.MAPID);
                     if (是否經過戰鬥)
                     {
                         if (m目標ID != 0)
@@ -171,15 +177,16 @@ namespace NOBApp.Sports
 
                     if (m進行官ID == 0)
                     {
-                        MainNob.目前動作 = "搜尋 筆試官";
+                        MainNob.Log("搜尋 筆試官 == 0");
                         FBAT = true;
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
                         尋找筆試官();
+                        MainNob.Log($"搜尋 筆試官 == {m進行官ID}");
                     }
                     mErrorCheck = mErrorCheck + 1;
                     if (m目標ID != 0)
                     {
-                        MainNob.目前動作 = $"有目標的狀態 找尋目標對戰中 {mErrorCheck}";
+                        MainNob.Log($"有目標的狀態 找尋目標對戰中 {MainNob.確認選單} {MainNob.對話與結束戰鬥} {MainNob.出現左右選單} {mErrorCheck}");
                         #region 有目標的狀態
                         if (MainNob.對話與結束戰鬥)
                         {
@@ -211,7 +218,7 @@ namespace NOBApp.Sports
                     }
                     else
                     {
-                        MainNob.目前動作 = $"前往 筆試官 {mErrorCheck}";
+                        MainNob.Log($"前往 筆試官 {mErrorCheck}");
                         MainNob.MoveToNPC(m進行官ID);
                         Task.Delay(500).Wait();
                         if (MainNob.對話與結束戰鬥)
@@ -297,7 +304,7 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                  MainNob.Log($"上覽入場中 {mErrorCheck} {BattleNum} MAP : {MainNob.MAPID}");
+                MainNob.Log($"上覽入場中 {mErrorCheck} {BattleNum} MAP : {MainNob.MAPID}");
                 MainNob.目前動作 = $"上覽入場中 {mErrorCheck} {BattleNum}  MAP : {MainNob.MAPID}";
                 Task.Delay(300).Wait();
                 if (統計販賣戰鬥)
@@ -321,10 +328,11 @@ namespace NOBApp.Sports
                     MessageBox.Show($"{MainWindow.UseLockNOB!.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
                     Environment.Exit(0);
                 }
+                MainNob.Log("-----大黑天ID------ " + 大黑天ID);
                 MainNob.MoveToNPC(大黑天ID);
                 if (MainNob.出現直式選單)
                 {
-                    //  MainNob.Log("-----出現直式選單------ " + MainNob.取得最下面選項());
+                    MainNob.Log("-----出現直式選單------ " + MainNob.取得最下面選項());
                     Task.Delay(100).Wait();
                     if (入場正式NPC說話 == false && MainNob.出現左右選單)
                     {
@@ -352,7 +360,7 @@ namespace NOBApp.Sports
                     if (str.Contains("甲") || str.Contains("乙") || str.Contains("丙") || str.Contains("丁") ||
                         str.Contains("戊") || str.Contains("己") || str.Contains("庚") || str.Contains("辛"))
                     {
-                          MainNob.Log("選擇難度 : " + MainNob.CodeSetting.選擇難度);
+                        MainNob.Log("選擇難度 : " + MainNob.CodeSetting.選擇難度);
                         MainNob.直向選擇(MainNob.CodeSetting.選擇難度);
                         Task.Delay(100).Wait();
                         MainNob.KeyPress(VKeys.KEY_ENTER, 10, 200);

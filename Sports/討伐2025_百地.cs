@@ -160,7 +160,7 @@ namespace NOBApp.Sports
                             {
                                 battleIn = 1;
                             }
-                            if (MainNob.結算中)
+                            if (MainNob.進入結算)
                             {
                                 foreach (var item in FIDList)
                                 {

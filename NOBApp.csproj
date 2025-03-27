@@ -12,7 +12,7 @@
 		<PackageIcon>SteamPGIN.png</PackageIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<BaseOutputPath>C:\BOT</BaseOutputPath>
+		<BaseOutputPath>F:\NOBOnline\BOT</BaseOutputPath>
 	</PropertyGroup>
 	
 	<ItemGroup>

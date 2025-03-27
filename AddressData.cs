@@ -8,20 +8,21 @@ namespace NOBApp
 {
     public static class AddressData
     {
+        static string FIXSTR = "<nobolHD.bng>";
         public static string Acc = "5B69918";
         public static string Pas = Acc.AddressAdd(21);
         public static string 角色名稱 = "4C4D210";
-        public static string 地圖座標X = "5B695CC";
-        public static string 地圖位置 = "4C4BC44";
+        public static string 地圖座標X = "5B695BC";
+        public static string 地圖位置 = "4C4BC34";
         public static string 地圖座標Y = 地圖座標X.AddressAdd(8);
         public static string 快捷F8 = "5C33812";  //差222
         public static string 快捷F9 = 快捷F8.AddressAdd(222);  //差222
         public static string 快捷F10 = 快捷F9.AddressAdd(222);  //差222
         public static string 快捷F11 = 快捷F10.AddressAdd(222);  //差222
         public static string 快捷F12 = 快捷F11.AddressAdd(222);  //差222
-        public static string 選擇項目 = "96455C";//96453C
-        public static string 移動對象 = "964560";
-        public static string 開始移動到目標對象 = "964558";
+        public static string 選擇項目 = "964538";
+        public static string 移動對象 = "96455C";
+        public static string 開始移動到目標對象 = "96453C";
         public static string 最後確認 = "5C5CD74";
         public static string 頻道認證 = "5C3EB3C";
         public static string 頻道認證B = "5C3F8BC";
@@ -46,8 +47,10 @@ namespace NOBApp
         public static string 戰鬥結算UI = "AFB904"; //1-結算中 0-沒有結算畫面
         public static string 是否有觀察對象 = "4C4BA18"; //沒有的話是 FFFFFFFF\
         public static string 特殊狀態判斷 = "96CC14";  //win11的狀態
-        public static string 直選框 = "4C4D028";   //跳出選擇視窗[0~n選擇] ccTalkBox1
+        public static string 直選框 = "4C4D008";   //跳出選擇視窗[0~n選擇] ccTalkBox1
         public static string 直選框文字 = "AD9944";      //確認選擇視窗文字 只會出現最後 ccTalkBox
         public static string 搜尋身邊NPCID起始 = "5C53F10";
+        public static string 視角 = $"{FIXSTR} + 5C5C8A0"; //0-俯視 1-第一人稱
+
     }
 }
