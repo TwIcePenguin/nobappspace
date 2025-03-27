@@ -90,7 +90,7 @@ namespace NOBApp
             {
                 Directory.CreateDirectory(DmConfig.DmGlobalPath);
             }
-
+            腳本區.IsEnabled =
             腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
             UIDefault();
             RegButtonEvent();
@@ -549,7 +549,7 @@ namespace NOBApp
                             _timer.Stop();
                             _timer.Start();
                             所有人狀態.AppendText($"通過驗證..");
-                            Root.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = true;
+                            腳本區.IsEnabled = Root.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = true;
                             UpdateSelectMenu();
                             LoadSetting();
                             讀取隊員技能組();
@@ -705,7 +705,7 @@ namespace NOBApp
             if (DateTime.Now > 到期日)
             {
                 Debug.WriteLine(到期日.ToString());
-                腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
+                腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
                 if (UseLockNOB != null)
                 {
                     UseLockNOB.驗證完成 = false;

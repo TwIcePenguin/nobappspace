@@ -57,8 +57,12 @@
             <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Height="24" Width="56" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
         </Canvas>
+        <Canvas x:Name="腳本區" IsEnabled="False">
+            <ComboBox Visibility="Visible" VerticalAlignment="Top" SelectionChanged="SelectMenu_SelectionChanged" x:Name="SelectMenu" Height="20" Canvas.Left="10" Canvas.Top="145" Width="166"/>
+            <CheckBox x:Name="StartCode" Content="啟動" HorizontalAlignment="Left" Height="21" VerticalAlignment="Top" Width="88" Padding="0,-1,0,0" FontSize="18" FontWeight="Normal" RenderTransformOrigin="0.5,0.5" AutomationProperties.AcceleratorKey="" BorderThickness="1,1,1,1" IsEnabled="False" FontFamily="Arial Black" VerticalContentAlignment="Center" Margin="181,143,0,0" Grid.RowSpan="1" Visibility="Visible"/>
+        </Canvas>
 
-        <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本區" Margin="5,170,5,0" VerticalAlignment="Top" Height="250">
+        <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本進階設定區" Margin="5,170,5,0" VerticalAlignment="Top" Height="250">
             <Grid x:Name="ControlGrid" UseLayoutRounding="False" HorizontalAlignment="Left" VerticalAlignment="Top" Height="218" Width="552" IsEnabled="False" Margin="0,5,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="123*"/>
@@ -77,8 +81,6 @@
                     <CheckBox x:Name="CB_大會地" Content="大會地" Height="16" Width="63" Canvas.Left="135" Canvas.Top="32" HorizontalAlignment="Left" VerticalAlignment="Top" />
                 </Canvas>
                 <CheckBox x:Name="CB_BKAutoEnter" Content="背景ENTER" Visibility="Hidden" Height="18" Width="84" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="43,3,0,0" Grid.Column="1"/>
-                <ComboBox Visibility="Visible" VerticalAlignment="Top" SelectionChanged="SelectMenu_SelectionChanged" x:Name="SelectMenu" Margin="-5,2,21,0" Height="20"/>
-                <CheckBox x:Name="StartCode" Content="啟動" HorizontalAlignment="Left" Height="21" VerticalAlignment="Top" Width="88" Padding="0,-1,0,0" FontSize="18" FontWeight="Normal" RenderTransformOrigin="0.5,0.5" AutomationProperties.AcceleratorKey="" BorderThickness="1,1,1,1" IsEnabled="False" FontFamily="Arial Black" VerticalContentAlignment="Center" Margin="166,0,0,0" Grid.RowSpan="1" Grid.ColumnSpan="2" Visibility="Visible"/>
                 <Button x:Name="Btn_CloseGame" Content="關閉遊戲" HorizontalAlignment="Left" Height="18" Margin="198,3,0,0" VerticalAlignment="Top" Width="53" Background="Red" BorderBrush="Red" Click="Button_Click" Grid.Column="2" Visibility="Hidden"/>
 
                 <TextBox x:Name="FNPCID" HorizontalAlignment="Left" Height="20" Margin="57,25,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="118" Visibility="Hidden" Grid.ColumnSpan="2"/>
