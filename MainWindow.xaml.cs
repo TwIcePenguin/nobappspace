@@ -58,14 +58,21 @@ namespace NOBApp
         public static bool 準備進入下一階段 = false;
         public static bool 完成進入下一階段 = false;
         public static int 限點數量 = 2;
+        public static bool 開打 = false;
         public static bool CodeRun = false;
         public static DmSoftCustomClassName? dmSoft;
         public static DateTime 到期日 = DateTime.Now.AddYears(99);
         public static string CUCDKEY = string.Empty;
-        public static Window WindowsRoot;
+        public static Window? WindowsRoot;
         public static int OrinX = 0;
         public static int OrinY = 0;
         public ComboBox[] comboBoxes;
+        private static readonly Dictionary<string, string> stateAMapping = new Dictionary<string, string>
+        {
+            { "A0 98", "戰鬥中" },
+            { "F0 B8", "待機" },
+            { "F0 F8", "對話與結束戰鬥" },
+        };
         static bool UpdateNPCDataUI = false;
         Thickness oThickness;
         double winHeight;
@@ -380,7 +387,6 @@ namespace NOBApp
             F5解無敵 = 解無敵.IsChecked ?? false;
         }
 
-        public static bool 開打 = false;
         private void CB_開打_Click(object sender, RoutedEventArgs e)
         {
             開打 = CB_開打.IsChecked ?? false;
@@ -729,7 +735,8 @@ namespace NOBApp
             if (UseLockNOB != null && useMenu != null && useMenu.FIDList != null && 所有人狀態 != null)
             {
                 所有人狀態.Clear();
-                所有人狀態.AppendText($@"LDS:{UseLockNOB.StateA} S:{MainState} " + Environment.NewLine);
+                string stateADescription = GetStateADescription(UseLockNOB.StateA);
+                所有人狀態.AppendText($@"LDS:{stateADescription} S:{MainState} " + Environment.NewLine);
                 for (int i = 0; i < useMenu.FIDList.Count; i++)
                 {
                     NOBDATA nob = useMenu.FIDList[i];
@@ -1661,6 +1668,11 @@ namespace NOBApp
             {
                 Debug.WriteLine($@"{UseLockNOB.PlayerName}_LoadSK.sk write Error -> {e.ToString()}");
             }
+        }
+
+        private string GetStateADescription(string stateA)
+        {
+            return stateAMapping.TryGetValue(stateA, out var description) ? description : stateA;
         }
     }
 }

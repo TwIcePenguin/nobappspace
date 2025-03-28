@@ -453,7 +453,7 @@ namespace NOBApp.Sports
         }
 
         //Func<座標, bool> 確認移動座標 = null;
-        public void 目標地移動(List<座標> movePosList)
+        public void 目標地移動(List<座標> movePosList, Func<bool> checkTarget = null)
         {
             if (movePosList.Count > 0)
             {
