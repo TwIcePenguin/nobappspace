@@ -20,9 +20,9 @@ namespace NOBApp.Sports
               MainNob.Log("明宮 最先運作");
             MainNob?.KeyPress(VKeys.KEY_W);
             mErrorCheck = 0;
-            for (int i = 0; i < FIDList.Count; i++)
+            for (int i = 0; i < NobTeam.Count; i++)
             {
-                FIDList[i].選擇目標類型(1);
+                NobTeam[i].選擇目標類型(1);
             }
         }
 
@@ -47,17 +47,17 @@ namespace NOBApp.Sports
                     {
                         inBattle = false;
                         inBattleState = 0;
-                        foreach (var nob in FIDList)
+                        foreach (var nob in NobTeam)
                         {
                             if (nob != null)
                                 Task.Run(nob.離開戰鬥B);
                         }
                         int escCheck = 0;
-                        while (MainWindow.CodeRun)
+                        while (MainNob.StartRunCode)
                         {
                             bool allDoneCheck = true;
 
-                            foreach (var nob in FIDList)
+                            foreach (var nob in NobTeam)
                             {
                                 if (nob.離開戰鬥確認 == false)
                                 {
@@ -101,7 +101,7 @@ namespace NOBApp.Sports
                     inBattle = false;
                     MainNob.目前動作 = "待機";
                     bool allDone = true;
-                    foreach (var nob in FIDList)
+                    foreach (var nob in NobTeam)
                     {
                         if (nob.待機 == false)
                         {

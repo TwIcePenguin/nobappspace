@@ -9,7 +9,7 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="NOBMain.xaml.cs">
+    <Compile Update="NobMain.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -17,7 +17,7 @@
     <Page Update="MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="NOBMain.xaml">
+    <Page Update="NobMain.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

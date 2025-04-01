@@ -250,28 +250,28 @@ namespace NOBApp
         }
 
         static public bool timeUpUpdate = false;
-        public static async void GetWebsiteData(Uri uri)
-        {
-            using (var httpClient = new HttpClient())
-            {
-                try
-                {
-                    HttpResponseMessage response = await httpClient.GetAsync(uri);
+        //public static async void GetWebsiteData(Uri uri)
+        //{
+        //    using (var httpClient = new HttpClient())
+        //    {
+        //        try
+        //        {
+        //            HttpResponseMessage response = await httpClient.GetAsync(uri);
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string content = await response.Content.ReadAsStringAsync();
-                          Debug.WriteLine($"回傳訊息 -> \n{content}");
-                        Authentication.讀取認證訊息Json(content);
-                        // 處理回應內容
-                    }
-                }
-                catch (Exception e)
-                {
-                      Debug.WriteLine("Message :{0} ", e.Message);
-                }
-            }
-        }
+        //            if (response.IsSuccessStatusCode)
+        //            {
+        //                string content = await response.Content.ReadAsStringAsync();
+        //                  Debug.WriteLine($"回傳訊息 -> \n{content}");
+        //                Authentication.讀取認證訊息Json(content);
+        //                // 處理回應內容
+        //            }
+        //        }
+        //        catch (Exception e)
+        //        {
+        //              Debug.WriteLine("Message :{0} ", e.Message);
+        //        }
+        //    }
+        //}
 
         public static string GetSerialNumber()
         {
@@ -427,7 +427,7 @@ namespace NOBApp
             registryKey.SetValue("DeviceRequirement", string.Join(',', array));
         }
 
-        public static void OpenNobMuit(int tryNum = 2, bool hasMusic = false)
+        public static void OpenNobMuit()
         {
             RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc");
             string? strPath = registryKey.GetValue("GameFolder")?.ToString();
@@ -438,43 +438,36 @@ namespace NOBApp
             string runFilePath = @$"{strPath}\nobolHD.bng";
             Debug.WriteLine(@$"runFilePath : {runFilePath}");
 
+            // 從註冊表加載之前成功的Session Index
+            int? sessionIndex = LoadSessionIndexFromRegistry();
+
             if (File.Exists(runFilePath))
             {
                 Process nob = new Process();
-                if (hasMusic)
-                {
-                    nob.StartInfo.FileName = "cmd.exe";
-                    nob.StartInfo.UseShellExecute = false;
-                    nob.StartInfo.RedirectStandardOutput = true;
-                    nob.StartInfo.RedirectStandardInput = true;
-                    nob.StartInfo.CreateNoWindow = true;
-                    nob.Start();
-                    nob.StandardInput.WriteLine(dir);
-                    nob.StandardInput.WriteLine($@"start {runFilePath}");
-                }
-                else
-                {
-                    nob.StartInfo.FileName = runFilePath;
-                    nob.Start();
-                }
+
+                nob.StartInfo.FileName = runFilePath;
+                nob.Start();
 
                 string path = @"./libs/handle.exe";
                 if (!System.IO.File.Exists(path))
                 {
-                      Debug.WriteLine("Handle Error !!");
+                    Debug.WriteLine("Handle Error !!");
                     return;
                 }
 
-                Process tool = new Process();
-
-                for (int i = 0; i < tryNum; i++)
+                // 如果有已知的成功Session Index，優先使用它
+                if (sessionIndex.HasValue)
                 {
+                    Debug.WriteLine($"嘗試使用之前成功的Session Index: {sessionIndex.Value}");
+                    Process tool = new Process();
+
                     tool.StartInfo.FileName = path;
-                    tool.StartInfo.Arguments = $"-a \"\\Sessions\\{i}\\BaseNamedObjects\\Nobunaga Online Game Mutex\"";
+                    tool.StartInfo.Arguments = $"-a \"\\Sessions\\{sessionIndex.Value}\\BaseNamedObjects\\Nobunaga Online Game Mutex\"";
                     tool.StartInfo.UseShellExecute = false;
                     tool.StartInfo.RedirectStandardOutput = true;
                     tool.StartInfo.CreateNoWindow = true;
 
+                    bool foundMutex = false;
                     tool.Start();
                     while (!tool.StandardOutput.EndOfStream)
                     {
@@ -483,35 +476,40 @@ namespace NOBApp
                         var index1 = s.IndexOf("Mutant");
                         if (index1 > 0)
                         {
+                            foundMutex = true;
                             var index2 = s.IndexOf(":", index1);
                             var ID = s.Substring(s.IndexOf("Mutant") + 6, index2 - index1 - 6);
 
                             Process tool2 = new();
                             tool2.StartInfo.FileName = path;
-                            if (hasMusic)
-                            {
-                                Process[] processlist = Process.GetProcessesByName("nobolHD.bng");
-                                foreach (var item in processlist)
-                                {
-                                    tool2.StartInfo.Arguments = $@"-p {item.Id} -c {ID} -y";
-                                    tool2.StartInfo.UseShellExecute = false;
-                                    tool2.StartInfo.RedirectStandardOutput = true;
-                                    tool2.StartInfo.CreateNoWindow = true;
-                                    tool2.Start();
-                                    tool2.WaitForExit();
-                                }
-                            }
-                            else
-                            {
-                                tool2.StartInfo.Arguments = $@"-p {nob.Id} -c {ID} -y";
-                                tool2.StartInfo.UseShellExecute = false;
-                                tool2.StartInfo.RedirectStandardOutput = true;
-                                tool2.StartInfo.CreateNoWindow = true;
-                                tool2.Start();
-                                tool2.WaitForExit();
-                            }
+                            tool2.StartInfo.Arguments = $@"-p {nob.Id} -c {ID} -y";
+                            tool2.StartInfo.UseShellExecute = false;
+                            tool2.StartInfo.RedirectStandardOutput = true;
+                            tool2.StartInfo.CreateNoWindow = true;
+                            tool2.Start();
+                            tool2.WaitForExit();
+                            Debug.WriteLine($"已處理成功的Session {sessionIndex.Value} 的Mutex: {ID}");
                         }
                     }
+
+                    // 如果當前的Session Index仍然有效，就不需要嘗試其他的Sessions
+                    if (foundMutex)
+                    {
+                        Debug.WriteLine("使用已知Session Index處理完成");
+                    }
+                    else
+                    {
+                        // 如果已知的Session Index不再有效，清除記錄並嘗試新的Sessions
+                        Debug.WriteLine("已知的Session Index不再有效，嘗試新的Sessions");
+                        ClearSessionIndexFromRegistry();
+                        TryNewSessions(nob, path);
+                    }
+                }
+                else
+                {
+                    // 如果沒有已知的Session Index，嘗試新的Sessions
+                    Debug.WriteLine("沒有已知的Session Index，開始探索新的Sessions");
+                    TryNewSessions(nob, path);
                 }
             }
 
@@ -521,11 +519,127 @@ namespace NOBApp
             registryKey.SetValue("MultiBootNum", mulitnum);
         }
 
-        public static void SetTimeUp()
+        private static void TryNewSessions(Process nob, string path)
+        {
+            Process tool = new Process();
+            int? successfulSessionIndex = null;
+
+            for (int i = 0; i < 10; i++)
+            {
+                tool.StartInfo.FileName = path;
+                tool.StartInfo.Arguments = $"-a \"\\Sessions\\{i}\\BaseNamedObjects\\Nobunaga Online Game Mutex\"";
+                tool.StartInfo.UseShellExecute = false;
+                tool.StartInfo.RedirectStandardOutput = true;
+                tool.StartInfo.CreateNoWindow = true;
+
+                bool foundMutex = false;
+                tool.Start();
+                while (!tool.StandardOutput.EndOfStream)
+                {
+                    string s = tool.StandardOutput.ReadLine();
+                    s = s?.Replace(" ", "") ?? string.Empty;
+                    var index1 = s.IndexOf("Mutant");
+                    if (index1 > 0)
+                    {
+                        foundMutex = true;
+                        var index2 = s.IndexOf(":", index1);
+                        var ID = s.Substring(s.IndexOf("Mutant") + 6, index2 - index1 - 6);
+
+                        Process tool2 = new();
+                        tool2.StartInfo.FileName = path;
+                        tool2.StartInfo.Arguments = $@"-p {nob.Id} -c {ID} -y";
+                        tool2.StartInfo.UseShellExecute = false;
+                        tool2.StartInfo.RedirectStandardOutput = true;
+                        tool2.StartInfo.CreateNoWindow = true;
+                        tool2.Start();
+                        tool2.WaitForExit();
+                        Debug.WriteLine($"已處理新Session {i} 的Mutex: {ID}");
+                    }
+                }
+
+                // 如果在該Session中找到了Mutex，記錄這個成功的Session Index
+                if (foundMutex)
+                {
+                    Debug.WriteLine($"新Session {i} 處理成功");
+                    successfulSessionIndex = i;
+                    // 只記錄第一個成功的Session
+                    break;
+                }
+            }
+
+            // 儲存發現的成功Session Index
+            if (successfulSessionIndex.HasValue)
+            {
+                SaveSessionIndexToRegistry(successfulSessionIndex.Value);
+                Debug.WriteLine($"儲存新的成功Session Index: {successfulSessionIndex.Value}");
+            }
+        }
+
+
+        /// <summary>
+        /// 從註冊表載入Session Index
+        /// </summary>
+        public static int? LoadSessionIndexFromRegistry()
+        {
+            try
+            {
+                RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc\Setting");
+                object value = registryKey.GetValue("SessionsIndex");
+
+                if (value != null)
+                {
+                    string valueStr = value.ToString();
+                    if (int.TryParse(valueStr, out int index))
+                    {
+                        return index;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"從註冊表載入Session Index失敗: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 將Session Index儲存到註冊表
+        /// </summary>
+        public static void SaveSessionIndexToRegistry(int sessionIndex)
+        {
+            try
+            {
+                RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc\Setting");
+                registryKey.SetValue("SessionsIndex", sessionIndex.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"儲存Session Index到註冊表失敗: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 清除註冊表中的Session Index
+        /// </summary>
+        public static void ClearSessionIndexFromRegistry()
+        {
+            try
+            {
+                RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc\Setting");
+                registryKey.DeleteValue("SessionsIndex", false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"清除註冊表中的Session Index失敗: {ex.Message}");
+            }
+        }
+
+        public static void SetTimeUp(NOBDATA user)
         {
             RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc");
             string? ppmitime = registryKey.GetValue("PPMITIME")?.ToString();
-            registryKey.SetValue("PPMITIME", MainWindow.到期日.ToString());
+            registryKey.SetValue("PPMITIME", user.到期日.ToString());
         }
 
         public static void UpdateTimer(System.Windows.Controls.Label lb_time)
@@ -535,14 +649,13 @@ namespace NOBApp
             if (string.IsNullOrEmpty(ppmitime))
             {
                 var time = DateTime.Now.AddDays(7);
-                MainWindow.到期日 = time;
                 registryKey.SetValue("PPMITIME", time.ToString());
                 lb_time.Content = $"到期日:{time.ToString()}";
             }
             else
             {
                 var tt = DateTime.Parse(ppmitime);
-                MainWindow.到期日 = tt;
+                //MainWindow.到期日 = tt;
                 lb_time.Content = $"到期日:{tt.ToString()}";
             }
         }

@@ -42,7 +42,7 @@ namespace NOBApp.Sports
         {
             全部追隨();
             移動點 = new();
-              MainNob.Log($"回村長定位 掛網點 :  {掛網點.X} , {掛網點.Y}");
+            MainNob.Log($"回村長定位 掛網點 :  {掛網點.X} , {掛網點.Y}");
             //移動點.Add(new(21987, 24883));
             移動點.Add(掛網點);
             Task.Delay(100).Wait();
@@ -61,9 +61,9 @@ namespace NOBApp.Sports
                 {
                     initPos = true;
                     掛網點 = new(MainNob.PosX, MainNob.PosY);
-                      MainNob.Log($"A 掛網點 : {掛網點.X} , {掛網點.Y}");
+                    MainNob.Log($"A 掛網點 : {掛網點.X} , {掛網點.Y}");
                     休息回合 = MainNob.CodeSetting.其他選項A == 0 ? 80 : MainNob.CodeSetting.其他選項A;
-                      MainNob.Log($"休息回合 {休息回合}");
+                    MainNob.Log($"休息回合 {休息回合}");
                     全部追隨();
                 }
 
@@ -81,18 +81,18 @@ namespace NOBApp.Sports
                     useUser = MainNob;
                     Task.Run(村長補符);
                     Task.Delay(200).Wait();
-                    foreach (var nobuser in 隊員智能功能組)
+                    foreach (var nobuser in NobTeam)
                     {
-                        if (nobuser.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                        if (nobuser.PlayerName.Contains(MainNob.PlayerName) == false)
                         {
                             useUser = null;
-                            useUser = nobuser.NOB;
+                            useUser = nobuser;
                             Task.Run(村長補符);
                             Task.Delay(200).Wait();
                         }
                     }
-                      MainNob.Log($"隊員智能功能組 -> {隊員智能功能組.Count}");
-                    while (MainWindow.CodeRun)
+                    MainNob.Log($"隊員智能功能組 -> {NobTeam.Count}");
+                    while (MainNob.StartRunCode)
                     {
                         Task.Delay(500).Wait();
                         bool 全部完成 = true;
@@ -100,9 +100,9 @@ namespace NOBApp.Sports
                         {
                             全部完成 = false;
                         }
-                        foreach (var 成員 in 隊員智能功能組)
+                        foreach (var 成員 in NobTeam)
                         {
-                            if (成員.NOB.完成必須對話 == false)
+                            if (成員.完成必須對話 == false)
                             {
                                 全部完成 = false;
                                 break;
@@ -110,20 +110,20 @@ namespace NOBApp.Sports
                         }
                         if (全部完成)
                         {
-                              MainNob.Log("補符正常完成");
+                            MainNob.Log("補符正常完成");
                             break;
                         }
                         tryDone = tryDone + 1;
                         if (tryDone > 60)
                         {
-                              MainNob.Log("強制結束");
+                            MainNob.Log("強制結束");
                             break;
                         }
 
                     }
 
-                      MainNob.Log("全部補完");
-                    MainWindow.IgnoredIDs.Clear();
+                    MainNob.Log("全部補完");
+                    NobMainCodePage.IgnoredIDs.Clear();
                     全部追隨();
                     Task.Delay(1000).Wait();
                     戰鬥回合 = 0;
@@ -132,10 +132,10 @@ namespace NOBApp.Sports
                     void 村長補符()
                     {
                         NOBDATA user = useUser;
-                          MainNob.Log($"{user.PlayerName} 補符");
+                        MainNob.Log($"{user.PlayerName} 補符");
                         int tryNum = 0;
                         user.完成必須對話 = false;
-                        while (MainWindow.CodeRun)
+                        while (MainNob.StartRunCode)
                         {
                             if (user.出現直式選單)
                             {
@@ -148,7 +148,7 @@ namespace NOBApp.Sports
                                     Task.Delay(100);
                                     user.KeyPress(VKeys.KEY_ESCAPE, 5);
                                     waitDone = waitDone + 1;
-                                      MainNob.Log($"{user.PlayerName} 補符 完成");
+                                    MainNob.Log($"{user.PlayerName} 補符 完成");
                                     user.完成必須對話 = true;
                                     break;
                                 }
@@ -165,7 +165,7 @@ namespace NOBApp.Sports
                             Task.Delay(200);
                             if (tryNum > 200 && 補符 == false)
                             {
-                                  MainNob.Log($"{user.PlayerName} 補符過程出現異常 強制結束");
+                                MainNob.Log($"{user.PlayerName} 補符過程出現異常 強制結束");
                                 break;
                             }
                         }
@@ -175,9 +175,9 @@ namespace NOBApp.Sports
                 {
                     if (MainNob.待機)
                     {
-                          MainNob.Log($"搜尋新敵人");
+                        MainNob.Log($"搜尋新敵人");
                         MainNob.目前動作 = "搜尋新敵人";
-                        MainWindow.TargetsID.Clear();
+                        NobMainCodePage.TargetsID.Clear();
                         Task.Delay(300).Wait();
                         UpdateUI?.Invoke();
                         Task.Delay(100).Wait();
@@ -189,13 +189,13 @@ namespace NOBApp.Sports
                         }
                     }
 
-                    if (MainWindow.TargetsID != null && MainWindow.開打)
+                    if (NobMainCodePage.TargetsID != null && MainNob.開打)
                     {
                         MainNob.目前動作 = "待機";
                         if (MainNob.待機)
                         {
                             MainNob.目前動作 = "待機 準備找怪";
-                            if (MainWindow.F5解無敵 && F5解無敵 == false)
+                            if (MainNob.F5解無敵 && F5解無敵 == false)
                             {
                                 F5解無敵 = true;
                                 MainNob.KeyPress(VKeys.KEY_F5);
@@ -209,8 +209,8 @@ namespace NOBApp.Sports
                                 移動倒掛網點();
                             }
 
-                              MainNob.Log($" 目前目標數量 : {MainWindow.TargetsID.Count}");
-                            if (MainWindow.TargetsID.Count == 0)
+                            MainNob.Log($" 目前目標數量 : {NobMainCodePage.TargetsID.Count}");
+                            if (NobMainCodePage.TargetsID.Count == 0)
                             {
                                 MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                             }
@@ -218,9 +218,9 @@ namespace NOBApp.Sports
                             {
                                 MainNob.目前動作 = $"尋找目標..SPCheck {spCheck}.";
                                 bool battleIn = false;
-                                for (int i = 0; i < MainWindow.TargetsID.Count; i++)
+                                for (int i = 0; i < NobMainCodePage.TargetsID.Count; i++)
                                 {
-                                    var emID = MainWindow.TargetsID[i];
+                                    var emID = NobMainCodePage.TargetsID[i];
                                     if (skipID.Contains(emID))
                                     {
                                         continue;
@@ -235,17 +235,17 @@ namespace NOBApp.Sports
                                     //岩石
                                     if (0 > emID || emID > 4261412000)
                                     {
-                                        var npc = MainWindow.allNPCs.FirstOrDefault(npc => npc.ID == emID);
+                                        var npc = NobMainCodePage.allNPCs.FirstOrDefault(npc => npc.ID == emID);
                                         if (npc != null)
                                         {
-                                              MainNob.Log($"目標 : {emID} 範圍 : {npc.Distance}");
+                                            MainNob.Log($"目標 : {emID} 範圍 : {npc.Distance}");
 
                                             MainNob.MoveToNPC((int)emID);
-                                            foreach (var nob in 隊員智能功能組)
+                                            foreach (var nob in NobTeam)
                                             {
-                                                if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                                if (nob != null && nob.PlayerName.Contains(MainNob.PlayerName) == false)
                                                 {
-                                                    nob.NOB.MoveToNPC((int)emID);
+                                                    nob.MoveToNPC((int)emID);
                                                 }
                                             }
                                         }
@@ -256,13 +256,13 @@ namespace NOBApp.Sports
                                             for (int j = 0; j < 3; j++)
                                             {
                                                 MainNob.KeyPress(VKeys.KEY_ESCAPE);
-                                                foreach (var nob in 隊員智能功能組)
+                                                foreach (var nob in NobTeam)
                                                 {
-                                                    if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                                    if (nob != null && nob.PlayerName.Contains(MainNob.PlayerName) == false)
                                                     {
-                                                        if (nob.NOB.戰鬥中 == false)
+                                                        if (nob.戰鬥中 == false)
                                                         {
-                                                            nob.NOB.KeyPress(VKeys.KEY_ESCAPE);
+                                                            nob.KeyPress(VKeys.KEY_ESCAPE);
                                                         }
                                                     }
                                                 }
@@ -279,13 +279,13 @@ namespace NOBApp.Sports
                                             for (int j = 0; j < 3; j++)
                                             {
                                                 MainNob.KeyPress(VKeys.KEY_ESCAPE);
-                                                foreach (var nob in 隊員智能功能組)
+                                                foreach (var nob in NobTeam)
                                                 {
-                                                    if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                                    if (nob != null && nob.PlayerName.Contains(MainNob.PlayerName) == false)
                                                     {
-                                                        if (nob.NOB.戰鬥中 == false)
+                                                        if (nob.戰鬥中 == false)
                                                         {
-                                                            nob.NOB.KeyPress(VKeys.KEY_ESCAPE);
+                                                            nob.KeyPress(VKeys.KEY_ESCAPE);
                                                         }
                                                     }
                                                 }
@@ -301,8 +301,8 @@ namespace NOBApp.Sports
                                         }
                                         全部追隨();
                                         Task.Delay(2000).Wait();
-                                        if (MainWindow.IgnoredIDs.Contains(emID) == false)
-                                            MainWindow.IgnoredIDs.Add(emID);
+                                        if (NobMainCodePage.IgnoredIDs.Contains(emID) == false)
+                                            NobMainCodePage.IgnoredIDs.Add(emID);
                                     }
                                     else
                                     {
@@ -314,7 +314,7 @@ namespace NOBApp.Sports
                                             case 5:
                                             case 15:
                                                 int tryNum = 0;
-                                                while (MainWindow.CodeRun)
+                                                while (MainNob.StartRunCode)
                                                 {
                                                     全部追隨();
                                                     Task.Delay(500).Wait();
@@ -323,26 +323,26 @@ namespace NOBApp.Sports
                                                     if (lockID == (int)emID)
                                                     {
                                                         MainNob.MoveToNPC((int)emID);
-                                                        foreach (var nob in 隊員智能功能組)
+                                                        foreach (var nob in NobTeam)
                                                         {
-                                                            if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                                            if (nob != null && nob.PlayerName.Contains(MainNob.PlayerName) == false)
                                                             {
-                                                                if (nob.NOB.戰鬥中 == false)
+                                                                if (nob.戰鬥中 == false)
                                                                 {
-                                                                    nob.NOB.MoveToNPC((int)emID);
+                                                                    nob.MoveToNPC((int)emID);
                                                                 }
                                                             }
                                                         }
                                                         Task.Delay(500).Wait();
                                                         for (int j = 0; j < 3; j++)
                                                         {
-                                                            foreach (var nob in 隊員智能功能組)
+                                                            foreach (var nob in NobTeam)
                                                             {
                                                                 if (nob != null
-                                                                    && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false
-                                                                    && nob.NOB.戰鬥中 == false)
+                                                                    && nob.PlayerName.Contains(MainNob.PlayerName) == false
+                                                                    && nob.戰鬥中 == false)
                                                                 {
-                                                                    nob.NOB.MoveToNPC((int)emID);
+                                                                    nob.MoveToNPC((int)emID);
                                                                 }
                                                             }
                                                         }
@@ -350,22 +350,22 @@ namespace NOBApp.Sports
                                                         if (MainNob.戰鬥中)
                                                         {
                                                             Task.Delay(1000).Wait();
-                                                            if (MainWindow.IgnoredIDs.Contains(emID) == false)
-                                                                MainWindow.IgnoredIDs.Add(emID);
+                                                            if (NobMainCodePage.IgnoredIDs.Contains(emID) == false)
+                                                                NobMainCodePage.IgnoredIDs.Add(emID);
                                                             spCheck = 0;
                                                             tryFindNum = 0;
 
                                                             bool allinBattle = true;
-                                                            while (CodeRun)
+                                                            while (MainNob.StartRunCode)
                                                             {
-                                                                foreach (var nob in 隊員智能功能組)
+                                                                foreach (var nob in NobTeam)
                                                                 {
-                                                                    if (nob != null && nob.NOB.PlayerName.Contains(MainNob.PlayerName) == false)
+                                                                    if (nob != null && nob.PlayerName.Contains(MainNob.PlayerName) == false)
                                                                     {
-                                                                        if (nob.NOB.戰鬥中 == false)
+                                                                        if (nob.戰鬥中 == false)
                                                                         {
                                                                             allinBattle = false;
-                                                                            nob.NOB.MoveToNPC((int)emID);
+                                                                            nob.MoveToNPC((int)emID);
                                                                         }
                                                                     }
                                                                     Task.Delay(100).Wait();
@@ -380,22 +380,22 @@ namespace NOBApp.Sports
                                                         if (tryNum > 6)
                                                         {
                                                             tryNum = 0;
-                                                            if (MainWindow.IgnoredIDs.Contains(emID) == false)
-                                                                MainWindow.IgnoredIDs.Add(emID);
+                                                            if (NobMainCodePage.IgnoredIDs.Contains(emID) == false)
+                                                                NobMainCodePage.IgnoredIDs.Add(emID);
                                                             break;
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        if (MainWindow.IgnoredIDs.Contains(emID) == false)
-                                                            MainWindow.IgnoredIDs.Add(emID);
+                                                        if (NobMainCodePage.IgnoredIDs.Contains(emID) == false)
+                                                            NobMainCodePage.IgnoredIDs.Add(emID);
                                                         break;
                                                     }
                                                 }
                                                 break;
                                             default:
-                                                if (MainWindow.IgnoredIDs.Contains(emID) == false)
-                                                    MainWindow.IgnoredIDs.Add(emID);
+                                                if (NobMainCodePage.IgnoredIDs.Contains(emID) == false)
+                                                    NobMainCodePage.IgnoredIDs.Add(emID);
                                                 continue;
                                         }
 
@@ -410,7 +410,7 @@ namespace NOBApp.Sports
                                     }
                                 }
 
-                                  MainNob.Log("選轉尋找目標");
+                                MainNob.Log("選轉尋找目標");
                                 MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                             }
 
@@ -450,19 +450,19 @@ namespace NOBApp.Sports
                             if (mBCHCount > 3)
                             {
                                 mBCHCount = 0;
-                                  MainNob.Log($"隊員智能功能組 {隊員智能功能組.Count}");
-                                foreach (var user in 隊員智能功能組)
+                                MainNob.Log($"隊員智能功能組 {NobTeam.Count}");
+                                foreach (var user in NobTeam)
                                 {
                                     if (user != null)
-                                        Task.Run(user.NOB.離開戰鬥B);
+                                        Task.Run(user.離開戰鬥B);
                                 }
                                 int tryNum = 0;
-                                while (MainWindow.CodeRun)
+                                while (MainNob.StartRunCode)
                                 {
                                     bool allDoneCheck = true;
-                                    foreach (var user in 隊員智能功能組)
+                                    foreach (var user in NobTeam)
                                     {
-                                        if (user.NOB.離開戰鬥確認 == false)
+                                        if (user.離開戰鬥確認 == false)
                                         {
                                             allDoneCheck = false;
                                         }

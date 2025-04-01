@@ -21,20 +21,20 @@ namespace NOBApp.Sports
                 if (MainNob.待機)
                 {
                     Task.Delay(100).Wait();
-                    var npcs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, 4, MainNob.CodeSetting.搜尋範圍);
+                    var npcs = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 4, MainNob.CodeSetting.搜尋範圍);
                     if (npcs.Count > 0)
                     {
-                        MainWindow.AllNPCIDs = npcs.Select(x => x.ID)
-                            .Where(id => !MainWindow.TargetsID.Contains(id))
-                            .Where(id => !MainWindow.IgnoredIDs.Contains(id)).ToList();
+                        NobMainCodePage.AllNPCIDs = npcs.Select(x => x.ID)
+                            .Where(id => !NobMainCodePage.TargetsID.Contains(id))
+                            .Where(id => !NobMainCodePage.IgnoredIDs.Contains(id)).ToList();
                     }
                 }
 
-                if (MainWindow.AllNPCIDs != null && MainWindow.開打)
+                if (NobMainCodePage.AllNPCIDs != null && MainNob.開打)
                 {
                     if (MainNob.待機)
                     {
-                        if (MainWindow.F5解無敵 && F5解無敵 == false)
+                        if (MainNob.F5解無敵 && F5解無敵 == false)
                         {
                             F5解無敵 = true;
                             MainNob.KeyPress(VKeys.KEY_F5);
@@ -42,28 +42,23 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
                         }
 
-                          MainNob.Log($"目標數量 ==> {MainWindow.AllNPCIDs.Count}");
-                        if (MainWindow.AllNPCIDs.Count == 0)
+                        MainNob.Log($"目標數量 ==> {NobMainCodePage.AllNPCIDs.Count}");
+                        if (NobMainCodePage.AllNPCIDs.Count == 0)
                         {
                             MainNob.KeyPress(VKeys.KEY_Q, 1, 500);
                         }
                         else
                         {
-                            for (int i = 0; i < MainWindow.AllNPCIDs.Count; i++)
+                            for (int i = 0; i < NobMainCodePage.AllNPCIDs.Count; i++)
                             {
-                                if (MainWindow.開打 == false || !MainNob.待機)
+                                if (MainNob.開打 == false || !MainNob.待機)
                                 {
                                     break;
                                 }
 
-                                if (MainWindow.限點數量 != 0 && i >= MainWindow.限點數量)
-                                {
-                                    break;
-                                }
-
-                                var id = (int)MainWindow.AllNPCIDs[i];
-                                  MainNob.Log($"鎖定打怪 => {id}");
-                                if (MainWindow.Enter點怪)
+                                var id = (int)NobMainCodePage.AllNPCIDs[i];
+                                MainNob.Log($"鎖定打怪 => {id}");
+                                if (MainNob.CodeSetting.Enter點怪)
                                 {
                                     MainNob.鎖定NPC(id);
                                     Task.Delay(200).Wait();
@@ -104,8 +99,8 @@ namespace NOBApp.Sports
                         {
                             cacheIGID.Remove(delint[i]);
 
-                            if (MainWindow.IgnoredIDs.Contains(delint[i]) == false)
-                                MainWindow.IgnoredIDs.Add(delint[i]);
+                            if (NobMainCodePage.IgnoredIDs.Contains(delint[i]) == false)
+                                NobMainCodePage.IgnoredIDs.Add(delint[i]);
                         }
                     }
 
@@ -119,7 +114,7 @@ namespace NOBApp.Sports
                     if (MainNob.對話與結束戰鬥)
                         mBCHCount++;
 
-                    if (MainWindow.UseAutoSkill == false)
+                    if (MainNob.IsUseAutoSkill == false)
                     {
                         if (mBCHCount > 2)
                         {

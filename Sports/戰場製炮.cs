@@ -107,7 +107,7 @@ namespace NOBApp.Sports
                         後退(3000);
                         Task.Delay(100).Wait();
                         MainNob.KeyPress(VKeys.KEY_C);
-                        //MainWindow.CodeRun = false;
+                        //MainNob.StartRunCode = false;
                         mPoint = 0;
                         MainNob.目前動作 = "前往目";
                         return;

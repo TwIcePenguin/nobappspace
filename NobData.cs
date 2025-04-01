@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using NOBApp.Sports;
-using static NOBApp.MainWindow;
+using static NOBApp.NobMainCodePage;
 
 namespace NOBApp
 {
@@ -18,6 +18,7 @@ namespace NOBApp
         /// <param name="hWnd">程序</param>
         /// <param name="bounds">範圍</param>
         /// <returns></returns>
+        #region DllImport
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
@@ -34,10 +35,14 @@ namespace NOBApp
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
+        [DllImport("USER32.DLL")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        #endregion
+
         public Setting CodeSetting = new();
         public 自動技能組 AutoSkillSet = new();
-        //之後須要收費的話 直接使用
-        public DateTime TimeUP;
+        public DateTime 到期日 = DateTime.Now.AddYears(99);
         public Process Proc;
         public RECT 原視窗;
         public int NowHeight;
@@ -191,7 +196,10 @@ namespace NOBApp
         public bool 副本進入完成 = false;
         public bool 副本離開完成 = false;
         public string 目前動作 = "";
+        public string NOBCDKEY = "";
         public BaseClass? RunCode;
+        public bool StartRunCode = false;
+        public bool IsUseAutoSkill = false;
         public List<BTData> MYTeamData = new List<BTData>();
         public List<BTData> EMTeamData = new List<BTData>();
         public List<long> SetSkillsID = new List<long>();
@@ -200,6 +208,15 @@ namespace NOBApp
         public bool 完成必須對話 = false;
         public bool 啟動自動輔助中 = false;
         public bool 準備完成 = false;
+        public bool 自動追蹤隊長 = false;
+        public bool 希望取得 = false;
+        public bool 自動結束_A = false;
+        public bool 自動結束_B = false;
+        /// <summary>
+        /// 判斷是否開始隨機地圖上打怪
+        /// </summary>
+        public bool 開打 = false;
+        public bool F5解無敵 = false;
 
         string cacheLog = string.Empty;
         public void Log(string str)
@@ -224,12 +241,12 @@ namespace NOBApp
             SKNames.Clear();
         }
 
-        public void CodeRunUpdate()
+        public void CodeUpdate()
         {
             bool _init = false;
-            while (MainWindow.CodeRun && RunCode != null)
+            while (StartRunCode && RunCode != null)
             {
-                if (MainWindow.CodeRun == false)
+                if (StartRunCode == false)
                     break;
                 if (!_init)
                 {
@@ -254,8 +271,11 @@ namespace NOBApp
             bool 進入過戰鬥畫面 = false;
             bool 已經放過一次 = false;
             bool 放技能完成 = false;
-            while (MainWindow.UseAutoSkill && dmSoft != null)
+            while (IsUseAutoSkill)
             {
+                if (MainWindow.dmSoft == null)
+                    return;
+
                 if (AutoSkillSet.背景Enter)
                 {
                     KeyPressPP(VKeys.KEY_ENTER);
@@ -270,7 +290,7 @@ namespace NOBApp
                     endBattleCheckNum = 0;
                     希望完成 = false;
                     進入過戰鬥畫面 = true;
-                    var index = dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
+                    var index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
                     if (index > 0 && (MYTeamData == null || MYTeamData.Count == 0))
                     {
                         BtDataUpdate();
@@ -280,12 +300,12 @@ namespace NOBApp
                     {
                         do
                         {
-                            index = dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
-                            string supDataCheck = dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, 1);
+                            index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
+                            string supDataCheck = MainWindow.dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, 1);
                             if (supDataCheck.Substring(supDataCheck.Length - 1).Contains("4"))
                             {
                                 string newD = supDataCheck[0] + "0";
-                                dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
+                                MainWindow.dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
                             }
 
                             if (index > 0)
@@ -299,7 +319,7 @@ namespace NOBApp
                                 }
                                 if (AutoSkillSet.特殊運作)
                                 {
-                                    int setindex = (int)dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
+                                    int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
                                     Debug.WriteLine("setindex : " + setindex);
 
                                     Task.Delay(AutoSkillSet.程式速度).Wait();
@@ -321,7 +341,7 @@ namespace NOBApp
 
                                         if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
                                         {
-                                            setNum = check(UseLockNOB!.MYTeamData, AutoSkillSet.施放A);
+                                            setNum = check(MainNob!.MYTeamData, AutoSkillSet.施放A);
                                             直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度);
                                         }
                                         else
@@ -374,7 +394,7 @@ namespace NOBApp
                                     {
                                         if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
                                         {
-                                            setNum = check(UseLockNOB!.MYTeamData, AutoSkillSet.施放C);
+                                            setNum = check(MainNob!.MYTeamData, AutoSkillSet.施放C);
                                             直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度);
                                         }
                                         else
@@ -407,7 +427,7 @@ namespace NOBApp
                             }
                             Task.Delay(AutoSkillSet.程式速度).Wait();
                         }
-                        while (MainWindow.UseAutoSkill && index > 0);
+                        while (IsUseAutoSkill && index > 0);
                     }
 
                     #endregion 戰鬥中
@@ -431,12 +451,12 @@ namespace NOBApp
                         已經放過一次 = false;
                         進入過戰鬥畫面 = false;
 
-                        if (UseLockNOB!.MYTeamData.Count > 0)
+                        if (MainNob!.MYTeamData.Count > 0)
                         {
-                            UseLockNOB.ClearBTData();
+                            MainNob.ClearBTData();
                         }
 
-                        if (全隊追蹤)
+                        if (自動追蹤隊長)
                         {
                             KeyPress(VKeys.KEY_F8);
                             Task.Delay(500).Wait();
@@ -458,11 +478,11 @@ namespace NOBApp
                                 endBattleCheckNum = 0;
                                 放技能完成 = false;
                                 已經放過一次 = false;
-                                if (隊長希望取得 && 希望完成 == false)
+                                if (希望取得 && 希望完成 == false)
                                 {
                                     希望完成 = true;
                                     Task.Delay(1000).Wait();
-                                    UseLockNOB!.KeyPress(VKeys.KEY_ENTER, 6, 300);
+                                    MainNob!.KeyPress(VKeys.KEY_ENTER, 6, 300);
                                     Task.Delay(100).Wait();
                                 }
 
@@ -585,7 +605,7 @@ namespace NOBApp
         {
             for (int i = 0; i < loopNum; i++)
             {
-                if (MainWindow.CodeRun == false && MainWindow.UseAutoSkill == false)
+                if (StartRunCode == false && IsUseAutoSkill == false)
                     break;
 
                 Proc.MainWindowHandle.KeyPress(keyCode);
@@ -642,7 +662,7 @@ namespace NOBApp
                     break;
                 }
             }
-            while ((MainWindow.CodeRun || MainWindow.UseAutoSkill) && true);
+            while (StartRunCode || IsUseAutoSkill);
             離開戰鬥確認 = true;
         }
 
@@ -677,7 +697,7 @@ namespace NOBApp
                         break;
                     }
                 }
-            } while ((MainWindow.CodeRun || MainWindow.UseAutoSkill) && true);
+            } while (StartRunCode || IsUseAutoSkill);
 
             (int x, int y) GetRandomPosition(int centerX, int centerY, int rangeX, int rangeY)
             {
@@ -738,7 +758,18 @@ namespace NOBApp
             int TopPos = tlIndex * 40;
             int LeftPos = tlIndex * 120;
 
-            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, OrinX, OrinY, true);
+            MoveWindow(Proc.MainWindowHandle, LeftPos, TopPos, MainWindow.OrinX, MainWindow.OrinY, true);
+        }
+
+        public void FoucsNobWindows()
+        {
+            if (Proc.MainWindowHandle != IntPtr.Zero)
+            {
+                GetWindowRect(Proc.MainWindowHandle, out RECT rect);
+                var nowPos = rect;
+                MoveWindow(Proc.MainWindowHandle, nowPos.Left - 100, nowPos.Top, (int)MainWindow.Instance!.Width, (int)MainWindow.Instance.Height, true);
+                SetForegroundWindow(Proc.MainWindowHandle);
+            }
         }
 
         public void FoucsNobApp(Process proc)
@@ -747,7 +778,7 @@ namespace NOBApp
             {
                 GetWindowRect(Proc.MainWindowHandle, out RECT rect);
                 var nowPos = rect;
-                MoveWindow(proc.MainWindowHandle, nowPos.Left - 100, nowPos.Top, (int)WindowsRoot.Width, (int)WindowsRoot.Height, true);
+                MoveWindow(proc.MainWindowHandle, nowPos.Left - 100, nowPos.Top, (int)MainWindow.Instance!.Width, (int)MainWindow.Instance.Height, true);
                 SetForegroundWindow(proc.MainWindowHandle);
             }
         }

@@ -20,14 +20,15 @@ namespace NOBApp.Sports
 
         List<long> skipID = new();
         bool 進行任務 = false;
+        bool 準備進入下一階段 = false;
         public override void 初始化()
         {
             MainNob!.Log("夢幻城 最先運作");
             MainNob!.KeyPress(VKeys.KEY_W);
             MainNob!.選擇目標類型(1);
-            for (int i = 0; i < FIDList.Count; i++)
+            for (int i = 0; i < NobTeam.Count; i++)
             {
-                FIDList[i].選擇目標類型(1);
+                NobTeam[i].選擇目標類型(1);
             }
         }
 
@@ -77,7 +78,7 @@ namespace NOBApp.Sports
                         選擇();
                     }
                     MainNob.Log($"完成該樓");
-                    foreach (var item in NobTeams)
+                    foreach (var item in NobTeam)
                     {
                         item.Log($"ResetPoint");
                         item.ResetPoint = true;
@@ -156,7 +157,7 @@ namespace NOBApp.Sports
 
                 if (hasBox && boxGetCheck > 10)
                 {
-                    while (CodeRun)
+                    while (MainNob.StartRunCode)
                     {
                         MainNob.MoveToNPC(MainNob.GetTargetIDINT());
                         Task.Delay(1000).Wait();
@@ -248,17 +249,17 @@ namespace NOBApp.Sports
             {
                 Task.Delay(100).Wait();
                 int findCheck = 0;
-                while (MainWindow.CodeRun && MainNob != null)
+                while (MainNob != null && MainNob.StartRunCode)
                 {
                     if (mPoint == 8)
                     {
                         if (MainNob!.戰鬥中)
                             break;
 
-                        while (CodeRun)
+                        while (MainNob.StartRunCode)
                         {
                             bool allDone = true;
-                            foreach (var item in NobTeams)
+                            foreach (var item in NobTeam)
                             {
                                 if (item!.準備完成 == false)
                                 {
@@ -288,7 +289,7 @@ namespace NOBApp.Sports
                                 選擇();
                             }
                             MainNob.Log($"完成該樓");
-                            foreach (var item in NobTeams)
+                            foreach (var item in NobTeam)
                             {
                                 item.Log($"ResetPoint");
                                 item.ResetPoint = true;
@@ -341,7 +342,7 @@ namespace NOBApp.Sports
                                 選擇();
                             }
                             MainNob.Log($"完成該樓");
-                            foreach (var item in NobTeams)
+                            foreach (var item in NobTeam)
                             {
                                 item.Log($"ResetPoint");
                                 item.ResetPoint = true;

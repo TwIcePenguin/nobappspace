@@ -73,13 +73,13 @@ namespace NOBApp.GoogleData
                             {
                                 nobData.贊助者 = true;
                                 userData.StartTimer = expirationDate.ToString();
-                                Authentication.儲存認證訊息(userData);
+                                Authentication.儲存認證訊息(nobData, userData);
                             }
                             if (foundValue.CheckC.Contains("1"))
                             {
                                 nobData.特殊者 = true;
                                 userData.StartTimer = expirationDate.ToString();
-                                Authentication.儲存認證訊息(userData);
+                                Authentication.儲存認證訊息(nobData, userData);
                             }
                         }
                         else
@@ -112,7 +112,7 @@ namespace NOBApp.GoogleData
                                 foundValue.CheckC = "1";
                                 nobData.特殊者 = true;
                             }
-                            Authentication.儲存認證訊息(foundValue);
+                            Authentication.儲存認證訊息(nobData, foundValue);
                         }
                     }
                 }
@@ -145,7 +145,7 @@ namespace NOBApp.GoogleData
                 {
                     foreach (var item in ItemsMapper.MapFromRangeData(valueRange.Values))
                     {
-                          Debug.WriteLine($"{item.UserName}, {item.Acc}, {item.Pww}, {item.SerialNumber}, {item.LoginTimer}");
+                        Debug.WriteLine($"{item.UserName}, {item.Acc}, {item.Pww}, {item.SerialNumber}, {item.LoginTimer}");
                     }
                     var appendRequest = GoogleSheetValues.Append(valueRange, SpreadsheetId, range);
                     appendRequest.ValueInputOption = AppendRequest.ValueInputOptionEnum.USERENTERED;

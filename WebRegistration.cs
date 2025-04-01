@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NOBApp
 {
@@ -64,7 +65,8 @@ namespace NOBApp
                                 {
                                     string responseContent = await response.Content.ReadAsStringAsync();
                                     //  MainNob.Log($"回傳訊息 -> \n{responseContent}");
-                                    Authentication.讀取認證訊息Json(responseContent);
+                                    var u = useNobList.Find(i => { return i.Account.Contains(data.Acc); });
+                                    Authentication.讀取認證訊息Json(u, responseContent);
                                 }
                                 else
                                 {

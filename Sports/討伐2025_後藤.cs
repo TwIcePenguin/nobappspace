@@ -22,11 +22,11 @@ namespace NOBApp.Sports
             移動點 = new();
 
             Point = 檢查點.入場;
-            for (int i = 0; i < FIDList.Count; i++)
+            for (int i = 0; i < NobTeam.Count; i++)
             {
-                FIDList[i].選擇目標類型(1);
-                MainWindow.dmSoft!.WriteString(FIDList[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
-                MainWindow.dmSoft!.WriteString(FIDList[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
+                NobTeam[i].選擇目標類型(1);
+                MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
+                MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
             }
         }
 
@@ -44,15 +44,15 @@ namespace NOBApp.Sports
                 switch (Point)
                 {
                     case 檢查點.入場:
-                        mUseNOB = UseLockNOB;
+                        mUseNOB = MainNob;
                         Task.Run(接任務);
-                          MainNob.Log($"---- {mUseNOB!.PlayerName}");
+                        MainNob.Log($"---- {mUseNOB!.PlayerName}");
                         Task.Delay(5000).Wait();
-                        for (int i = 0; i < FIDList.Count; i++)
+                        for (int i = 0; i < NobTeam.Count; i++)
                         {
-                            if (FIDList[i].PlayerName.Contains(MainNob.PlayerName) == false)
+                            if (NobTeam[i].PlayerName.Contains(MainNob.PlayerName) == false)
                             {
-                                mUseNOB = FIDList[i];
+                                mUseNOB = NobTeam[i];
                                 mUseNOB.副本進入完成 = false;
                                 Task.Run(接任務);
                                 Task.Delay(500).Wait();
@@ -60,11 +60,11 @@ namespace NOBApp.Sports
                         }
                         Task.Delay(500).Wait();
                         Dictionary<NOBDATA, int> playErrorCheck = new();
-                        while (MainWindow.CodeRun)
+                        while (MainNob.StartRunCode)
                         {
                             bool done = true;
 
-                            foreach (var nob in FIDList)
+                            foreach (var nob in NobTeam)
                             {
                                 if (nob.副本進入完成 == false)
                                 {
@@ -83,7 +83,7 @@ namespace NOBApp.Sports
                         //if (false)
                         {
                             MainNob.KeyPress(VKeys.KEY_W, 3);
-                            foreach (var nob in FIDList)
+                            foreach (var nob in NobTeam)
                             {
                                 if (nob != null)
                                 {
@@ -92,7 +92,7 @@ namespace NOBApp.Sports
                                 }
                             }
                             //使用道具
-                            while (MainWindow.CodeRun)
+                            while (MainNob.StartRunCode)
                             {
                                 MainNob.KeyPress(VKeys.KEY_F7);
                                 MainNob.KeyPress(VKeys.KEY_ENTER, 3, 500);
@@ -106,7 +106,7 @@ namespace NOBApp.Sports
                                 }
                             }
                             ////對話開始
-                            while (MainWindow.CodeRun)
+                            while (MainNob.StartRunCode)
                             {
                                 if (MainNob.GetTargetIDINT() != -1)
                                 {
@@ -146,9 +146,9 @@ namespace NOBApp.Sports
                         int finalTargetID = 0;
                         int findCheck = 0;
                         //搜尋目標
-                        while (CodeRun)
+                        while (MainNob.StartRunCode)
                         {
-                            var allNPCIDs = GetAllNPCIDs();
+                            var allNPCIDs = NobMainCodePage.GetAllNPCIDs();
                             foreach (var id in allNPCIDs)
                             {
                                 if (skipID.Contains(id))
@@ -173,7 +173,7 @@ namespace NOBApp.Sports
 
                             if (targetIDs.Count >= 2)
                             {
-                                  MainNob.Log($"敵人搜尋完成");
+                                MainNob.Log($"敵人搜尋完成");
                                 break;
                             }
                             else
@@ -190,7 +190,7 @@ namespace NOBApp.Sports
 
                         int thisTargetID = 0;
 
-                        while (CodeRun)
+                        while (MainNob.StartRunCode)
                         {
                             MainNob.目前動作 = $"小兵數量 -> {targetIDs.Count} 結算中 -> {MainNob.進入結算}";
                             if (MainNob.戰鬥中)
@@ -211,16 +211,16 @@ namespace NOBApp.Sports
                                         targetIDs.Remove(thisTargetID);
                                     checkBattle = checkBattle + 1;
                                     離開結算 = true;
-                                    foreach (var item in FIDList)
+                                    foreach (var item in NobTeam)
                                     {
                                         Task.Run(item.離開戰鬥B);
                                     }
                                 }
                                 Task.Delay(200).Wait();
-                                while (CodeRun)
+                                while (MainNob.StartRunCode)
                                 {
                                     bool alldone = true;
-                                    foreach (var item in FIDList)
+                                    foreach (var item in NobTeam)
                                     {
                                         if (item.離開戰鬥確認 == false)
                                         {
@@ -275,9 +275,9 @@ namespace NOBApp.Sports
                         //搜尋目標
                         if (finalTargetID == 0)
                         {
-                            while (CodeRun)
+                            while (MainNob.StartRunCode)
                             {
-                                var allNPCIDs = GetAllNPCIDs();
+                                var allNPCIDs = NobMainCodePage.GetAllNPCIDs();
                                 foreach (var id in allNPCIDs)
                                 {
                                     if (skipID.Contains(id))
@@ -294,14 +294,14 @@ namespace NOBApp.Sports
                                     skipID.Add(id);
                                     if (targetIDs.Count >= 1)
                                     {
-                                          MainNob.Log($"敵人搜尋完成");
+                                        MainNob.Log($"敵人搜尋完成");
                                         break;
                                     }
                                 }
 
                                 if (targetIDs.Count >= 1)
                                 {
-                                      MainNob.Log($"敵人搜尋完成");
+                                    MainNob.Log($"敵人搜尋完成");
                                     break;
                                 }
                                 else
@@ -324,7 +324,7 @@ namespace NOBApp.Sports
                         }
                         int battleIn = 0;
 
-                        while (MainWindow.CodeRun)
+                        while (MainNob.StartRunCode)
                         {
                             MainNob.目前動作 = $"目標數量 -> {targetIDs.Count}";
 
@@ -337,15 +337,15 @@ namespace NOBApp.Sports
                             {
                                 MainNob.目前動作 = $"結算中 -> {離開結算} 目標數量 -> {targetIDs.Count}";
 
-                                foreach (var item in FIDList)
+                                foreach (var item in NobTeam)
                                 {
                                     Task.Run(item.離開戰鬥B);
                                 }
                                 Task.Delay(200).Wait();
-                                while (CodeRun)
+                                while (MainNob.StartRunCode)
                                 {
                                     bool alldone = true;
-                                    foreach (var item in FIDList)
+                                    foreach (var item in NobTeam)
                                     {
                                         if (item.離開戰鬥確認 == false)
                                         {
@@ -414,7 +414,7 @@ namespace NOBApp.Sports
                                 {
                                     出場NPCID = MainNob.GetTargetIDINT();
                                     battleCheck = 0;
-                                    foreach (var nob in FIDList)
+                                    foreach (var nob in NobTeam)
                                     {
                                         nob.副本離開完成 = false;
                                         mUseNOB = nob;
@@ -422,13 +422,13 @@ namespace NOBApp.Sports
                                         Task.Delay(500).Wait();
                                     }
                                     Task.Delay(300).Wait();
-                                    while (CodeRun)
+                                    while (MainNob.StartRunCode)
                                     {
                                         bool done = true;
 
-                                        foreach (var nob in FIDList)
+                                        foreach (var nob in NobTeam)
                                         {
-                                              MainNob.Log($"{nob.PlayerName} 副本離開完成 -> {nob.副本離開完成}");
+                                            MainNob.Log($"{nob.PlayerName} 副本離開完成 -> {nob.副本離開完成}");
                                             if (nob.副本離開完成 == false)
                                             {
                                                 done = false;
@@ -476,7 +476,7 @@ namespace NOBApp.Sports
         private void 接任務()
         {
             var useNOB = mUseNOB;
-              MainNob.Log("接任務 " + useNOB!.PlayerName);
+            MainNob.Log("接任務 " + useNOB!.PlayerName);
             int mErrorCheck = 0;
             if (useNOB != null)
             {
@@ -484,7 +484,7 @@ namespace NOBApp.Sports
                 useNOB.目前動作 = "尋找NPC對話..";
                 int movePress = 0;
                 bool isOK = false;
-                while (MainWindow.CodeRun)
+                while (MainNob.StartRunCode)
                 {
                     if (movePress % 50 == 0)
                     {
@@ -553,7 +553,7 @@ namespace NOBApp.Sports
                         mErrorCheck++;
                         if (mErrorCheck > 20)
                         {
-                              MainNob.Log(" ErrorCheck ");
+                            MainNob.Log(" ErrorCheck ");
                             mErrorCheck = 0;
                             useNOB.KeyPress(VKeys.KEY_ESCAPE, 10, 200);
                             useNOB.KeyPress(VKeys.KEY_ENTER);
@@ -568,7 +568,7 @@ namespace NOBApp.Sports
                 }
                 movePress = 0;
                 mErrorCheck = 0;
-                while (MainWindow.CodeRun)
+                while (MainNob.StartRunCode)
                 {
                     if (movePress % 50 == 0)
                     {
@@ -576,9 +576,9 @@ namespace NOBApp.Sports
                     }
                     else
                     {
-                        if (!UseLockNOB!.PlayerName.Contains(useNOB.PlayerName) && UseLockNOB.副本進入完成 == false)
+                        if (!MainNob!.PlayerName.Contains(useNOB.PlayerName) && MainNob.副本進入完成 == false)
                         {
-                            UseLockNOB.目前動作 = $"等待隊長 -> {UseLockNOB!.PlayerName}.{UseLockNOB.副本進入完成}.";
+                            MainNob.目前動作 = $"等待隊長 -> {MainNob!.PlayerName}.{MainNob.副本進入完成}.";
                             continue;
                         }
                     }
@@ -621,18 +621,18 @@ namespace NOBApp.Sports
         private void 離開副本()
         {
             var useNOB = mUseNOB;
-              MainNob.Log($"{useNOB != null} 離開副本 " + useNOB?.PlayerName);
+            MainNob.Log($"{useNOB != null} 離開副本 " + useNOB?.PlayerName);
             if (useNOB != null)
             {
                 useNOB.副本離開完成 = false;
                 useNOB.目前動作 = $"尋找NPC對話.. 離開副本 -> {useNOB.副本離開完成}";
                 int x = 0;
                 int y = 0;
-                while (MainWindow.CodeRun)
+                while (MainNob.StartRunCode)
                 {
                     Task.Delay(200).Wait();
                     useNOB.目前動作 = $"出去中 {useNOB.StateA} {useNOB.MAPID} {useNOB.副本離開完成}";
-                      MainNob.Log($"{出場NPCID} - {x} {useNOB.PosX} {y} {useNOB.PosY}");
+                    MainNob.Log($"{出場NPCID} - {x} {useNOB.PosX} {y} {useNOB.PosY}");
                     if ((x > 0 && y > 0) && (useNOB.PosX != x && useNOB.PosY != y))
                     {
                         useNOB.副本離開完成 = true;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NOBApp
 {
-    public partial class MainWindow
+    public partial class NobMainCodePage
     {
         public static List<NPCData> allNPCs = new();
         public static int NpcCountToRead = 150;
@@ -70,9 +70,9 @@ namespace NOBApp
         {
             List<NPCData> allNPCs = new List<NPCData>();
 
-            if (UseLockNOB == null)
+            if (MainNob == null)
             {
-                  Debug.WriteLine("UseLockNOB 為 null，無法搜尋 NPC。");
+                Debug.WriteLine("MainNob 為 null，無法搜尋 NPC。");
                 return allNPCs; // 如果 NOB 未鎖定，返回空列表
             }
 
@@ -82,7 +82,7 @@ namespace NOBApp
             int npcCountToRead = NpcCountToRead; // 可考慮使其動態化
             int bytesToRead = npcCountToRead * 12; // 每個 NPC 條目佔 12 位元組
 
-            string dataStr = dmSoft?.ReadData(UseLockNOB.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
+            string dataStr = MainWindow.dmSoft?.ReadData(MainNob.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
 
             if (string.IsNullOrEmpty(dataStr))
                 return allNPCs; // 處理 dataStr 失敗
@@ -94,13 +94,13 @@ namespace NOBApp
             }
             catch (FormatException ex)
             {
-                  Debug.WriteLine($"轉換 Hex 字串時發生錯誤: {ex.Message}");
+                Debug.WriteLine($"轉換 Hex 字串時發生錯誤: {ex.Message}");
                 return allNPCs; // 處理 Hex 字串格式錯誤
             }
 
             if (npcDataBytes == null || npcDataBytes.Length != bytesToRead)
             {
-                  Debug.WriteLine("讀取 NPC 資料區塊時發生錯誤。 ReadData 返回 null 或不正確的大小。");
+                Debug.WriteLine("讀取 NPC 資料區塊時發生錯誤。 ReadData 返回 null 或不正確的大小。");
                 return allNPCs; // 處理記憶體讀取失敗
             }
 

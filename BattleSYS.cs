@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NOBApp
 {
-    public partial class MainWindow
+    public partial class NobMainCodePage
     {
         public class 自動技能組
         {

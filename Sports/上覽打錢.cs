@@ -40,7 +40,7 @@ namespace NOBApp.Sports
         }
         public override void 腳本運作()
         {
-            if (MainWindow.CodeRun && MainNob != null)
+            if (MainNob != null && MainNob.StartRunCode)
             {
                 狀態刷新判斷2();
                 switch (Point)
@@ -323,10 +323,10 @@ namespace NOBApp.Sports
 
                 if (mENDCheck > 4)
                 {
-                    MainWindow.CodeRun = false;
-                    MainNob.CloseGame();
-                    MessageBox.Show($"{MainWindow.UseLockNOB!.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
-                    Environment.Exit(0);
+                    MainNob.StartRunCode = false;
+                    //MainNob.CloseGame();
+                    MessageBox.Show($"{MainNob.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
+                    //Environment.Exit(0);
                 }
                 MainNob.Log("-----大黑天ID------ " + 大黑天ID);
                 MainNob.MoveToNPC(大黑天ID);
@@ -431,7 +431,7 @@ namespace NOBApp.Sports
                 else
                     break;
             }
-            while (MainWindow.CodeRun);
+            while (MainNob.StartRunCode);
         }
 
         void 尋找筆試官()

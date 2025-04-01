@@ -45,13 +45,13 @@ namespace NOBApp.Sports
                               MainNob.Log("inBattleState : ---");
                             inBattleState = false;
                             checkDone = 0;
-                            foreach (var nob in FIDList)
+                            foreach (var nob in NobTeam)
                             {
                                 mUseNOB = nob;
                                 new Thread(離開戰鬥).Start();
                                 Task.Delay(200).Wait();
                             }
-                            while (MainWindow.CodeRun && checkDone > FIDList.Count)
+                            while (MainNob.StartRunCode && checkDone > NobTeam.Count)
                             {
                                 Task.Delay(200).Wait();
                                 break;
@@ -84,7 +84,7 @@ namespace NOBApp.Sports
                 if (useNOB.待機)
                     break;
             }
-            while (MainWindow.CodeRun);
+            while (MainNob.StartRunCode);
 
             checkDone++;
         }

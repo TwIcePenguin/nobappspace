@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using static NOBApp.MainWindow;
+using static NOBApp.NobMainCodePage;
 
 namespace NOBApp.Sports
 {
@@ -31,7 +31,7 @@ namespace NOBApp.Sports
         /// <summary>
         /// 包含隊長自己
         /// </summary>
-        public List<NOBDATA> FIDList = new();
+        public List<NOBDATA> NobTeam = new();
         public List<座標> 移動點 = new();
         public int MoveIndex = 0;
         private int moveMode = 0;
@@ -48,11 +48,10 @@ namespace NOBApp.Sports
 
         public void AddNOBList(List<NOBDATA> mList)
         {
-            FIDList = mList;
-            NobTeams = mList;
-            if (FIDList != null)
+            NobTeam = mList;
+            if (NobTeam != null)
             {
-                foreach (var nob in FIDList)
+                foreach (var nob in NobTeam)
                 {
                     nob.更改F8追隨();
                 }
@@ -61,10 +60,10 @@ namespace NOBApp.Sports
 
         public void 全部追隨()
         {
-            foreach (var item in 隊員智能功能組)
+            foreach (var item in NobTeam)
             {
-                item.NOB.更改F8追隨();
-                item.NOB.KeyPressPP(VKeys.KEY_F8);
+                item.更改F8追隨();
+                item.KeyPressPP(VKeys.KEY_F8);
             }
         }
 
@@ -97,7 +96,7 @@ namespace NOBApp.Sports
                 int moveErrorCheck = 0;
                 int battleCheckDone = -1;
                 int tryError = 0;
-                while (MainWindow.CodeRun && 移動點.Count > MoveIndex)
+                while (MainNob.StartRunCode && 移動點.Count > MoveIndex)
                 {
                     if (MainNob.戰鬥中)
                     {
@@ -306,7 +305,7 @@ namespace NOBApp.Sports
                 int findCheck = 0;
 
                 var allNPCIDs = GetAllNPCs();
-                while (CodeRun)
+                while (MainNob.StartRunCode)
                 {
                     foreach (var npc in allNPCIDs)
                     {
@@ -362,8 +361,8 @@ namespace NOBApp.Sports
                 };
                 int findCheck = 0;
 
-                var allNPCIDs = MainWindow.GetFilteredNPCs(types, minDistance, maxDistance);
-                while (CodeRun)
+                var allNPCIDs = GetFilteredNPCs(types, minDistance, maxDistance);
+                while (MainNob.StartRunCode)
                 {
                     foreach (var npc in allNPCIDs)
                     {
@@ -390,7 +389,7 @@ namespace NOBApp.Sports
                     if (findCheck > 3)
                     {
                         findCheck = 0;
-                        allNPCIDs = MainWindow.GetFilteredNPCs(TargetTypes.NPC, minDistance, maxDistance + 2000); findCheck = 0;
+                        allNPCIDs = GetFilteredNPCs(TargetTypes.NPC, minDistance, maxDistance + 2000); findCheck = 0;
                     }
                 }
             }
@@ -430,7 +429,10 @@ namespace NOBApp.Sports
         public void 確認開門(座標 doomPos)
         {
             int findCheck = 0;
-            while (CodeRun)
+            if (MainNob == null)
+                return;
+
+            while (MainNob.StartRunCode)
             {
                 if (MainNob!.有觀察對象)
                 {
@@ -466,11 +468,14 @@ namespace NOBApp.Sports
 
         public void 尋找並清除目標(int colorMath, int needCount = 1, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
+            if (MainNob == null)
+                return;
+
             int thisTargetID = 0;
             int checkBattleDone = -1;
             targetIDs.Clear();
             targetIDs = 顏色尋目標群(colorMath, needCount, eTC);
-            while (CodeRun)
+            while (MainNob.StartRunCode)
             {
                 if (MainNob == null)
                 {
@@ -521,7 +526,7 @@ namespace NOBApp.Sports
                                 Task.Run(item.離開戰鬥A);
                             }
 
-                            while (CodeRun)
+                            while (MainNob.StartRunCode)
                             {
                                 bool alldone = true;
                                 foreach (var item in NobTeams)
@@ -559,7 +564,7 @@ namespace NOBApp.Sports
             int thisTargetID = 0;
             int checkBattleDone = -1;
             targetIDs = targetList;
-            while (CodeRun)
+            while (MainNob.StartRunCode)
             {
                 if (MainNob == null)
                 {
@@ -610,7 +615,7 @@ namespace NOBApp.Sports
                                 Task.Run(item.離開戰鬥A);
                             }
 
-                            while (CodeRun)
+                            while (MainNob.StartRunCode)
                             {
                                 bool alldone = true;
                                 foreach (var item in NobTeams)
@@ -645,11 +650,16 @@ namespace NOBApp.Sports
 
         public bool 尋找目標並對話(int talkID, int targetColorCheck, E_TargetColor targetNPCType = E_TargetColor.藍NPC)
         {
+            if (MainNob == null)
+            {
+                return false;
+            }
+
             int talkNPCID = talkID; // 目標NPC的ID，初始值為 -1 表示尚未找到
             int findTargetTimeoutCounter = 0; // 尋找目標的超時計數器
             int maxFindTargetTimeout = 100; // 最大尋找目標超時次數 (可根據需求調整)
             int moveIndex = 0;
-            while (MainWindow.CodeRun) // 當程式碼運行時持續執行
+            while (MainNob.StartRunCode) // 當程式碼運行時持續執行
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
                 {
@@ -691,7 +701,7 @@ namespace NOBApp.Sports
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }
 
-            return false; // 如果迴圈因為 MainWindow.CodeRun 為 false 而結束，也返回 false
+            return false; // 如果迴圈因為 MainNob.StartRunCode 為 false 而結束，也返回 false
         }
 
         /// <summary>
@@ -702,11 +712,14 @@ namespace NOBApp.Sports
         /// <returns>如果成功與NPC對話則返回 true，否則返回 false。</returns>
         public bool 尋找目標並對話(int targetColorCheck, E_TargetColor targetNPCType)
         {
+            if (MainNob == null)
+                return false;
+
             int talkNPCID = -1; // 目標NPC的ID，初始值為 -1 表示尚未找到
             int findTargetTimeoutCounter = 0; // 尋找目標的超時計數器
             int maxFindTargetTimeout = 100; // 最大尋找目標超時次數 (可根據需求調整)
 
-            while (MainWindow.CodeRun) // 當程式碼運行時持續執行
+            while (MainNob.StartRunCode) // 當程式碼運行時持續執行
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
                 {
@@ -741,16 +754,19 @@ namespace NOBApp.Sports
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }
 
-            return false; // 如果迴圈因為 MainWindow.CodeRun 為 false 而結束，也返回 false
+            return false; // 如果迴圈因為 MainNob.StartRunCode 為 false 而結束，也返回 false
         }
 
         public bool 尋找目標並對話(int targetColorCheck, E_TargetColor targetNPCType, ref int r_talkNPCID)
         {
+            if (MainNob == null)
+                return false;
+
             int talkNPCID = -1; // 目標NPC的ID，初始值為 -1 表示尚未找到
             int findTargetTimeoutCounter = 0; // 尋找目標的超時計數器
             int maxFindTargetTimeout = 100; // 最大尋找目標超時次數 (可根據需求調整)
             int talkcheckMax = 0;
-            while (MainWindow.CodeRun) // 當程式碼運行時持續執行
+            while (MainNob.StartRunCode) // 當程式碼運行時持續執行
             {
                 if (talkNPCID == -1) // 如果尚未找到目標NPC的ID
                 {
@@ -795,7 +811,7 @@ namespace NOBApp.Sports
                 Task.Delay(50).Wait(); // 增加短暫延遲，避免迴圈過快 (可根據需求調整)
             }
 
-            return false; // 如果迴圈因為 MainWindow.CodeRun 為 false 而結束，也返回 false
+            return false; // 如果迴圈因為 MainNob.StartRunCode 為 false 而結束，也返回 false
         }
 
 

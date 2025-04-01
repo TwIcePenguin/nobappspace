@@ -125,5 +125,6 @@ namespace NOBApp
         public int 其他選項B { get; set; }
         public int 搜尋範圍 { get; set; }
         public int 線路 { get; set; }
+        public bool Enter點怪 { get; set; }
     }
 }
