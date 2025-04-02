@@ -803,7 +803,5 @@ namespace NOBApp
                 MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, 原視窗.Right - 原視窗.Left, 原視窗.Bottom - 原視窗.Top, true);
             }
         }
-
     }
-
 }

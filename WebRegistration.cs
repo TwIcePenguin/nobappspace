@@ -1,4 +1,3 @@
-using NOBApp.GoogleData;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,13 +5,12 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace NOBApp
 {
     public class WebRegistration
     {
-        static List<string> _dataList = new();
+        static public List<string> DataSendDoneList = new();
         public static void OnWebReg()
         {
             try
@@ -22,7 +20,7 @@ namespace NOBApp
                 {
                     if (nob != null && !string.IsNullOrEmpty(nob.Account) && !string.IsNullOrEmpty(nob.Password))
                     {
-                        if (_dataList.Contains(nob.Account))
+                        if (DataSendDoneList.Contains(nob.Account))
                         {
                             return;
                         }
@@ -73,7 +71,7 @@ namespace NOBApp
                                     var u = MainWindow.AllNobWindowsList.Find(i => { return i.Account.Contains(data.Acc); });
                                     if (u != null)
                                     {
-                                        _dataList.Add(u.Account);
+                                        DataSendDoneList.Add(u.Account);
                                         Authentication.讀取認證訊息Json(u, responseContent);
                                     }
                                 }

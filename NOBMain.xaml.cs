@@ -45,7 +45,6 @@ namespace NOBApp
         public TabItem RootTabItem;
         Thickness oThickness;
         bool pageA_isExpanded = false, pageB_isExpanded = false;
-        private bool isNetRun = false;
         public NobMainCodePage()
         {
             InitializeComponent();
@@ -418,12 +417,8 @@ namespace NOBApp
                         return;
                     }
 
-                    if (!isNetRun)
-                    {
-                        isNetRun = true;
-                        Debug.WriteLine($"Web Reg {MainWindow.AllNobWindowsList.Count}");
-                        Task.Run(() => WebRegistration.OnWebReg());
-                    }
+                    Debug.WriteLine($"Web Reg {MainWindow.AllNobWindowsList.Count}");
+                    Task.Run(() => WebRegistration.OnWebReg());
 
                     if (MainNob != null)
                     {
@@ -462,7 +457,6 @@ namespace NOBApp
                                 }
                                 if (checkCount >= 60)
                                 {
-                                    isNetRun = false;
                                     所有人狀態.Text = "等待超時 請重新點選驗證";
                                     return;
                                 }
@@ -518,7 +512,6 @@ namespace NOBApp
                     }
                     else
                     {
-                        isNetRun = false;
                         StartCode.IsChecked = false;
                         StartCode.UpdateLayout();
                         MessageBox.Show("選擇異常 不存在的角色資料 或著該角色被關閉請刷新後 請重新嘗試驗證");
@@ -837,10 +830,7 @@ namespace NOBApp
 
         public void FocusUserWindows()
         {
-            if (MainNob != null)
-            {
-                MainNob.FoucsNobWindows();
-            }
+            MainNob?.FoucsNobWindows();
         }
 
         //啟動腳本
@@ -852,11 +842,8 @@ namespace NOBApp
             MainNob.StartRunCode = mChecked;
             if (mChecked && useMenu != null)
             {
-                if (isNetRun == false && MainWindow.AllNobWindowsList != null)
+                if (MainWindow.AllNobWindowsList != null)
                 {
-                    isNetRun = true;
-                    WebRegistration.useNobList = MainWindow.AllNobWindowsList;
-                    Debug.WriteLine($"nobList -> {MainWindow.AllNobWindowsList.Count}");
                     Task.Run(() => WebRegistration.OnWebReg());
                 }
 

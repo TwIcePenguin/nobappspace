@@ -10,7 +10,7 @@ namespace NOBApp
     {
         public class 自動技能組
         {
-            public NOBDATA NOB;
+            public NOBDATA? NOB;
             public bool 同步 { get; set; }
             public bool 重複放 { get; set; }
             public bool 一次放 { get; set; }
