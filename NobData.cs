@@ -209,14 +209,16 @@ namespace NOBApp
         public bool 啟動自動輔助中 = false;
         public bool 準備完成 = false;
         public bool 自動追蹤隊長 = false;
-        public bool 希望取得 = false;
         public bool 自動結束_A = false;
         public bool 自動結束_B = false;
+        public bool 希望取得 = false;
         /// <summary>
         /// 判斷是否開始隨機地圖上打怪
         /// </summary>
         public bool 開打 = false;
         public bool F5解無敵 = false;
+        //使用 Enter 點怪(舊式)
+        public bool isUseEnter = false;
 
         string cacheLog = string.Empty;
         public void Log(string str)
@@ -767,7 +769,6 @@ namespace NOBApp
             {
                 GetWindowRect(Proc.MainWindowHandle, out RECT rect);
                 var nowPos = rect;
-                MoveWindow(Proc.MainWindowHandle, nowPos.Left - 100, nowPos.Top, (int)MainWindow.Instance!.Width, (int)MainWindow.Instance.Height, true);
                 SetForegroundWindow(Proc.MainWindowHandle);
             }
         }

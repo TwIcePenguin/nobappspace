@@ -20,7 +20,6 @@ namespace NOBApp
     public partial class NobMainCodePage : UserControl
     {
         BaseClass? useMenu = null;
-        List<SkillData> skillList = new();
         /// <summary>
         /// 本次一起掛網的隊伍 包含隊長自己
         /// </summary>
@@ -32,21 +31,21 @@ namespace NOBApp
         DispatcherTimer _timer = new DispatcherTimer();
         static 隊伍技能紀錄 m隊伍技能紀錄 = new();
         Dictionary<string, Action> menuMapping = new Dictionary<string, Action>();
-        public bool 自動結束_A = false;
-        public bool 自動結束_B = false;
-        public bool 隊長希望取得 = false;
+
+        /// <summary>
+        /// 是否全隊追蹤 用在沒有腳本並且戰鬥結束的狀態下全隊自動追蹤
+        /// </summary>
         public bool 全隊追蹤 = false;
-        public bool isGoogleReg = false;
-        public bool Enter點怪 = false;
-        public bool F5解無敵 = false;
+
         public bool 準備進入下一階段 = false;
         public bool 完成進入下一階段 = false;
         public int 限點數量 = 2;
-        public string CUCDKEY = string.Empty;
-        public Window? WindowsRoot;
         public bool UpdateNPCDataUI = false;
         public ComboBox[] comboBoxes;
         public TabItem RootTabItem;
+        Thickness oThickness;
+        bool pageA_isExpanded = false, pageB_isExpanded = false;
+        private bool isNetRun = false;
         public NobMainCodePage()
         {
             InitializeComponent();
@@ -67,6 +66,8 @@ namespace NOBApp
             _timer.Tick += CustomUpdate;
 
             Tools.UpdateTimer(到期計時);
+
+            oThickness = 戰鬥輔助面.Margin;
 
             其他選項A.Visibility =
             Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
@@ -113,7 +114,7 @@ namespace NOBApp
             直接下指令_1.TextChanged += 直接下指令_TextChanged;
             同步_1.Click += 同步_Click;
 
-            //戰鬥輔助面.LayoutUpdated += 戰鬥輔助面_LayoutUpdated;
+            戰鬥輔助面.LayoutUpdated += 戰鬥輔助面_LayoutUpdated;
 
             List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
             List_忽略名單.SelectionChanged += 排序_SelectionChanged;
@@ -229,6 +230,22 @@ namespace NOBApp
         #endregion
 
         #region UIEvent 
+        private void 戰鬥輔助面_LayoutUpdated(object? sender, EventArgs e)
+        {
+            int offsetY = 100;
+            if (pageB_isExpanded != 腳本展區.IsExpanded || pageA_isExpanded != 戰鬥輔助面.IsExpanded)
+            {
+                pageB_isExpanded = 腳本展區.IsExpanded;
+                pageA_isExpanded = 戰鬥輔助面.IsExpanded;
+
+                double tA = pageB_isExpanded ? 300 + offsetY : 0;
+                double tB = pageA_isExpanded ? 370 + offsetY : 0;
+                Thickness nThickness = oThickness;
+                nThickness.Top = oThickness.Top + tA;
+                MainWindow.Instance!.UIRefrshSize(pageB_isExpanded, pageA_isExpanded);
+                戰鬥輔助面.Margin = nThickness;
+            }
+        }
         private void FollowLeadLockTarget_Click(object sender, RoutedEventArgs e)
         {
             if (MainNob != null)
@@ -247,10 +264,10 @@ namespace NOBApp
             全員離開戰鬥();
         }
 
-
         private void 希望取得_Click(object sender, RoutedEventArgs e)
         {
-            隊長希望取得 = 希望取得.IsChecked == true;
+            if (MainNob != null)
+                MainNob.希望取得 = 希望取得.IsChecked == true;
         }
 
         private void 同步_Click(object sender, RoutedEventArgs e)
@@ -309,7 +326,8 @@ namespace NOBApp
 
         private void E點怪_Click(object sender, RoutedEventArgs e)
         {
-            Enter點怪 = E點怪.IsChecked ?? false;
+            if (MainNob != null)
+                MainNob.isUseEnter = E點怪.IsChecked ?? false;
         }
 
         private void 解無敵_Click(object sender, RoutedEventArgs e)
@@ -331,12 +349,14 @@ namespace NOBApp
 
         private void 自動結束一_Click(object sender, RoutedEventArgs e)
         {
-            自動結束_A = 自動結束一.IsChecked ?? false;
+            if (MainNob != null)
+                MainNob.自動結束_A = 自動結束一.IsChecked ?? false;
         }
 
         private void 自動結束二_Click(object sender, RoutedEventArgs e)
         {
-            自動結束_B = 自動結束二.IsChecked ?? false;
+            if (MainNob != null)
+                MainNob.自動結束_B = 自動結束二.IsChecked ?? false;
         }
         public void 同步所有需要功能(VKeys key)
         {
@@ -380,7 +400,6 @@ namespace NOBApp
         /// </summary>
         private async void LockButton_Click(object sender, RoutedEventArgs e)
         {
-            isGoogleReg = 認證2CB.IsChecked == false;
             bool reset = LockBtn.Content.ToString()!.Contains("解除");
             bool isPass = false;
 
@@ -402,8 +421,7 @@ namespace NOBApp
                     if (!isNetRun)
                     {
                         isNetRun = true;
-                        WebRegistration.useNobList = MainWindow.AllNobWindowsList;
-                        Debug.WriteLine($"Web Reg {WebRegistration.useNobList.Count} {MainWindow.AllNobWindowsList.Count}");
+                        Debug.WriteLine($"Web Reg {MainWindow.AllNobWindowsList.Count}");
                         Task.Run(() => WebRegistration.OnWebReg());
                     }
 
@@ -515,9 +533,10 @@ namespace NOBApp
                     ControlGrid.IsEnabled = isPass;
                     CB_HID.IsEnabled = !isPass;
                     if (isPass)
-                        MainWindow.SetTitle($"{MainNob?.PlayerName} - 企鵝之野望 {VersionInfo.Version} KEY = {Tools.GetSerialNumber()}");
-                    else
-                        MainWindow.SetTitle($"企鵝之野望 {VersionInfo.Version} KEY = {Tools.GetSerialNumber()}");
+                    {
+                        RootTabItem.Header = $"{MainNob!.PlayerName}";
+                    }
+
                     LockBtn.Content = isPass ? "解除" : "驗證";
                     LockBtn.UpdateLayout();
                 }
@@ -662,7 +681,7 @@ namespace NOBApp
 
             bool autoCheckin = Authentication.讀取認證訊息Name(user) && string.IsNullOrEmpty(user.NOBCDKEY) == false;
 
-            認證TBox.Text = autoCheckin ? CUCDKEY : string.Empty;
+            認證TBox.Text = autoCheckin ? user.NOBCDKEY : string.Empty;
             認證2CB.IsChecked = autoCheckin;
         }
 
@@ -716,22 +735,18 @@ namespace NOBApp
             }
         }
 
-        #endregion
-
-        public void 全員離開戰鬥()
+        private void 目前名單_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var r = MainWindow.GetResolutioSize();
-            foreach (var nob in NobTeams)
+            if (sender is ListBox)
             {
-                if (nob != null)
+                var lbx = (ListBox)sender;
+                if (lbx.SelectedValue != null)
                 {
-                    int inPosX = (int)r.X / 2;
-                    int inPosY = (int)r.Y / 2 - 50;
-                    nob.MR_Clik(inPosX + 16, inPosY);
-                    Task.Delay(50).Wait();
-                    nob.MR_Clik(inPosX - 100, inPosY);
-                    Task.Delay(50).Wait();
-                    nob.MR_Clik(inPosX - 100, inPosY + 100);
+                    //   MainNob.Log("lbx " + lbx.SelectedValue.ToString());
+                    if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
+                    {
+                        MainNob!.鎖定NPC(id);
+                    }
                 }
             }
         }
@@ -762,6 +777,52 @@ namespace NOBApp
 
         }
 
+        private void 限制點怪_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            int.TryParse(其他選項A.Text, out int num);
+            限點數量 = Math.Abs(num);
+        }
+
+        private void 排序_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListBox)
+            {
+                var lbx = (ListBox)sender;
+                if (lbx.SelectedValue == null)
+                {
+                    return;
+                }
+                Debug.WriteLine($"鎖定 -> {lbx.SelectedValue.ToString()}");
+                if (lbx.SelectedValue != null && string.IsNullOrEmpty(lbx.SelectedValue.ToString()) == false)
+                {
+                    if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
+                    {
+                        MainNob!.鎖定NPC(id);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        public void 全員離開戰鬥()
+        {
+            var r = MainWindow.GetResolutioSize();
+            foreach (var nob in NobTeams)
+            {
+                if (nob != null)
+                {
+                    int inPosX = (int)r.X / 2;
+                    int inPosY = (int)r.Y / 2 - 50;
+                    nob.MR_Clik(inPosX + 16, inPosY);
+                    Task.Delay(50).Wait();
+                    nob.MR_Clik(inPosX - 100, inPosY);
+                    Task.Delay(50).Wait();
+                    nob.MR_Clik(inPosX - 100, inPosY + 100);
+                }
+            }
+        }
+
         private NOBDATA? NowSelect()
         {
             string idstr = CB_HID.SelectedValue?.ToString();
@@ -783,7 +844,6 @@ namespace NOBApp
         }
 
         //啟動腳本
-        bool isNetRun = false;
         private void StartCode_Checked(bool mChecked)
         {
             if (MainNob == null)
@@ -796,7 +856,7 @@ namespace NOBApp
                 {
                     isNetRun = true;
                     WebRegistration.useNobList = MainWindow.AllNobWindowsList;
-                    Debug.WriteLine($"nobList -> {MainWindow.AllNobWindowsList.Count} Nob-> {WebRegistration.useNobList.Count}");
+                    Debug.WriteLine($"nobList -> {MainWindow.AllNobWindowsList.Count}");
                     Task.Run(() => WebRegistration.OnWebReg());
                 }
 
@@ -911,22 +971,6 @@ namespace NOBApp
             }
 
             Btn_Refresh.IsEnabled = !mChecked;
-        }
-
-        private void 目前名單_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ListBox)
-            {
-                var lbx = (ListBox)sender;
-                if (lbx.SelectedValue != null)
-                {
-                    //   MainNob.Log("lbx " + lbx.SelectedValue.ToString());
-                    if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
-                    {
-                        MainNob!.鎖定NPC(id);
-                    }
-                }
-            }
         }
 
         void 儲存隊員技能組()
@@ -1140,33 +1184,6 @@ namespace NOBApp
             }
         }
 
-        private void 限制點怪_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            int.TryParse(其他選項A.Text, out int num);
-            限點數量 = Math.Abs(num);
-        }
-
-        private void 排序_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ListBox)
-            {
-                var lbx = (ListBox)sender;
-                if (lbx.SelectedValue == null)
-                {
-                    return;
-                }
-                Debug.WriteLine($"鎖定 -> {lbx.SelectedValue.ToString()}");
-                if (lbx.SelectedValue != null && string.IsNullOrEmpty(lbx.SelectedValue.ToString()) == false)
-                {
-                    if (int.TryParse(lbx.SelectedValue.ToString(), out int id))
-                    {
-                        MainNob!.鎖定NPC(id);
-                    }
-                }
-            }
-        }
-
-
         public void LoadSetting()
         {
             if (MainNob == null)
@@ -1326,6 +1343,5 @@ namespace NOBApp
                 Debug.WriteLine($@"{MainNob.PlayerName}_LoadSK.sk write Error -> {e.ToString()}");
             }
         }
-
     }
 }

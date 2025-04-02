@@ -12,17 +12,21 @@ namespace NOBApp
 {
     public class WebRegistration
     {
-        public static List<NOBDATA> useNobList = new List<NOBDATA>();
-
+        static List<string> _dataList = new();
         public static void OnWebReg()
         {
             try
             {
                 List<FPDATA> dataList = new();
-                Parallel.ForEach(useNobList, nob =>
+                Parallel.ForEach(MainWindow.AllNobWindowsList, nob =>
                 {
                     if (nob != null && !string.IsNullOrEmpty(nob.Account) && !string.IsNullOrEmpty(nob.Password))
                     {
+                        if (_dataList.Contains(nob.Account))
+                        {
+                            return;
+                        }
+
                         FPDATA fdata = new()
                         {
                             Acc = nob.Account,
@@ -38,6 +42,7 @@ namespace NOBApp
                         }
                     }
                 });
+
                 try
                 {
                     using HttpClient client = new();
@@ -65,8 +70,12 @@ namespace NOBApp
                                 {
                                     string responseContent = await response.Content.ReadAsStringAsync();
                                     //  MainNob.Log($"回傳訊息 -> \n{responseContent}");
-                                    var u = useNobList.Find(i => { return i.Account.Contains(data.Acc); });
-                                    Authentication.讀取認證訊息Json(u, responseContent);
+                                    var u = MainWindow.AllNobWindowsList.Find(i => { return i.Account.Contains(data.Acc); });
+                                    if (u != null)
+                                    {
+                                        _dataList.Add(u.Account);
+                                        Authentication.讀取認證訊息Json(u, responseContent);
+                                    }
                                 }
                                 else
                                 {

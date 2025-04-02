@@ -68,7 +68,7 @@ namespace NOBApp
         /// <returns>所有 NPC 資料的清單</returns>
         public static List<NPCData> GetAllNPCs()
         {
-            List<NPCData> allNPCs = new List<NPCData>();
+            List<NPCData> allNPCs = new();
 
             if (MainNob == null)
             {

@@ -48,9 +48,7 @@ namespace NOBApp
         };
         public static Point TxtToResolution = new();
         static ComboBox? Resolution;
-        Thickness oThickness;
         double winHeight;
-        bool PA_isExpanded = false, PB_isExpanded = false;
         public static int OrinX = 0;
         public static int OrinY = 0;
 
@@ -75,9 +73,7 @@ namespace NOBApp
             UIDefault();
             RegButtonEvent();
 
-            //设置全局路径,设置了此路径后,所有接口调用中,相关的文件都相对于此路径.比如图片,字库等
             dmSoft.SetPath(DmConfig.DmGlobalPath);
-
 
             var list = Tools.InitResolution();
             foreach (var item in list)
@@ -105,7 +101,7 @@ namespace NOBApp
             for (int i = 0; i < 8; i++)
             {
                 var tabItem = new TabItem();
-                tabItem.Header = "TabItem";
+                tabItem.Header = $"角色{i}";
                 tabItem.MouseDoubleClick += OnTabFocus;
 
                 var content = new NobMainCodePage();
@@ -119,15 +115,11 @@ namespace NOBApp
         {
             if (sender is TabItem tabItem)
             {
-
-            }
-        }
-
-        public static void SetTitle(string txt)
-        {
-            if (Instance != null && Instance.企鵝之野望 != null)
-            {
-                Instance.企鵝之野望.Title = txt;
+                NobMainCodePage page = ((TabItem)sender).Content as NobMainCodePage;
+                if (page != null)
+                {
+                    page.FocusUserWindows();
+                }
             }
         }
 
@@ -207,18 +199,10 @@ namespace NOBApp
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            Debug.WriteLine("-- Window_Closing --");
-            Environment.Exit(0);
-        }
-
         private void UIDefault()
         {
             winHeight = 企鵝之野望.Height;
             企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
-
-
         }
 
         private void RegButtonEvent()
@@ -230,30 +214,22 @@ namespace NOBApp
             Btn_AutoRefresh.Click += Btn_AutoRefresh_Click;
         }
 
-        private void UIRefrshSize(bool 進階腳本開啟, bool 戰鬥輔助開啟)
+        public void UIRefrshSize(bool 進階腳本開啟, bool 戰鬥輔助開啟)
         {
             int offsetY = 100;
-            if (PB_isExpanded != 進階腳本開啟 || PA_isExpanded != 戰鬥輔助開啟)
-            {
-                PB_isExpanded = 進階腳本開啟;
-                PA_isExpanded = 戰鬥輔助開啟;
-
-                double tA = PB_isExpanded ? 300 + offsetY : 0;
-                double tB = PA_isExpanded ? 370 + offsetY : 0;
-                Thickness nThickness = oThickness;
-                nThickness.Top = oThickness.Top + tA;
-                企鵝之野望.Height = winHeight + tA + tB;
-            }
+            double tA = 進階腳本開啟 ? 300 + offsetY : 0;
+            double tB = 戰鬥輔助開啟 ? 370 + offsetY : 0;
+            企鵝之野望.Height = winHeight + tA + tB;
         }
 
         private void Button_Click_手把(object sender, RoutedEventArgs e)
         {
-            TB_GamePadName.Text = "XInput-1";
+            TB_GamePadName.Text = TB_GamePadName.Text.Contains("XInput") ? "None" : "XInput-1";
         }
+
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
         {
             var MainNob = NobMainCodePage.MainNob;
-            //WebRegistration.TestOnWebReg();
             if (MainNob != null)
             {
                 Debug.WriteLine(sender.ToString());
@@ -306,13 +282,10 @@ namespace NOBApp
                     nobWindowsList[i].MoveWindowTool(i);
                 }
         }
-
+        /// <summary>
+        /// 多開視窗
+        /// </summary>
         private void MuitOpen_Click(object sender, RoutedEventArgs e)
-        {
-            多開();
-        }
-
-        private void 多開()
         {
             string str = CMB_Resolution.Text;
             if (!string.IsNullOrEmpty(str))
@@ -331,44 +304,6 @@ namespace NOBApp
                     Task.Run(() => Tools.OpenNobMuit()).Wait();
                 }
             }
-        }
-
-        private void Button_Click_遊戲視窗多開(object sender, RoutedEventArgs e)
-        {
-            Process.Start("NOBApp.exe");
-        }
-
-
-        private void QuickSelectShowList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //var name = 快速切換.SelectedItem.ToString();
-            //var unob = nobWindowsList.Find(r => r.PlayerName == name);
-            //if (unob != null && string.IsNullOrEmpty(name) == false)
-            //{
-            //    SetForegroundWindow(unob.Proc.MainWindowHandle);
-            //    foreach (var item in Process.GetProcesses())
-            //    {
-            //        Debug.WriteLine($"item -> {item.MainWindowTitle}");
-            //        if (item.MainWindowTitle.Contains(name))
-            //        {
-            //            unob.FoucsNobApp(item);
-            //            break;
-            //        }
-            //    }
-            //}
-        }
-
-        private void DonateBtn(object sender, RoutedEventArgs e)
-        {
-            OpenDonatePage();
-        }
-
-        private void OpenDonatePage()
-        {
-            Process myProcess = new();
-            myProcess.StartInfo.UseShellExecute = true;
-            myProcess.StartInfo.FileName = @"https://ko-fi.com/icetwpenguin";
-            myProcess.Start();
         }
 
         public static string GetStateADescription(string stateA)
