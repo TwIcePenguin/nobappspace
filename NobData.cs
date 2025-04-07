@@ -10,8 +10,24 @@ using static NOBApp.NobMainCodePage;
 
 namespace NOBApp
 {
-    public class NOBDATA
+    public class NOBDATA : NOBBehavior
     {
+        public NOBDATA(Process proc) : base(proc)
+        {
+            bool _initWH = true;
+            while (_initWH)
+            {
+                if (GetWindowRect(Proc.MainWindowHandle, out RECT rect))
+                {
+                    原視窗 = rect;
+                    NowWidth = rect.Right - rect.Left;
+                    NowHeight = rect.Bottom - rect.Top;
+                    _initWH = false;
+                }
+                Task.Delay(100).Wait();
+            }
+        }
+
         /// <summary>
         /// 取得應用程式畫面
         /// </summary>
@@ -43,11 +59,9 @@ namespace NOBApp
         public Setting CodeSetting = new();
         public 自動技能組 AutoSkillSet = new();
         public DateTime 到期日 = DateTime.Now.AddYears(99);
-        public Process Proc;
         public RECT 原視窗;
         public int NowHeight;
         public int NowWidth;
-        public int Hwnd => (int)Proc.MainWindowHandle;
 
         static Random random = new Random();
         #region 記憶體讀取位置
@@ -178,16 +192,6 @@ namespace NOBApp
             return MainWindow.dmSoft!.ReadData(Hwnd, address, type);
         }
         #endregion
-        //
-        public void 前進(int time)
-        {
-            KeyPressT(VKeys.KEY_W, time);
-        }
-
-        public void 後退(int time)
-        {
-            KeyPressT(VKeys.KEY_S, time);
-        }
 
         public bool 特殊者 = false;
         public bool 贊助者 = false;
@@ -198,8 +202,6 @@ namespace NOBApp
         public string 目前動作 = "";
         public string NOBCDKEY = "";
         public BaseClass? RunCode;
-        public bool StartRunCode = false;
-        public bool IsUseAutoSkill = false;
         public List<BTData> MYTeamData = new List<BTData>();
         public List<BTData> EMTeamData = new List<BTData>();
         public List<long> SetSkillsID = new List<long>();
@@ -261,13 +263,13 @@ namespace NOBApp
             }
         }
 
-        public void BattleUpdate()
+        public async Task BattleUpdate()
         {
             if (啟動自動輔助中)
                 return;
 
             啟動自動輔助中 = true;
-            Debug.WriteLine($"Nob {PlayerName} Update ");
+
             int endBattleCheckNum = 0;
             bool 希望完成 = false;
             bool 進入過戰鬥畫面 = false;
@@ -343,7 +345,7 @@ namespace NOBApp
 
                                         if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
                                         {
-                                            setNum = check(MainNob!.MYTeamData, AutoSkillSet.施放A);
+                                            setNum = check(MYTeamData, AutoSkillSet.施放A);
                                             直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度);
                                         }
                                         else
@@ -396,7 +398,7 @@ namespace NOBApp
                                     {
                                         if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
                                         {
-                                            setNum = check(MainNob!.MYTeamData, AutoSkillSet.施放C);
+                                            setNum = check(MYTeamData, AutoSkillSet.施放C);
                                             直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度);
                                         }
                                         else
@@ -438,7 +440,7 @@ namespace NOBApp
                 if (對話與結束戰鬥)
                 {
                     #region 對話與結束戰鬥
-
+                    await Task.Delay(AutoSkillSet.程式速度);
                     #endregion
                 }
 
@@ -453,9 +455,9 @@ namespace NOBApp
                         已經放過一次 = false;
                         進入過戰鬥畫面 = false;
 
-                        if (MainNob!.MYTeamData.Count > 0)
+                        if (MYTeamData.Count > 0)
                         {
-                            MainNob.ClearBTData();
+                            ClearBTData();
                         }
 
                         if (自動追蹤隊長)
@@ -484,7 +486,7 @@ namespace NOBApp
                                 {
                                     希望完成 = true;
                                     Task.Delay(1000).Wait();
-                                    MainNob!.KeyPress(VKeys.KEY_ENTER, 6, 300);
+                                    KeyPress(VKeys.KEY_ENTER, 6, 300);
                                     Task.Delay(100).Wait();
                                 }
 
@@ -507,7 +509,6 @@ namespace NOBApp
 
             啟動自動輔助中 = false;
         }
-
         public void 更改F8追隨() => MainWindow.dmSoft!.WriteString(Hwnd, "<nobolHD.bng> + " + AddressData.快捷F8, 1, "／追蹤：％Ｌ");
 
         public void MoveToNPC(int npcID)
@@ -598,48 +599,6 @@ namespace NOBApp
             MainWindow.dmSoft!.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 1, 6);
         }
 
-        public void MR_Clik(int x, int y)
-        {
-            Proc.MainWindowHandle.M_RClick(x, y);
-        }
-
-        public void KeyPress(VKeys keyCode, int loopNum = 1, int delay = 100)
-        {
-            for (int i = 0; i < loopNum; i++)
-            {
-                if (StartRunCode == false && IsUseAutoSkill == false)
-                    break;
-
-                Proc.MainWindowHandle.KeyPress(keyCode);
-                if (loopNum > 1)
-                    Task.Delay(delay).Wait();
-            }
-        }
-
-        public void KeyPressPP(VKeys keyCode, int loopNum = 1, int delay = 100)
-        {
-            for (int i = 0; i < loopNum; i++)
-            {
-                Proc.MainWindowHandle.KeyPress(keyCode);
-                if (loopNum > 1)
-                    Task.Delay(delay).Wait();
-            }
-        }
-
-        public void KeyPressT(VKeys keyCode, int ss)
-        {
-            Proc.MainWindowHandle.KeyPress(keyCode, ss);
-        }
-
-        public void KeyDown(VKeys keyCode)
-        {
-            Proc.MainWindowHandle.KeyDown(keyCode);
-        }
-        public void KeyUp(VKeys keyCode)
-        {
-            Proc.MainWindowHandle.KeyUp(keyCode);
-        }
-
         public void 離開戰鬥A()
         {
             離開戰鬥確認 = false;
@@ -706,23 +665,6 @@ namespace NOBApp
                 int x = centerX + random.Next(-rangeX, rangeX);
                 int y = centerY + random.Next(-rangeY, rangeY);
                 return (x, y);
-            }
-        }
-
-        public NOBDATA(Process proc)
-        {
-            Proc = proc;
-            bool _initWH = true;
-            while (_initWH)
-            {
-                if (GetWindowRect(Proc.MainWindowHandle, out RECT rect))
-                {
-                    原視窗 = rect;
-                    NowWidth = rect.Right - rect.Left;
-                    NowHeight = rect.Bottom - rect.Top;
-                    _initWH = false;
-                }
-                Task.Delay(100).Wait();
             }
         }
 

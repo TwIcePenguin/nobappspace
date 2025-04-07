@@ -17,7 +17,7 @@ namespace NOBApp.Sports
         bool inBattle = false;
         public override void 初始化()
         {
-              MainNob.Log("明宮 最先運作");
+            MainNob.Log("明宮 最先運作");
             MainNob?.KeyPress(VKeys.KEY_W);
             mErrorCheck = 0;
             for (int i = 0; i < NobTeam.Count; i++)
@@ -37,9 +37,9 @@ namespace NOBApp.Sports
 
         public void 對話與結束戰鬥()
         {
-              MainNob.Log($"戰鬥結束 - {inBattle}");
             if (MainNob != null)
             {
+                MainNob.Log($"戰鬥結束 - {inBattle}");
                 Task.Delay(200).Wait();
                 if (inBattle)
                 {
@@ -117,7 +117,7 @@ namespace NOBApp.Sports
                     }
 
                     MainNob.目前動作 = "前進" + mErrorCheck;
-                    前進(300);
+                    MainNob.前進(300);
                     Task.Delay(200).Wait();
                     MainNob.KeyPress(VKeys.KEY_J);
                     Task.Delay(200).Wait();
@@ -126,7 +126,7 @@ namespace NOBApp.Sports
                     if (mErrorCheck > mMaxErrorCheck)
                     {
                         mErrorCheck = 0;
-                        後退(2000);
+                        MainNob.後退(2000);
                         Task.Delay(200).Wait();
                         MainNob.KeyPress(VKeys.KEY_J);
                         Task.Delay(200).Wait();
@@ -172,11 +172,11 @@ namespace NOBApp.Sports
         {
             if (MainNob != null)
             {
-                MainNob?.KeyPress(VKeys.KEY_J);
+                MainNob.KeyPress(VKeys.KEY_J);
                 Task.Delay(300).Wait();
-                MainNob?.KeyPress(VKeys.KEY_ENTER);
+                MainNob.KeyPress(VKeys.KEY_ENTER);
                 Task.Delay(300).Wait();
-                前進(300);
+                MainNob.前進(300);
                 Task.Delay(200).Wait();
             }
         }

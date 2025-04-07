@@ -1,19 +1,20 @@
 # UpdateVersion.ps1
 $versionFile = "VersionInfo.cs"
-$versionPattern = 'public const string Version = "v0.(\d+).(\d+)"'
+$versionPattern = 'public const string Version = "(\d+)\.(\d+)\.(\d+)"'
 
 if (Test-Path $versionFile) {
     $content = Get-Content $versionFile -Raw
     if ($content -match $versionPattern) {
-        $majorVersion = [int]$matches[1]
-        $buildNumber = [int]$matches[2] + 1
-        $newVersion = "v0.$majorVersion.$buildNumber"
+        $majorVersion = $matches[1]
+        $minorVersion = $matches[2]
+        $buildNumber = [int]$matches[3] + 1
+        $newVersion = "$majorVersion.$minorVersion.$buildNumber"
         $newContent = $content -replace $versionPattern, "public const string Version = `"$newVersion`""
         Set-Content $versionFile -Value $newContent
-        Write-Host "Updated version to $newVersion"
+        Write-Host "更新版本至 $newVersion"
     } else {
-        Write-Host "Version pattern not found in $versionFile"
+        Write-Host "在 $versionFile 中找不到版本模式"
     }
 } else {
-    Write-Host "$versionFile not found"
+    Write-Host "找不到 $versionFile 檔案"
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -22,10 +23,6 @@ namespace NOBApp.Sports
         private const int BattleEndCheckRetries = 3;              // 戰鬥結束檢查重試次數
         private const int LoopDelayMs = 20;                       // 迴圈延遲 (毫秒)
         #endregion
-        ~BaseClass()  // finalizer
-        {
-            // cleanup statements...
-        }
 
         public NOBDATA? MainNob { get; private set; }
         /// <summary>
@@ -74,15 +71,6 @@ namespace NOBApp.Sports
 
         public virtual void 初始化() { }
         public virtual void 腳本運作() { }
-        public void 前進(int time)
-        {
-            MainNob?.KeyPressT(VKeys.KEY_W, time);
-        }
-
-        public void 後退(int time)
-        {
-            MainNob?.KeyPressT(VKeys.KEY_S, time);
-        }
 
         public bool 移動到定點(int maxTry = 10000)
         {
@@ -170,7 +158,7 @@ namespace NOBApp.Sports
                             MainNob.KeyUp(VKeys.KEY_W); // 抬起 W 鍵
                             if (dis > checkDoneDis) // 如果還沒到達，短時間前進
                             {
-                                前進(100); // 短時間前進, 減少 overshoot
+                                MainNob.前進(100); // 短時間前進, 減少 overshoot
                             }
                         }
                     }
@@ -195,7 +183,7 @@ namespace NOBApp.Sports
                             MainNob.KeyUp(VKeys.KEY_W); // 停止前進
                             oldDistance = int.MaxValue;
 
-                            後退(RetreatDelayMs); // 後退一段時間
+                            MainNob.後退(RetreatDelayMs); // 後退一段時間
                             if (moveMode % 2 == 1)
                                 MainNob.KeyPressT(VKeys.KEY_A, SideStepDelayMs); // 側向移動 (模式 1)
                             if (moveMode % 2 == 2)
@@ -254,7 +242,7 @@ namespace NOBApp.Sports
             //  MainNob.Log($"x1:{x1} y1:{y1} x2:{x2} y2:{y2}");
             return (int)Math.Sqrt(dx * dx + dy * dy);
         }
-
+        
         public int GetAngle(float x1, float y1, float x2, float y2)
         {
             var xx = x2 - x1;
@@ -291,7 +279,7 @@ namespace NOBApp.Sports
         public List<int> targetIDs = new();
         public List<int> skipIDs = new();
 
-        public List<int> 顏色尋目標群(int colorMath, int needCount = 1, E_TargetColor eTC = E_TargetColor.藍NPC)
+        public List<int> 顏色尋目標群(NOBDATA user, int colorMath, int needCount = 1, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             List<int> targets = new();
             if (MainNob != null)
@@ -304,7 +292,7 @@ namespace NOBApp.Sports
                 };
                 int findCheck = 0;
 
-                var allNPCIDs = GetAllNPCs();
+                var allNPCIDs = GetAllNPCs(user);
                 while (MainNob.StartRunCode)
                 {
                     foreach (var npc in allNPCIDs)
@@ -339,7 +327,7 @@ namespace NOBApp.Sports
                         MainNob.Log($"超出搜尋次數 增加搜尋範圍 {NpcCountToRead}");
                         NpcCountToRead = Math.Min(NpcCountToRead + 5, 150);
                         IgnoredIDs.Clear();
-                        allNPCIDs = GetAllNPCs();
+                        allNPCIDs = GetAllNPCs(MainNob);
                         findCheck = 0;
                     }
                 }
@@ -348,7 +336,7 @@ namespace NOBApp.Sports
         }
 
 
-        public int 顏色尋目標(int colorMath, int minDistance = 0, int maxDistance = 65535, TargetTypes types = TargetTypes.NPC, E_TargetColor eTC = E_TargetColor.藍NPC)
+        public int 顏色尋目標(NOBDATA user, int colorMath, int minDistance = 0, int maxDistance = 65535, TargetTypes types = TargetTypes.NPC, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
             int targetID = -1;
             if (MainNob != null)
@@ -361,7 +349,7 @@ namespace NOBApp.Sports
                 };
                 int findCheck = 0;
 
-                var allNPCIDs = GetFilteredNPCs(types, minDistance, maxDistance);
+                var allNPCIDs = GetFilteredNPCs(user, types, minDistance, maxDistance);
                 while (MainNob.StartRunCode)
                 {
                     foreach (var npc in allNPCIDs)
@@ -389,7 +377,7 @@ namespace NOBApp.Sports
                     if (findCheck > 3)
                     {
                         findCheck = 0;
-                        allNPCIDs = GetFilteredNPCs(TargetTypes.NPC, minDistance, maxDistance + 2000); findCheck = 0;
+                        allNPCIDs = GetFilteredNPCs(user, TargetTypes.NPC, minDistance, maxDistance + 2000); findCheck = 0;
                     }
                 }
             }
@@ -401,7 +389,7 @@ namespace NOBApp.Sports
             int targetID = -1;
             if (MainNob != null)
             {
-                var list = 顏色尋目標群(colorMath, 1, eTC);
+                var list = 顏色尋目標群(MainNob, colorMath, 1, eTC);
                 if (list.Count > 0)
                 {
                     targetID = list[0];
@@ -454,7 +442,6 @@ namespace NOBApp.Sports
             }
         }
 
-        //Func<座標, bool> 確認移動座標 = null;
         public void 目標地移動(List<座標> movePosList, Func<bool> checkTarget = null)
         {
             if (movePosList.Count > 0)
@@ -474,7 +461,7 @@ namespace NOBApp.Sports
             int thisTargetID = 0;
             int checkBattleDone = -1;
             targetIDs.Clear();
-            targetIDs = 顏色尋目標群(colorMath, needCount, eTC);
+            targetIDs = 顏色尋目標群(MainNob, colorMath, needCount, eTC);
             while (MainNob.StartRunCode)
             {
                 if (MainNob == null)

@@ -540,7 +540,7 @@ namespace NOBApp.Sports
                         Task.Delay(100).Wait();
                         errorCheck = 0;
                         useNOB.目前動作 = "離開找不到嚮導";
-                        內部大會嚮導ID = 顏色尋目標(17, 0, 2000);
+                        內部大會嚮導ID = 顏色尋目標(MainNob, 17, 0, 2000);
                     }
                 }
 
@@ -789,7 +789,7 @@ namespace NOBApp.Sports
             while (MainNob != null && MainNob.StartRunCode)
             {
                 NobMainCodePage.NpcCountToRead = 60;
-                var npcsDatas = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 0, 70000);
+                var npcsDatas = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 0, 70000);
                 NPCData? targetNPC = npcsDatas.FirstOrDefault(npc => npc.Distance == 3);
 
                 if (targetNPC != null)
@@ -801,9 +801,9 @@ namespace NOBApp.Sports
                 else
                 {
                     //觀眾 9 嚮導 17
-                    內部大會嚮導ID = 顏色尋目標(17, 0, 70000);
+                    內部大會嚮導ID = 顏色尋目標(MainNob, 17, 0, 70000);
                     int findCheck = 0;
-                    var allNPCIDs = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 0, 20000);
+                    var allNPCIDs = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 0, 20000);
                     while (MainNob.StartRunCode)
                     {
                         bool isFind = false;
@@ -827,7 +827,7 @@ namespace NOBApp.Sports
                         findCheck++;
                         if (findCheck > 3)
                         {
-                            allNPCIDs = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 0, 5000);
+                            allNPCIDs = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 0, 5000);
                             findCheck = 0;
                             skipIDs.Clear();
                         }

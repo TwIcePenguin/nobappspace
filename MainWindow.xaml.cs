@@ -9,8 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -52,12 +54,15 @@ namespace NOBApp
         public static int OrinX = 0;
         public static int OrinY = 0;
 
+        private bool _updateAvailable = false;
+        private string _latestVersion = string.Empty;
+
         public Setting CodeSetting = new();
         public MainWindow()
         {
             InitializeComponent();
             AdminRelauncher();
-            企鵝之野望.Title = $"企鵝之野望 {VersionInfo.Version} KEY = {Tools.GetSerialNumber()}";
+            企鵝之野望.Title = $"企鵝之野望 v{VersionInfo.Version} KEY = {Tools.GetSerialNumber()}";
 
             var registerDmSoftDllResult = RegisterDmSoft.RegisterDmSoftDll();
             if (!registerDmSoftDllResult)
@@ -89,6 +94,44 @@ namespace NOBApp
             Resolution = CMB_Resolution;
             Instance = this;
             InitializeTabItems();
+            // 檢查更新是否成功完成
+            CheckUpdateSuccess();
+            // 在其他初始化之前加載 GitHub 配置
+            this.Loaded += (s, e) => CheckForUpdatesAsync();
+        }
+        private void CheckUpdateSuccess()
+        {
+            string successMarkerPath = Path.Combine(Environment.CurrentDirectory, "update_success.txt");
+            if (File.Exists(successMarkerPath))
+            {
+                try
+                {
+                    string successMessage = File.ReadAllText(successMarkerPath);
+                    File.Delete(successMarkerPath); // 讀取後立即刪除標記檔
+
+                    // 清理更新文件，以防未被清理
+                    string updateFilePath = Path.Combine(Environment.CurrentDirectory, "update.zip");
+                    if (File.Exists(updateFilePath))
+                    {
+                        try
+                        {
+                            File.Delete(updateFilePath);
+                            Debug.WriteLine("清理遺留的更新文件");
+                        }
+                        catch
+                        {
+                            // 忽略錯誤
+                        }
+                    }
+
+                    MessageBox.Show($"應用程式已成功更新！\n\n{successMessage}",
+                        "更新成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"讀取更新狀態檔案發生錯誤: {ex.Message}");
+                }
+            }
         }
 
         private void InitializeTabItems()
@@ -102,6 +145,7 @@ namespace NOBApp
             {
                 var tabItem = new TabItem();
                 tabItem.Header = $"角色{i}";
+
                 tabItem.MouseDoubleClick += OnTabFocus;
 
                 var content = new NobMainCodePage();
@@ -111,6 +155,269 @@ namespace NOBApp
             }
         }
 
+        /// <summary>
+        /// 檢查更新並設置更新按鈕的可見性
+        /// </summary>
+        /// <summary>
+        /// 檢查更新並設置更新按鈕的可見性
+        /// </summary>
+        private async void CheckForUpdates()
+        {
+            try
+            {
+                var release = await GetLatestRelease();
+                _updateAvailable = IsUpdateAvailable(release.tag_name);
+                _latestVersion = release.tag_name;
+
+                // 使用 Dispatcher.Invoke 確保 UI 更新在 UI 執行緒上進行
+                this.Dispatcher.Invoke(() =>
+                {
+                    if (_updateAvailable)
+                    {
+                        Btn_Update.Content = $"更新至 {_latestVersion}";
+                        Btn_Update.Visibility = Visibility.Visible;
+                        Debug.WriteLine($"發現新版本: {_latestVersion}，當前版本: {VersionInfo.Version}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"當前已是最新版本: {VersionInfo.Version}");
+                        Btn_Update.Visibility = Visibility.Collapsed;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"檢查更新失敗: {ex.Message}");
+                this.Dispatcher.Invoke(() =>
+                {
+                    Btn_Update.Visibility = Visibility.Collapsed;
+                });
+            }
+        }
+
+        /// <summary>
+        /// 更新按鈕點擊事件
+        /// </summary>
+        private async void Btn_Update_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_updateAvailable)
+            {
+                await CheckForUpdatesAsync();
+                return;
+            }
+
+            var result = MessageBox.Show($"是否更新至 {_latestVersion} 版本？\n\n更新後應用將重新啟動。",
+                "更新確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Root.IsEnabled =
+                Btn_Update.IsEnabled = false;
+                Btn_Update.Content = "正在更新...";
+
+                try
+                {
+                    // 下載更新
+                    await UpdateDownloader.DownloadUpdate(_latestVersion);
+                    Btn_Update.Content = "正在安裝更新...";
+
+                    // 創建一個專用的 PowerShell 更新腳本，使用修改過的解壓方法
+                    string psScriptPath = Path.Combine(Environment.CurrentDirectory, "RunUpdate.ps1");
+                    string psContent = @"
+# 設置腳本編碼為 UTF-8，解決中文顯示問題
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+Write-Host ""=============================================="" -ForegroundColor Cyan
+Write-Host ""          企鵝之野望 - 更新程序          "" -ForegroundColor Cyan
+Write-Host ""=============================================="" -ForegroundColor Cyan
+Write-Host """"
+Write-Host ""正在執行更新，請勿關閉此視窗..."" -ForegroundColor Yellow
+Write-Host """"
+
+# 記錄到日誌文件
+$logFile = ""update_log.txt""
+""[$(Get-Date)] 開始更新過程"" | Out-File -FilePath $logFile -Encoding utf8
+
+# 檢查更新文件
+if (-not (Test-Path ""update.zip"")) {
+    Write-Host ""錯誤: 找不到更新文件 'update.zip'"" -ForegroundColor Red
+    ""[$(Get-Date)] 錯誤: 找不到更新文件"" | Out-File -Append -FilePath $logFile -Encoding utf8
+    Write-Host """"
+    Write-Host ""按任意鍵退出..."" -ForegroundColor Yellow
+    $null = $Host.UI.RawUI.ReadKey(""NoEcho,IncludeKeyDown"")
+    exit 1
+}
+
+# 顯示文件大小
+$fileSize = (Get-Item ""update.zip"").Length / 1KB
+Write-Host ""找到更新文件，大小: $([Math]::Round($fileSize, 2)) KB"" -ForegroundColor Green
+""[$(Get-Date)] 找到更新文件，大小: $([Math]::Round($fileSize, 2)) KB"" | Out-File -Append -FilePath $logFile -Encoding utf8
+
+# 等待原應用程式退出
+Write-Host """"
+Write-Host ""正在等待原應用程式退出..."" -ForegroundColor Yellow
+Start-Sleep -Seconds 2
+
+# 解壓縮文件
+try {
+    Write-Host """"
+    Write-Host ""正在解壓縮更新文件..."" -ForegroundColor Yellow
+    ""[$(Get-Date)] 開始解壓縮更新文件"" | Out-File -Append -FilePath $logFile -Encoding utf8
+    
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [System.IO.Compression.ZipFile]::OpenRead(""update.zip"")
+    Write-Host ""更新包含 $($zip.Entries.Count) 個文件"" -ForegroundColor Cyan
+    
+    # 手動解壓縮文件，而不使用 ExtractToDirectory 方法
+    Write-Host ""正在解壓文件..."" -ForegroundColor Yellow
+    foreach ($entry in $zip.Entries) {
+        $targetPath = [System.IO.Path]::Combine(""."", $entry.FullName)
+        $targetDir = [System.IO.Path]::GetDirectoryName($targetPath)
+        
+        # 確保目標目錄存在
+        if (-not [System.IO.Directory]::Exists($targetDir)) {
+            [System.IO.Directory]::CreateDirectory($targetDir)
+        }
+        
+        # 如果是文件（不是目錄）才解壓
+        if (-not $entry.FullName.EndsWith('/')) {
+            # 檢查文件是否已存在，如果存在則刪除
+            if ([System.IO.File]::Exists($targetPath)) {
+                try {
+                    [System.IO.File]::Delete($targetPath)
+                } catch {
+                    # 使用 ${} 括號正確引用變數，避免與冒號衝突
+                    Write-Host ""無法刪除文件 ${targetPath}: $_"" -ForegroundColor Yellow
+                }
+            }
+            
+            # 解壓文件
+            try {
+                $entryStream = $entry.Open()
+                $targetStream = [System.IO.File]::Create($targetPath)
+                $entryStream.CopyTo($targetStream)
+                $targetStream.Close()
+                $entryStream.Close()
+            } catch {
+                # 同樣使用 ${} 括號
+                Write-Host ""解壓文件 ${entry.FullName} 失敗: $_"" -ForegroundColor Red
+                throw
+            }
+        }
+    }
+    
+    $zip.Dispose()
+    Write-Host ""解壓縮完成！"" -ForegroundColor Green
+    ""[$(Get-Date)] 解壓縮完成"" | Out-File -Append -FilePath $logFile -Encoding utf8
+}
+catch {
+    Write-Host ""解壓縮失敗: $($_.Exception.Message)"" -ForegroundColor Red
+    ""[$(Get-Date)] 解壓縮失敗: $($_.Exception.Message)"" | Out-File -Append -FilePath $logFile -Encoding utf8
+    Write-Host """"
+    Write-Host ""按任意鍵退出..."" -ForegroundColor Yellow
+    $null = $Host.UI.RawUI.ReadKey(""NoEcho,IncludeKeyDown"")
+    exit 1
+}
+
+# 刪除更新文件
+Write-Host """"
+Write-Host ""正在刪除更新文件..."" -ForegroundColor Yellow
+try {
+    Remove-Item ""update.zip"" -Force
+    Write-Host ""更新文件已刪除"" -ForegroundColor Green
+    ""[$(Get-Date)] 更新文件已刪除"" | Out-File -Append -FilePath $logFile -Encoding utf8
+}
+catch {
+    Write-Host ""警告: 無法刪除更新文件: $($_.Exception.Message)"" -ForegroundColor Yellow
+    ""[$(Get-Date)] 警告: 無法刪除更新文件"" | Out-File -Append -FilePath $logFile -Encoding utf8
+}
+
+# 寫入更新成功標記
+""更新成功於 $(Get-Date)"" | Out-File -FilePath ""update_success.txt"" -Encoding utf8
+""[$(Get-Date)] 寫入更新成功標記"" | Out-File -Append -FilePath $logFile -Encoding utf8
+
+# 重新啟動應用程式
+Write-Host """"
+Write-Host ""正在重新啟動應用程式..."" -ForegroundColor Yellow
+""[$(Get-Date)] 準備重新啟動應用程式"" | Out-File -Append -FilePath $logFile -Encoding utf8
+
+try {
+    Start-Process ""NOBApp.exe""
+    Write-Host ""應用程式已重新啟動"" -ForegroundColor Green
+    ""[$(Get-Date)] 應用程式已重新啟動"" | Out-File -Append -FilePath $logFile -Encoding utf8
+}
+catch {
+    Write-Host ""警告: 無法直接啟動 NOBApp.exe，嘗試尋找其它可執行文件..."" -ForegroundColor Yellow
+    
+    $exeFiles = Get-ChildItem -Path ""."" -Filter ""*.exe"" | Where-Object { $_.Name -ne ""NOBApp.exe"" }
+    if ($exeFiles.Count -gt 0) {
+        $exePath = $exeFiles[0].FullName
+        Write-Host ""找到可能的可執行文件: $($exeFiles[0].Name)"" -ForegroundColor Green
+        Start-Process $exePath
+        ""[$(Get-Date)] 啟動替代執行檔: $($exeFiles[0].Name)"" | Out-File -Append -FilePath $logFile -Encoding utf8
+    }
+    else {
+        Write-Host ""警告: 無法找到可執行文件，請手動啟動應用程式"" -ForegroundColor Red
+        ""[$(Get-Date)] 警告: 無法找到可執行文件"" | Out-File -Append -FilePath $logFile -Encoding utf8
+    }
+}
+
+# 結束
+Write-Host """"
+Write-Host ""=============================================="" -ForegroundColor Green
+Write-Host ""                更新成功完成!                "" -ForegroundColor Green
+Write-Host ""=============================================="" -ForegroundColor Green
+Write-Host """"
+""[$(Get-Date)] 更新過程完成"" | Out-File -Append -FilePath $logFile -Encoding utf8
+
+Write-Host ""按任意鍵關閉此視窗..."" -ForegroundColor Yellow
+$null = $Host.UI.RawUI.ReadKey(""NoEcho,IncludeKeyDown"")
+";
+
+                    // 使用 UTF-8 編碼寫入文件，確保中文正確顯示
+                    File.WriteAllText(psScriptPath, psContent, System.Text.Encoding.UTF8);
+
+                    // 記錄更新標記
+                    File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "update_pending.txt"),
+                        $"更新開始於 {DateTime.Now}，版本: {_latestVersion}");
+
+                    // 直接啟動 PowerShell 並保持視窗開啟
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoExit -ExecutionPolicy Bypass -NoProfile -File \"{psScriptPath}\"",
+                        UseShellExecute = true,
+                        CreateNoWindow = false,
+                        WindowStyle = ProcessWindowStyle.Normal
+                    };
+
+                    Process.Start(psi);
+
+                    // 延遲一秒後退出
+                    await Task.Delay(1000);
+                    Environment.Exit(0);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"更新失敗: {ex.Message}");
+                    File.AppendAllText("update_error.log", $"[{DateTime.Now}] 更新失敗: {ex.Message}\n{ex.StackTrace}\n");
+
+                    MessageBox.Show($"更新失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Root.IsEnabled = true;
+                    Btn_Update.IsEnabled = true;
+                    Btn_Update.Content = $"更新至 {_latestVersion}";
+                }
+            }
+        }
+
+        /// <summary>
+        /// 異步檢查更新
+        /// </summary>
+        private async Task CheckForUpdatesAsync()
+        {
+            await Task.Run(() => CheckForUpdates());
+        }
+
         private void OnTabFocus(object sender, MouseButtonEventArgs e)
         {
             if (sender is TabItem tabItem)
@@ -118,6 +425,7 @@ namespace NOBApp
                 NobMainCodePage page = ((TabItem)sender).Content as NobMainCodePage;
                 if (page != null)
                 {
+                    Debug.WriteLine($"{page.RootTabItem.Header}");
                     page.FocusUserWindows();
                 }
             }
@@ -229,36 +537,36 @@ namespace NOBApp
 
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
         {
-            var MainNob = NobMainCodePage.MainNob;
-            if (MainNob != null)
-            {
-                Debug.WriteLine(sender.ToString());
-                if (sender.ToString()!.Contains("企鵝A"))
-                {
-                    if (MainNob.GetTargetIDINT() != -1)
-                        Debug.WriteLine("NPC ID=>" + MainNob.GetTargetIDINT());
+            //var MainNob = null;
+            //if (MainNob != null)
+            //{
+            //    Debug.WriteLine(sender.ToString());
+            //    if (sender.ToString()!.Contains("企鵝A"))
+            //    {
+            //        if (MainNob.GetTargetIDINT() != -1)
+            //            Debug.WriteLine("NPC ID=>" + MainNob.GetTargetIDINT());
 
-                    //GetNPCIDs();
+            //        //GetNPCIDs();
 
-                    Debug.WriteLine($"1- {Dis(MainNob.PosX, MainNob.PosY, 14986, 14281)}");
-                    Debug.WriteLine($"2- {Dis(MainNob.PosX, MainNob.PosY, 14716, 4492)}");
-                    Debug.WriteLine($"3- {Dis(MainNob.PosX, MainNob.PosY, 5051, 4770)}");
-                    Debug.WriteLine($"4- {Dis(MainNob.PosX, MainNob.PosY, 5246, 14497)}");
+            //        Debug.WriteLine($"1- {Dis(MainNob.PosX, MainNob.PosY, 14986, 14281)}");
+            //        Debug.WriteLine($"2- {Dis(MainNob.PosX, MainNob.PosY, 14716, 4492)}");
+            //        Debug.WriteLine($"3- {Dis(MainNob.PosX, MainNob.PosY, 5051, 4770)}");
+            //        Debug.WriteLine($"4- {Dis(MainNob.PosX, MainNob.PosY, 5246, 14497)}");
 
-                    //效能測試
-                    //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
-                    //橘 565ABD
-                    var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
-                    //藍 565ABD
-                    var c2 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "565ABD");
-                    //紅 6363EE 
-                    var c3 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
-                    var c4 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
-                    var c5 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
+            //        //效能測試
+            //        //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
+            //        //橘 565ABD
+            //        var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
+            //        //藍 565ABD
+            //        var c2 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "565ABD");
+            //        //紅 6363EE 
+            //        var c3 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
+            //        var c4 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
+            //        var c5 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
 
-                    Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5}");
-                }
-            }
+            //        Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5}");
+            //    }
+            //}
         }
 
         private void Btn_AutoRefresh_Click(object sender, RoutedEventArgs e)

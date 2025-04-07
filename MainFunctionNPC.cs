@@ -10,6 +10,7 @@ namespace NOBApp
     public partial class NobMainCodePage
     {
         public static List<NPCData> allNPCs = new();
+
         public static int NpcCountToRead = 150;
         public static List<NPCData> filteredNPCs = new();
         //顯示 TargetView清單用
@@ -26,10 +27,10 @@ namespace NOBApp
         /// <param name="minID">ID 最小值</param>
         /// <param name="maxID">ID 最大值</param>
         /// <returns>符合條件的 NPC 清單</returns>
-        public static List<NPCData> GetFilteredNPCs(TargetTypes flags = TargetTypes.None, int minDistance = 0, int maxDistance = int.MaxValue, long? minID = null, long? maxID = null)
+        public static List<NPCData> GetFilteredNPCs(NOBDATA user, TargetTypes flags = TargetTypes.None, int minDistance = 0, int maxDistance = int.MaxValue, long? minID = null, long? maxID = null)
         {
             // 取得所有 NPC 資料
-            allNPCs = GetAllNPCs();
+            allNPCs = GetAllNPCs(user);
 
             // 過濾出符合條件的 NPC
             var query = allNPCs.AsEnumerable();
@@ -66,11 +67,11 @@ namespace NOBApp
         /// 取得所有 NPC 資料。
         /// </summary>
         /// <returns>所有 NPC 資料的清單</returns>
-        public static List<NPCData> GetAllNPCs()
+        public static List<NPCData> GetAllNPCs(NOBDATA user)
         {
             List<NPCData> allNPCs = new();
 
-            if (MainNob == null)
+            if (user == null)
             {
                 Debug.WriteLine("MainNob 為 null，無法搜尋 NPC。");
                 return allNPCs; // 如果 NOB 未鎖定，返回空列表
@@ -82,7 +83,7 @@ namespace NOBApp
             int npcCountToRead = NpcCountToRead; // 可考慮使其動態化
             int bytesToRead = npcCountToRead * 12; // 每個 NPC 條目佔 12 位元組
 
-            string dataStr = MainWindow.dmSoft?.ReadData(MainNob.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
+            string dataStr = MainWindow.dmSoft?.ReadData(user.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
 
             if (string.IsNullOrEmpty(dataStr))
                 return allNPCs; // 處理 dataStr 失敗
@@ -139,9 +140,9 @@ namespace NOBApp
             return allNPCs;
         }
 
-        public static List<int> GetAllNPCIDs()
+        public static List<int> GetAllNPCIDs(NOBDATA user)
         {
-            allNPCs = GetAllNPCs();
+            allNPCs = GetAllNPCs(user);
             return allNPCs.Select(npc => (int)npc.ID).ToList();
         }
 

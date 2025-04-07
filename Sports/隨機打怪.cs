@@ -21,7 +21,7 @@ namespace NOBApp.Sports
                 if (MainNob.待機)
                 {
                     Task.Delay(100).Wait();
-                    var npcs = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 4, MainNob.CodeSetting.搜尋範圍);
+                    var npcs = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 4, MainNob.CodeSetting.搜尋範圍);
                     if (npcs.Count > 0)
                     {
                         NobMainCodePage.AllNPCIDs = npcs.Select(x => x.ID)

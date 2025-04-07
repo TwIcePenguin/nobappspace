@@ -24,10 +24,12 @@ namespace NOBApp
         /// 本次一起掛網的隊伍 包含隊長自己
         /// </summary>
         public static List<NOBDATA> NobTeams = new();
+        public static Dictionary<int, NOBDATA> AllPageNOBUser = new();
+        public int PageIndex = 0;
         /// <summary>
         /// 鎖定的對象
         /// </summary>
-        public static NOBDATA? MainNob;
+        public NOBDATA? MainNob;
         DispatcherTimer _timer = new DispatcherTimer();
         static 隊伍技能紀錄 m隊伍技能紀錄 = new();
         Dictionary<string, Action> menuMapping = new Dictionary<string, Action>();
@@ -928,7 +930,7 @@ namespace NOBApp
                         foreach (var user in 隊員智能功能組)
                         {
                             //  MainNob.Log($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
-                            if (user.同步 && !user.NOB.PlayerName.Contains(MainNob.PlayerName))
+                            if (user != null && user.同步 && !user.NOB!.PlayerName.Contains(MainNob.PlayerName))
                             {
                                 user.NOB.RunCode = new 夢幻城();
                                 user.NOB.CodeSetting = MainNob.CodeSetting;
@@ -945,7 +947,7 @@ namespace NOBApp
                         foreach (var user in 隊員智能功能組)
                         {
                             //  MainNob.Log($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
-                            if (user.同步 && !user.NOB.PlayerName.Contains(MainNob.PlayerName))
+                            if (user != null && user.同步 && !user.NOB!.PlayerName.Contains(MainNob.PlayerName))
                             {
                                 user.NOB.RunCode = new 戰場製炮();
                                 user.NOB.CodeSetting = MainNob.CodeSetting;

@@ -117,7 +117,7 @@ namespace NOBApp.Sports
         {
             int findCheck = 0;
             NobMainCodePage.NpcCountToRead = 30;
-            var allNPCIDs = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 0, 70000);
+            var allNPCIDs = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 0, 70000);
             對手目標ID = -1;
             出場NPCID = -1;
             while (MainNob != null && MainNob.StartRunCode)
@@ -148,7 +148,7 @@ namespace NOBApp.Sports
                 }
 
                 MainNob!.KeyPressT(VKeys.KEY_Q, 500);
-                allNPCIDs = NobMainCodePage.GetFilteredNPCs(TargetTypes.NPC, 0, 70000);
+                allNPCIDs = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 0, 70000);
                 findCheck++;
                 if (findCheck > 6)
                 {

@@ -56,7 +56,7 @@ namespace NOBApp.Sports
 
                             if (MainNob.CodeSetting.後退時間 > 0)
                             {
-                                後退(MainNob.CodeSetting.後退時間);
+                                MainNob.後退(MainNob.CodeSetting.後退時間);
                                 Task.Delay(100).Wait();
                                 MainNob.KeyPress(VKeys.KEY_C);
                             }
@@ -104,7 +104,7 @@ namespace NOBApp.Sports
                         }
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 4);
                         Task.Delay(100).Wait();
-                        後退(3000);
+                        MainNob.後退(3000);
                         Task.Delay(100).Wait();
                         MainNob.KeyPress(VKeys.KEY_C);
                         //MainNob.StartRunCode = false;
