@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace NOBApp
 {
@@ -99,7 +100,6 @@ namespace NOBApp
             }
             return sb.ToString();
         }
-
         public static async void M_RClick(this IntPtr hProcess, int x, int y)
         {
             PostMessage(hProcess, WM_RBUTTONDOWN, 0, x + (y << 16));
@@ -112,7 +112,6 @@ namespace NOBApp
             await Task.Delay(50);
             PostMessage(hProcess, WM_LBUTTONUP, 0, x + (y << 16));
         }
-
         public static string SubStringByBytes(this string source, int NumberOfBytes, System.Text.Encoding encoding, string suffix = "")
         {
             if (string.IsNullOrWhiteSpace(source) || source.Length == 0)
@@ -153,17 +152,6 @@ namespace NOBApp
             return BitConverter.ToInt32(buffer, 0);
         }
 
-        public static string ReadData(this IntPtr hProcess, int address, byte[] buffer)
-        {
-            int bytesRead = 0;
-            ReadProcessMemory(hProcess, address, buffer, buffer.Length, ref bytesRead);
-            List<string> listStr = new();
-            foreach (var item in buffer)
-            {
-                listStr.Add(item.ToString("X2"));
-            }
-            return string.Join(" ", listStr);
-        }
         static uint repeatCount = 0;
         static uint scanCode = 0;
         static uint extended = 0;
@@ -634,7 +622,6 @@ namespace NOBApp
                 Debug.WriteLine($"清除註冊表中的Session Index失敗: {ex.Message}");
             }
         }
-
         public static void SetTimeUp(NOBDATA user)
         {
             RegistryKey registryKey = Registry.CurrentUser.CreateSubKey(@"Software\TecmoKoei\Nobunaga Online HD Tc");
@@ -658,6 +645,12 @@ namespace NOBApp
                 //MainWindow.到期日 = tt;
                 lb_time.Content = $"到期日:{tt.ToString()}";
             }
+        }
+        public static int Dis(int x1, int y1, int x2, int y2)
+        {
+            long dx = x2 - x1;
+            long dy = y2 - y1;
+            return (int)(dx * dx + dy * dy);
         }
     }
 }

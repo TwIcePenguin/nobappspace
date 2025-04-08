@@ -116,7 +116,7 @@ namespace NOBApp.Sports
 
                     int 目標座標X = 移動點[MoveIndex].X;
                     int 目標座標Y = 移動點[MoveIndex].Y;
-                    dis = Dis(MainNob.PosX, MainNob.PosY, 目標座標X, 目標座標Y);
+                    dis = Tools.Dis(MainNob.PosX, MainNob.PosY, 目標座標X, 目標座標Y);
 
                     MainNob.目前動作 = $"index : {MoveIndex} dis : {dis} {Environment.NewLine} X {MainNob.PosX}, Y {MainNob.PosY} {Environment.NewLine} MX {目標座標X} MY{目標座標Y}";
 
@@ -222,27 +222,6 @@ namespace NOBApp.Sports
             return false;
         }
 
-
-        public int 夾角(int a, int b)
-        {
-            double d1 = a - b;
-            double d2 = (2 * 3.14159) - Math.Abs(d1);
-            if (d1 > 0)
-                d2 = d2 * -1;
-            if (Math.Abs(d1) < Math.Abs(d2))
-                return (int)d1;
-            else
-                return (int)d2;
-
-        }
-        public int Dis(int x1, int y1, int x2, int y2)
-        {
-            double dx = x2 - x1;
-            double dy = y2 - y1;
-            //  MainNob.Log($"x1:{x1} y1:{y1} x2:{x2} y2:{y2}");
-            return (int)Math.Sqrt(dx * dx + dy * dy);
-        }
-        
         public int GetAngle(float x1, float y1, float x2, float y2)
         {
             var xx = x2 - x1;

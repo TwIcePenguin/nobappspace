@@ -324,8 +324,11 @@ namespace NOBApp.Sports
                 if (mENDCheck > 4)
                 {
                     MainNob.StartRunCode = false;
-                    //MainNob.CloseGame();
+                    TelegramNotifier.SendNotificationAsync(MainNob.PlayerName, "嘗試多次都沒有進入 戰局 多次卡住 自動登出 避免其他問題");
+                    MainNob.KeyPress(VKeys.KEY_F10, 10);
+                    MainNob.KeyPress(VKeys.KEY_F5, 3);
                     MessageBox.Show($"{MainNob.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
+
                     //Environment.Exit(0);
                 }
                 MainNob.Log("-----大黑天ID------ " + 大黑天ID);
@@ -345,7 +348,8 @@ namespace NOBApp.Sports
                         mTErrorCheck = 0;
                         滿倉判別 = 0;
 
-                        MainNob.KeyPress(VKeys.KEY_ENTER);
+                        MainNob.直向選擇(mTErrorCheck % 1);
+                        //MainNob.KeyPress(VKeys.KEY_ENTER);
                         Task.Delay(100).Wait();
                     }
                     if (MainNob.取得最下面選項().Contains("神魔"))
@@ -376,8 +380,6 @@ namespace NOBApp.Sports
                         是否經過戰鬥 = false;
                         Task.Delay(1000).Wait();
                     }
-
-
                 }
                 else if (MainNob.對話與結束戰鬥)
                 {

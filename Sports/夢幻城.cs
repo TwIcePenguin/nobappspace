@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using static NOBApp.MainWindow;
 
 namespace NOBApp.Sports
@@ -92,7 +87,7 @@ namespace NOBApp.Sports
 
                 if (mPoint <= 7 && 準備進入下一階段)
                 {
-                    if (Dis(MainNob.PosX, MainNob.PosY, 14986, 14281) < 6000)
+                    if (Tools.Dis(MainNob.PosX, MainNob.PosY, 14986, 14281) < 6000)
                     {
                         MainNob.Log($"已經 到下一 層樓了");
                         //進樓梯的人 直接完成
@@ -311,7 +306,7 @@ namespace NOBApp.Sports
                             MainNob.前進(200);
                         }
 
-                        if (Dis(MainNob.PosX, MainNob.PosY, 14986, 14281) < 6000)
+                        if (Tools.Dis(MainNob.PosX, MainNob.PosY, 14986, 14281) < 6000)
                         {
                             MainNob.Log($"已經 到下一 層樓了");
                             //進樓梯的人 直接完成
@@ -403,7 +398,7 @@ namespace NOBApp.Sports
                    };
 
                 var closestPosition = targetPositions
-                                     .OrderBy(pos => Dis(MainNob.PosX, MainNob.PosY, pos.X, pos.Y))
+                                     .OrderBy(pos => Tools.Dis(MainNob.PosX, MainNob.PosY, pos.X, pos.Y))
                                      .First();
                 if (mPoint != closestPosition.MPoint)
                 {

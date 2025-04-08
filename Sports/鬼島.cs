@@ -203,7 +203,7 @@ namespace NOBApp.Sports
                                 MainNob.KeyPress(VKeys.KEY_ESCAPE);
                             }
 
-                            var dis = Dis(MainNob.PosX, MainNob.PosY, 掛網點.X, 掛網點.Y);
+                            var dis = Tools.Dis(MainNob.PosX, MainNob.PosY, 掛網點.X, 掛網點.Y);
                             if (dis > 4000)
                             {
                                 移動倒掛網點();
@@ -250,7 +250,7 @@ namespace NOBApp.Sports
                                             }
                                         }
                                         Task.Delay(3500).Wait();
-                                        dis = Dis(MainNob.PosX, MainNob.PosY, 掛網點.X, 掛網點.Y);
+                                        dis = Tools.Dis(MainNob.PosX, MainNob.PosY, 掛網點.X, 掛網點.Y);
                                         if (dis > 4000)
                                         {
                                             for (int j = 0; j < 3; j++)
