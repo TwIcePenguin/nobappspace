@@ -265,9 +265,10 @@ namespace NOBApp
 
         public async Task BattleUpdate()
         {
+            Log($"1 啟動自動輔助中");
             if (啟動自動輔助中)
                 return;
-
+            Log($"2 啟動自動輔助中");
             啟動自動輔助中 = true;
 
             int endBattleCheckNum = 0;
@@ -279,6 +280,9 @@ namespace NOBApp
             {
                 if (MainWindow.dmSoft == null)
                     return;
+
+
+                Log($"IsUseAutoSkill->{IsUseAutoSkill}");
 
                 if (AutoSkillSet.背景Enter)
                 {

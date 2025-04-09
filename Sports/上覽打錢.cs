@@ -345,11 +345,9 @@ namespace NOBApp.Sports
                     if (MainNob.取得最下面選項().Contains("交換"))
                     {
                         入場正式NPC說話 = true;
-                        mTErrorCheck = 0;
                         滿倉判別 = 0;
-
-                        MainNob.直向選擇(mTErrorCheck % 1);
-                        //MainNob.KeyPress(VKeys.KEY_ENTER);
+                        //MainNob.直向選擇(mTErrorCheck % 2);
+                        MainNob.KeyPress(VKeys.KEY_ENTER);
                         Task.Delay(100).Wait();
                     }
                     if (MainNob.取得最下面選項().Contains("神魔"))
@@ -413,6 +411,7 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 6, 100);
                             Task.Delay(200).Wait();
 
+                            mTErrorCheck = 0;
                             Point = 0;
                             BattleNum = 0;
                             滿倉判別 = 0;
@@ -428,6 +427,14 @@ namespace NOBApp.Sports
                         Task.Delay(100).Wait();
                         if (MainNob.對話與結束戰鬥)
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
+                    }
+
+                    mTErrorCheck = mTErrorCheck + 1;
+                    if (mTErrorCheck > 20)
+                    {
+                        mTErrorCheck = 0;
+                        MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
+                        MainNob.KeyPress(VKeys.KEY_ENTER);
                     }
                 }
                 else

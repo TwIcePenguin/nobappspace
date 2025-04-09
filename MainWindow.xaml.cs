@@ -361,26 +361,24 @@ namespace NOBApp
                 // 使用 Dispatcher.Invoke 確保 UI 更新在 UI 執行緒上進行
                 this.Dispatcher.Invoke(() =>
                 {
+                    所有人狀態.Clear();
                     if (_updateAvailable)
                     {
                         Btn_Update.Content = $"更新至 {_latestVersion}";
                         Btn_Update.Visibility = Visibility.Visible;
-                        Debug.WriteLine($"發現新版本: {_latestVersion}，當前版本: {VersionInfo.Version}");
+                        所有人狀態.AppendText($"發現新版本: {_latestVersion}，當前版本: {VersionInfo.Version}");
                     }
                     else
                     {
-                        Debug.WriteLine($"當前已是最新版本: {VersionInfo.Version}");
-                        Btn_Update.Visibility = Visibility.Collapsed;
+
+                        所有人狀態.AppendText("當前已是最新版本");
+                        //Debug.WriteLine($"當前已是最新版本: {VersionInfo.Version}");
                     }
                 });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"檢查更新失敗: {ex.Message}");
-                this.Dispatcher.Invoke(() =>
-                {
-                    Btn_Update.Visibility = Visibility.Collapsed;
-                });
+                MessageBox.Show($"檢查更新失敗: {ex.Message}");
             }
         }
 

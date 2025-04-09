@@ -290,7 +290,7 @@ namespace NOBApp
                             var nb = 隊員智能功能組[i];
                             if (nb.同步)
                             {
-                                nb.NOB.直向選擇(setInput, 0);
+                                nb?.NOB?.直向選擇(setInput, 0);
                             }
                         }
                     }
@@ -304,7 +304,7 @@ namespace NOBApp
                             var nb = 隊員智能功能組[i];
                             if (nb.同步)
                             {
-                                nb.NOB.KeyPressPP(VKeys.KEY_R);
+                                nb?.NOB?.KeyPressPP(VKeys.KEY_R);
                             }
                         }
                     }
@@ -374,7 +374,6 @@ namespace NOBApp
             }
         }
 
-        public static bool UseAutoSkill = false;
         private void UseSkill_CB_Click(object sender, RoutedEventArgs e)
         {
             特殊功能開關Async();
@@ -382,14 +381,18 @@ namespace NOBApp
 
         public void 特殊功能開關Async()
         {
-            UseAutoSkill = UseSkill_CB.IsChecked == true;
-            if (UseAutoSkill)
+            if (MainNob == null)
+                return;
+
+            MainNob.IsUseAutoSkill = UseSkill_CB.IsChecked == true;
+            if (MainNob.IsUseAutoSkill)
             {
                 SaveSetting();
                 foreach (var item in 隊員智能功能組)
                 {
-                    if (item.NOB.啟動自動輔助中 == false)
+                    if (item?.NOB?.啟動自動輔助中 == false)
                     {
+                        MainNob.Log($"啟動自動輔助中");
                         Task.Run(item.NOB.BattleUpdate);
                     }
                 }
@@ -537,8 +540,15 @@ namespace NOBApp
                 }
             }
             else
+            {
                 MessageBox.Show("請選擇角色 ，　如果清單沒有角色名稱，開啟遊戲登入選擇完角色後點［刷新］");
 
+                LockBtn.Content = "驗證";
+                CB_HID.IsEnabled = true; 
+                CB_HID.UpdateLayout();
+                StartCode.IsChecked = false;
+                StartCode.UpdateLayout();
+            }
         }
 
         private void UpdateSelectMenu()
