@@ -11,8 +11,9 @@ namespace NOBApp.Sports
     internal class 上覽打錢 : BaseClass
     {
         public int mState = 0;
-        public int 大黑天ID = 1610613226;
+        public int 大黑天ID = 0;
         public int 上覽小販 = 0;
+        public int 御所ID = 0;
         new int Point = 0;
         /// <summary>
         /// 計算戰鬥場次 10場販賣一次
@@ -36,6 +37,7 @@ namespace NOBApp.Sports
             {
                 大黑天ID = MainNob.CodeSetting.目標A;
                 上覽小販 = MainNob.CodeSetting.目標B;
+                御所ID = MainNob.CodeSetting.目標C;
             }
         }
         public override void 腳本運作()
@@ -108,7 +110,7 @@ namespace NOBApp.Sports
                     if (MainNob.進入結算)
                     {
                         MainNob.Log($"狀態刷新判斷 進入結算");
-                        Task.Run(MainNob.離開戰鬥B).Wait();
+                        MainNob.離開戰鬥B();
                         return false;
                     }
 
@@ -116,7 +118,7 @@ namespace NOBApp.Sports
                     {
                         MainNob.Log($"狀態刷新判斷 戰鬥中");
                         統計販賣戰鬥 = 是否經過戰鬥 = true;
-                        Task.Delay(1000).Wait();
+                        Task.Delay(1000);
                         return false;
                     }
 
@@ -261,7 +263,7 @@ namespace NOBApp.Sports
             }
         }
 
-        private void 尋找下一個目標ID()
+        void 尋找下一個目標ID()
         {
             if (MainNob != null)
             {
@@ -300,6 +302,7 @@ namespace NOBApp.Sports
                 }
             }
         }
+
         void 上覽入場()
         {
             if (MainNob != null)
@@ -445,21 +448,22 @@ namespace NOBApp.Sports
 
         void 尋找筆試官()
         {
+            if (MainNob == null || MainWindow.dmSoft == null)
+                return;
+
             var str = AddressData.搜尋身邊NPCID起始;
-            long findID, maxID = long.MaxValue;
-            List<long> skipIDs = new();
+            long maxID = long.MaxValue;
+
             for (int i = 0; i < 30; i++)
             {
-                findID = MainWindow.dmSoft!.ReadInt(MainNob!.Hwnd, "<nobolHD.bng> + " + str, 4);
-                //chid = MainWindow.dmSoft.ReadInt(useNOB.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(3), 2);
-                long dis = MainWindow.dmSoft.ReadInt(MainNob!.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(4), 4);
+                long findID = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4);
+                long dis = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(4), 4);
+
                 if (maxID > findID && dis >= 65534)
                 {
                     maxID = findID;
                     m進行官ID = (int)findID + 1;
                     m目標ID = (int)findID - 1;
-                    skipIDs.Add(findID);
-                    str = str.AddressAdd(12); continue;
                 }
 
                 str = str.AddressAdd(12);

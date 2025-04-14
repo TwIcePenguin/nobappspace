@@ -21,7 +21,7 @@
             <Button x:Name="企鵝專用測試A" Content="企鵝A" Height="24" Width="36" Canvas.Left="265" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="5,30,0,0"/>
             <Button x:Name="企鵝專用測試B" Content="企鵝B" Height="24" Width="36" Canvas.Left="306" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="40,30,0,0"/>
             <Button x:Name="企鵝專用測試C" Content="企鵝C" Height="24" Width="36" Canvas.Left="347" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="75,30,0,0"/>
-            <TextBox x:Name="所有人狀態" Height="47" Margin="350,5,5,0" TextWrapping="WrapWithOverflow" Text="" VerticalAlignment="Top" MaxLines="2147483643" MaxLength="6" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" Visibility="Visible" IsReadOnly="True" HorizontalContentAlignment="Stretch" Padding="0,0,5,0" VerticalContentAlignment="Stretch"/>
+            <TextBox x:Name="MainWindowsStatusMsgBox" Height="47" Margin="350,5,5,0" TextWrapping="WrapWithOverflow" Text="" VerticalAlignment="Top" MaxLines="2147483643" MaxLength="6" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" Visibility="Visible" IsReadOnly="True" HorizontalContentAlignment="Stretch" Padding="0,0,5,0" VerticalContentAlignment="Stretch"/>
         </Grid>
         <TabControl x:Name="NBTabControl" Margin="0,60,0,0"/>
 

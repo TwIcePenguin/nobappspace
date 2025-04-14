@@ -4,9 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Management;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,14 +21,6 @@ namespace NOBApp
     public static class Tools
     {
         #region API
-        [DllImport("kernel32.dll")]
-        public static extern bool ReadProcessMemory(IntPtr hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesRead);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, int lpBaseAddress, byte[] lpBuffer, int dwSize, ref int lpNumberOfBytesWritten);
-        [DllImport("kernel32.dll")]
-        internal static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, IntPtr nSize, ref UInt32 lpNumberOfBytesWritten);
-
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
         [DllImport("user32.dll", SetLastError = true)]
@@ -41,65 +37,6 @@ namespace NOBApp
         private static readonly Dictionary<string, Assembly> LoadDlls = new Dictionary<string, Assembly>();
         private static readonly Dictionary<string, object> Assemblies = new Dictionary<string, object>();
 
-        internal static void WriteBytes(this IntPtr hProcess, int address, byte[] value)
-        {
-            bool success;
-            UInt32 nBytesRead = 0;
-            success = WriteProcessMemory(hProcess, (IntPtr)address, value, (IntPtr)value.Length, ref nBytesRead);
-        }
-
-        internal static void WriteInt(this IntPtr hProcess, int address, int value)
-        {
-            bool success;
-            byte[] buffer = BitConverter.GetBytes(value);
-            UInt32 nBytesRead = 0;
-            success = WriteProcessMemory(hProcess, (IntPtr)address, buffer, (IntPtr)4, ref nBytesRead);
-        }
-
-        public static string ReadStrII(this IntPtr hProcess, int address, byte[] buffer)
-        {
-            int bytesRead = 0;
-            ReadProcessMemory(hProcess, address, buffer, buffer.Length, ref bytesRead);
-            string str = Encoding.Unicode.GetString(buffer);
-            string deStr = str.SubStringByBytes(8);
-
-            return deStr;
-        }
-        public static string ReadStr(this IntPtr hProcess, int address, byte[] buffer)
-        {
-            int bytesRead = 0;
-            ReadProcessMemory(hProcess, address, buffer, buffer.Length, ref bytesRead);
-            return Encoding.Unicode.GetString(buffer).TrimEnd('\0');
-
-            //  MainNob.Log("buffer : " + string.Join( " ", buffer) + " - " + buffer.Length);
-            //return Encoding.Unicode.GetString(buffer,0,6);
-        }
-        public static string SubStringByBytes(byte[] source, int NumberOfBytes, string suffix = "")
-        {
-            if (source.Length == 0)
-                return "";
-
-            long tempLen = 0;
-            StringBuilder sb = new StringBuilder();
-            string str = Encoding.Unicode.GetString(source);
-            foreach (var c in str)
-            {
-                Char[] _charArr = new Char[] { c };
-                byte[] _charBytes = Encoding.Unicode.GetBytes(_charArr);
-                if ((tempLen + source.Length) > NumberOfBytes)
-                {
-                    if (!string.IsNullOrWhiteSpace(suffix))
-                        sb.Append(suffix);
-                    break;
-                }
-                else
-                {
-                    tempLen += _charBytes.Length;
-                    sb.Append(Encoding.Unicode.GetString(_charBytes));
-                }
-            }
-            return sb.ToString();
-        }
         public static async void M_RClick(this IntPtr hProcess, int x, int y)
         {
             PostMessage(hProcess, WM_RBUTTONDOWN, 0, x + (y << 16));
@@ -111,45 +48,6 @@ namespace NOBApp
             PostMessage(hProcess, WM_LBUTTONDOWN, 0, x + (y << 16));
             await Task.Delay(50);
             PostMessage(hProcess, WM_LBUTTONUP, 0, x + (y << 16));
-        }
-        public static string SubStringByBytes(this string source, int NumberOfBytes, System.Text.Encoding encoding, string suffix = "")
-        {
-            if (string.IsNullOrWhiteSpace(source) || source.Length == 0)
-                return source;
-
-            if (encoding.GetBytes(source).Length <= NumberOfBytes)
-                return source;
-
-            long tempLen = 0;
-            StringBuilder sb = new StringBuilder();
-            foreach (var c in source)
-            {
-                Char[] _charArr = new Char[] { c };
-                byte[] _charBytes = encoding.GetBytes(_charArr);
-                if ((tempLen + _charBytes.Length) > NumberOfBytes)
-                {
-                    if (!string.IsNullOrWhiteSpace(suffix))
-                        sb.Append(suffix);
-                    break;
-                }
-                else
-                {
-                    tempLen += _charBytes.Length;
-                    sb.Append(encoding.GetString(_charBytes));
-                }
-            }
-            return sb.ToString();
-        }
-        public static string SubStringByBytes(this string source, int NumberOfBytes, string encoding = "UTF-8", string suffix = "")
-        {
-            return SubStringByBytes(source, NumberOfBytes, Encoding.GetEncoding(encoding), suffix);
-        }
-
-        public static int ReadInt(this IntPtr hProcess, int address, byte[] buffer)
-        {
-            int bytesRead = 0;
-            ReadProcessMemory(hProcess, address, buffer, buffer.Length, ref bytesRead);
-            return BitConverter.ToInt32(buffer, 0);
         }
 
         static uint repeatCount = 0;
@@ -192,7 +90,6 @@ namespace NOBApp
                                                                                      //SendMessage(hProcess, WM_KEYDOWN, (IntPtr)0x41, (IntPtr)0); // A鍵
                                                                                      //  MainNob.Log("keyCode-->" + keyCode);
         }
-
 
         public static void KeyDown(this IntPtr hProcess, VKeys keyCode)
         {
@@ -238,119 +135,190 @@ namespace NOBApp
         }
 
         static public bool timeUpUpdate = false;
-        //public static async void GetWebsiteData(Uri uri)
-        //{
-        //    using (var httpClient = new HttpClient())
-        //    {
-        //        try
-        //        {
-        //            HttpResponseMessage response = await httpClient.GetAsync(uri);
-
-        //            if (response.IsSuccessStatusCode)
-        //            {
-        //                string content = await response.Content.ReadAsStringAsync();
-        //                  Debug.WriteLine($"回傳訊息 -> \n{content}");
-        //                Authentication.讀取認證訊息Json(content);
-        //                // 處理回應內容
-        //            }
-        //        }
-        //        catch (Exception e)
-        //        {
-        //              Debug.WriteLine("Message :{0} ", e.Message);
-        //        }
-        //    }
-        //}
-
+        /// <summary>
+        /// 取得電腦的唯一識別碼
+        /// </summary>
         public static string GetSerialNumber()
         {
             try
             {
-                return GetcomputerUUID();
+                return GetMachineGuid();
             }
-            catch
+            catch (Exception ex)
             {
-                return "";
+                Debug.WriteLine($"獲取機器識別碼出錯: {ex.Message}");
+                // 退回到舊方法
+                try
+                {
+                    return GetcomputerUUID();
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+        }
+        /// <summary>
+        /// 從 WMI 取得電腦的 UUID
+        /// </summary>
+        private static string GetcomputerUUID()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT UUID FROM Win32_ComputerSystemProduct"))
+                {
+                    foreach (var managementObject in searcher.Get().Cast<ManagementObject>())
+                    {
+                        if (managementObject["UUID"] != null)
+                        {
+                            return managementObject["UUID"].ToString().Trim();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"取得電腦 UUID 失敗: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+        /// <summary>
+        /// 產生高可靠性的機器唯一識別碼
+        /// </summary>
+        private static string GetMachineGuid()
+        {
+            // 收集多個硬體資訊來源
+            var components = new List<string>();
+
+            // 1. 主機板序號
+            components.Add(GetWmiPropertyValue("Win32_BaseBoard", "SerialNumber"));
+
+            // 2. BIOS 序號
+            components.Add(GetWmiPropertyValue("Win32_BIOS", "SerialNumber"));
+
+            // 3. 處理器 ID
+            components.Add(GetWmiPropertyValue("Win32_Processor", "ProcessorId"));
+
+            // 4. 硬碟序號
+            components.Add(GetDiskVolumeSerialNumber());
+
+            // 5. 網路識別碼
+            components.Add(GetMacAddress());
+
+            // 6. 作業系統序號
+            components.Add(GetWmiPropertyValue("Win32_OperatingSystem", "SerialNumber"));
+
+            // 7. 電腦名稱
+            components.Add(Environment.MachineName);
+
+            // 8. Windows Product ID (從註冊表)
+            components.Add(GetWindowsProductId());
+
+            // 9. 安裝日期
+            components.Add(GetWmiPropertyValue("Win32_OperatingSystem", "InstallDate"));
+
+            // 移除空值後合併成一個字串
+            string fingerprint = string.Join(":", components.Where(s => !string.IsNullOrEmpty(s)));
+
+            // 產生雜湊值
+            using (var hasher = SHA256.Create())
+            {
+                var hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(fingerprint));
+                return BitConverter.ToString(hashBytes).Replace("-", "");
             }
         }
 
-        public static string GetcomputerUUID()
+        /// <summary>
+        /// 從 WMI 取得特定屬性值
+        /// </summary>
+        private static string GetWmiPropertyValue(string className, string propertyName)
         {
-            var uuid = GetSmBIOSUUID();
-            if (string.IsNullOrEmpty(uuid))
+            try
             {
-                var cpuID = GetCPUID();
-                var biosSerialNumber = GetBIOSSerialNumber();
-                uuid = $"{cpuID}_{biosSerialNumber}";
+                using (var searcher = new ManagementObjectSearcher($"SELECT {propertyName} FROM {className}"))
+                {
+                    foreach (var managementObject in searcher.Get().Cast<ManagementObject>())
+                    {
+                        if (managementObject[propertyName] != null)
+                        {
+                            return managementObject[propertyName].ToString().Trim();
+                        }
+                    }
+                }
             }
-            return uuid;
-        }
-
-        public static string? GetCPUID()
-        {
-            var cmd = "wmic cpu get processorid";
-            return ExecuteCMD(cmd, output =>
+            catch (Exception ex)
             {
-                var cpuid = GetTextAfterSpecialText(output, "ProcessorId");
-                return cpuid;
-            });
-        }
-
-        public static string? GetSmBIOSUUID()
-        {
-            var cmd = "wmic csproduct get UUID";
-            return ExecuteCMD(cmd, output =>
-            {
-                string? uuid = GetTextAfterSpecialText(output, "UUID");
-                if (uuid == "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")
-                    uuid = null;
-                return uuid;
-            });
-        }
-
-        public static string? GetBIOSSerialNumber()
-        {
-            var cmd = "wmic bios get serialnumber";
-            return ExecuteCMD(cmd, output =>
-            {
-                var serialNumber = GetTextAfterSpecialText(output, "SerialNumber");
-                return serialNumber;
-            });
-        }
-
-        private static string? GetTextAfterSpecialText(string fullText, string specialText)
-        {
-            if (string.IsNullOrWhiteSpace(fullText) || string.IsNullOrWhiteSpace(specialText))
-            {
-                return null;
+                Debug.WriteLine($"取得 WMI {className}.{propertyName} 失敗: {ex.Message}");
             }
-            string? lastText = null;
-            var idx = fullText.LastIndexOf(specialText);
-            if (idx > 0)
-            {
-                lastText = fullText.Substring(idx + specialText.Length).Trim();
-            }
-            return lastText;
+
+            return string.Empty;
         }
 
-        private static string? ExecuteCMD(string cmd, Func<string, string?> filterFunc)
+        /// <summary>
+        /// 取得磁碟序號
+        /// </summary>
+        private static string GetDiskVolumeSerialNumber()
         {
-            //  MainNob.Log($"ExecuteCMD - CMD:{cmd}");
-            using var process = new Process();
-            process.StartInfo.FileName = "cmd.exe";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
-            //  MainNob.Log($"Start - CMD:{cmd}");
-            process.StandardInput.WriteLine(cmd + " &exit");
-            process.StandardInput.AutoFlush = true;
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            process.Close();
-            //  MainNob.Log($"CMD:{cmd} output:{output.ToString()}");
-            return filterFunc(output);
+            try
+            {
+                string systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
+                using (var searcher = new ManagementObjectSearcher($@"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE DeviceID='{systemDrive.TrimEnd('\\')}\'"))
+                {
+                    foreach (ManagementObject drive in searcher.Get())
+                    {
+                        return drive["VolumeSerialNumber"].ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"取得磁碟序號失敗: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// 取得第一個實體網卡的 MAC 地址
+        /// </summary>
+        private static string GetMacAddress()
+        {
+            try
+            {
+                return NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(nic => nic.NetworkInterfaceType != NetworkInterfaceType.Loopback && nic.OperationalStatus == OperationalStatus.Up)
+                    .Select(nic => nic.GetPhysicalAddress().ToString())
+                    .FirstOrDefault() ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"取得 MAC 地址失敗: {ex.Message}");
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 從註冊表取得 Windows 產品 ID
+        /// </summary>
+        private static string GetWindowsProductId()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+                {
+                    if (key != null)
+                    {
+                        return key.GetValue("ProductId")?.ToString() ?? string.Empty;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"取得 Windows 產品 ID 失敗: {ex.Message}");
+            }
+
+            return string.Empty;
         }
 
         public static string? GetGamePadStr()
@@ -562,7 +530,6 @@ namespace NOBApp
                 Debug.WriteLine($"儲存新的成功Session Index: {successfulSessionIndex.Value}");
             }
         }
-
 
         /// <summary>
         /// 從註冊表載入Session Index

@@ -68,8 +68,15 @@ namespace NOBApp
 
             Tools.UpdateTimer(到期計時);
 
+            UIStatus_Default();
+
             oThickness = 戰鬥輔助面.Margin;
 
+            MainWindow.RefreshNOBID(CB_HID, comboBoxes);
+        }
+
+        void UIStatus_Default()
+        {
             其他選項A.Visibility =
             Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
             List_鎖定名單.Visibility =
@@ -77,8 +84,6 @@ namespace NOBApp
             SMENU2.Visibility = 後退時間.Visibility = TargetViewPage.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility =
             FNPCID.Visibility = SMENU1.Visibility =
             Btn_TargetC.Visibility = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Hidden;
-
-            MainWindow.RefreshNOBID(CB_HID, comboBoxes);
         }
 
         void UIEventAdd()
@@ -407,6 +412,12 @@ namespace NOBApp
             bool reset = LockBtn.Content.ToString()!.Contains("解除");
             bool isPass = false;
 
+#if DEBUG && false
+            腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = true;
+            UpdateSelectMenu();
+            return;
+#endif
+
             // 確認 是否有選擇 CB_HID
             if (LockBtn != null && ControlGrid != null && CB_HID != null &&
                 CB_HID.SelectedValue != null && MainWindow.AllNobWindowsList != null)
@@ -427,8 +438,8 @@ namespace NOBApp
 
                     if (MainNob != null)
                     {
-                        所有人狀態.Clear();
-                        所有人狀態.AppendText("驗證中.. 請稍後\n");
+                        視窗狀態.Clear();
+                        視窗狀態.AppendText("驗證中.. 請稍後\n");
 
                         if (!MainNob.驗證完成)
                         {
@@ -451,24 +462,24 @@ namespace NOBApp
                                 Debug.WriteLine($"MainNob 驗證 {MainNob.驗證完成} Count {checkCount}");
                                 if (MainNob.驗證完成)
                                 {
-                                    所有人狀態.Text = "驗證完成!";
+                                    視窗狀態.Text = "驗證完成!";
                                     checkCount = 0;
                                     break;
                                 }
                                 else
                                 {
                                     checkCount++;
-                                    所有人狀態.Text = $"驗證中! -- {checkCount}";
+                                    視窗狀態.Text = $"驗證中! -- {checkCount}";
                                 }
                                 if (checkCount >= 60)
                                 {
-                                    所有人狀態.Text = "等待超時 請重新點選驗證";
+                                    視窗狀態.Text = "等待超時 請重新點選驗證";
                                     return;
                                 }
                                 await Task.Delay(400);
                             }
                         }
-                        所有人狀態.AppendText("取得相關資料 比對中..\n");
+                        視窗狀態.AppendText("取得相關資料 比對中..\n");
                         try
                         {
                             bool SPPass = MainNob.特殊者 ? MainNob.驗證國家 : MainNob.贊助者;
@@ -485,24 +496,25 @@ namespace NOBApp
                         }
                         catch (Exception err)
                         {
-                            所有人狀態.AppendText($"資料錯誤.. \n{err}\n");
+                            視窗狀態.AppendText($"資料錯誤.. \n{err}\n");
                         }
 
                         Tools.SetTimeUp(MainNob);
-                        所有人狀態.AppendText($"驗證完成.. 更新時間 -> {MainNob.到期日}\n");
+                        視窗狀態.AppendText($"驗證完成.. 更新時間 -> {MainNob.到期日}\n");
                         到期計時.Content = $"到期日:{MainNob.到期日}";
 
-                        if (DateTime.Now > MainNob.到期日)
-                        {
-                            isPass = false;
-                            MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 感謝各位");
-                        }
+                        //暫時將到期關閉
+                        //if (DateTime.Now > MainNob.到期日)
+                        //{
+                        //    isPass = false;
+                        //    MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 感謝各位");
+                        //}
 
                         if (isPass)
                         {
                             _timer.Stop();
                             _timer.Start();
-                            所有人狀態.AppendText($"通過驗證..");
+                            視窗狀態.AppendText($"通過驗證..");
                             腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = true;
                             UpdateSelectMenu();
                             LoadSetting();
@@ -510,7 +522,7 @@ namespace NOBApp
                         }
                         else
                         {
-                            所有人狀態.AppendText($"該帳號 驗證失敗.. 請聯繫企鵝處理");
+                            視窗狀態.AppendText($"該帳號 驗證失敗.. 請聯繫企鵝處理");
                             MainNob.StartRunCode = false;
                             _timer.Stop();
                         }
@@ -544,7 +556,7 @@ namespace NOBApp
                 MessageBox.Show("請選擇角色 ，　如果清單沒有角色名稱，開啟遊戲登入選擇完角色後點［刷新］");
 
                 LockBtn.Content = "驗證";
-                CB_HID.IsEnabled = true; 
+                CB_HID.IsEnabled = true;
                 CB_HID.UpdateLayout();
                 StartCode.IsChecked = false;
                 StartCode.UpdateLayout();
@@ -618,39 +630,39 @@ namespace NOBApp
                 return;
             }
 
-            if (DateTime.Now > MainNob.到期日)
-            {
-                MainNob.Log($"到期日 : {MainNob.到期日}");
-                腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
-                MainNob.驗證完成 = false;
-                MainNob.特殊者 = false;
-                MainNob.贊助者 = false;
-                MainNob.StartRunCode = false;
-                MainNob.IsUseAutoSkill = false;
-                useMenu = null;
-                MainNob = null;
-                StartCode.IsChecked = false;
-                StartCode.UpdateLayout();
-                LockBtn.Content = "驗證";
-                LockBtn.UpdateLayout();
-                _timer.Stop();
-                MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 贊助後再按一次 [需鎖定] 會自動更新日期 感謝各位夥伴的支持");
-            }
+            //if (DateTime.Now > MainNob.到期日)
+            //{
+            //    MainNob.Log($"到期日 : {MainNob.到期日}");
+            //    腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
+            //    MainNob.驗證完成 = false;
+            //    MainNob.特殊者 = false;
+            //    MainNob.贊助者 = false;
+            //    MainNob.StartRunCode = false;
+            //    MainNob.IsUseAutoSkill = false;
+            //    useMenu = null;
+            //    MainNob = null;
+            //    StartCode.IsChecked = false;
+            //    StartCode.UpdateLayout();
+            //    LockBtn.Content = "驗證";
+            //    LockBtn.UpdateLayout();
+            //    _timer.Stop();
+            //    MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 贊助後再按一次 [需鎖定] 會自動更新日期 感謝各位夥伴的支持");
+            //}
 
             if ((LockBtn != null && LockBtn.Content.ToString()!.Contains("驗證")))
                 return;
 
-            if (MainNob != null && useMenu != null && useMenu.NobTeam != null && 所有人狀態 != null)
+            if (MainNob != null && useMenu != null && useMenu.NobTeam != null && 視窗狀態 != null)
             {
-                所有人狀態.Clear();
+                視窗狀態.Clear();
                 string stateADescription = MainWindow.GetStateADescription(MainNob.StateA);
-                所有人狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
+                視窗狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
                 for (int i = 0; i < useMenu.NobTeam.Count; i++)
                 {
                     NOBDATA nob = useMenu.NobTeam[i];
                     if (nob != null)
                     {
-                        所有人狀態.AppendText($@"{nob.PlayerName} : {nob.目前動作} " + Environment.NewLine);
+                        視窗狀態.AppendText($@"{nob.PlayerName} : {nob.目前動作} " + Environment.NewLine);
                     }
                 }
             }
@@ -696,11 +708,13 @@ namespace NOBApp
             if (string.IsNullOrEmpty(str))
             {
                 StartCode.IsEnabled = false;
+                StartCode.UpdateLayout();
                 return;
             }
             StartCode.IsChecked = false;
             StartCode.IsEnabled = !string.IsNullOrEmpty(str);
             useMenu = null;
+            UIStatus_Default();
             UIUpdate.RefreshNOBID_Sec(comboBoxes, MainWindow.AllNobWindowsList);
             if (menuMapping.ContainsKey(str))
             {
@@ -710,6 +724,8 @@ namespace NOBApp
             {
                 StartCode.IsEnabled = false;
             }
+
+            StartCode.UpdateLayout();
         }
 
         private void OnTargetClick_A(object sender, RoutedEventArgs e)

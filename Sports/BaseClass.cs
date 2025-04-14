@@ -255,6 +255,34 @@ namespace NOBApp.Sports
             return (int)angle;
         }
 
+        public int CheckGetNPC(int id, int colorMath, E_TargetColor eTC = E_TargetColor.藍NPC)
+        {
+            if (MainNob == null)
+                return id;
+
+            MainNob.鎖定NPC(id);
+            Task.Delay(200).Wait();
+            if (MainNob.GetTargetIDINT() == id)
+            {
+                return id;
+            }
+            else
+            {
+                var rid = 顏色尋目標(colorMath);
+                if (rid > 0)
+                {
+                    MainNob.鎖定NPC(rid);
+                    Task.Delay(200).Wait();
+                    if (MainNob.GetTargetIDINT() == rid)
+                    {
+                        return rid;
+                    }
+                }
+            }
+
+            return id;
+        }
+
         public List<int> targetIDs = new();
         public List<int> skipIDs = new();
 
@@ -313,7 +341,6 @@ namespace NOBApp.Sports
             }
             return targets;
         }
-
 
         public int 顏色尋目標(NOBDATA user, int colorMath, int minDistance = 0, int maxDistance = 65535, TargetTypes types = TargetTypes.NPC, E_TargetColor eTC = E_TargetColor.藍NPC)
         {
@@ -530,6 +557,12 @@ namespace NOBApp.Sports
             int thisTargetID = 0;
             int checkBattleDone = -1;
             targetIDs = targetList;
+            if (MainNob == null)
+            {
+
+                return;
+            }
+
             while (MainNob.StartRunCode)
             {
                 if (MainNob == null)

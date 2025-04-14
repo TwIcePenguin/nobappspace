@@ -43,6 +43,7 @@ namespace NOBApp
             { "F0 F8", "對話與結束戰鬥" },
         };
         public static Point TxtToResolution = new();
+        static TextBox? 主窗狀態;
         static ComboBox? Resolution;
         double winHeight;
         public static int OrinX = 0;
@@ -138,6 +139,15 @@ namespace NOBApp
             return stateAMapping.TryGetValue(stateA, out var description) ? description : stateA;
         }
 
+        public static void 狀態訊息(string msg)
+        {
+            主窗狀態?.AppendText(msg);
+        }
+        public static void 清除狀態訊息()
+        {
+            主窗狀態?.Clear();
+        }
+
         #endregion static public functions
 
         #region public functions
@@ -191,6 +201,7 @@ namespace NOBApp
 
         private void UIDefault()
         {
+            主窗狀態 = MainWindowsStatusMsgBox;
             winHeight = 企鵝之野望.Height;
             企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
         }
@@ -361,17 +372,16 @@ namespace NOBApp
                 // 使用 Dispatcher.Invoke 確保 UI 更新在 UI 執行緒上進行
                 this.Dispatcher.Invoke(() =>
                 {
-                    所有人狀態.Clear();
+                    清除狀態訊息();
                     if (_updateAvailable)
                     {
                         Btn_Update.Content = $"更新至 {_latestVersion}";
                         Btn_Update.Visibility = Visibility.Visible;
-                        所有人狀態.AppendText($"發現新版本: {_latestVersion}，當前版本: {VersionInfo.Version}");
+                        狀態訊息($"發現新版本: {_latestVersion}，當前版本: {VersionInfo.Version}");
                     }
                     else
                     {
-
-                        所有人狀態.AppendText("當前已是最新版本");
+                        狀態訊息("當前已是最新版本");
                         //Debug.WriteLine($"當前已是最新版本: {VersionInfo.Version}");
                     }
                 });
@@ -619,6 +629,5 @@ $null = $Host.UI.RawUI.ReadKey(""NoEcho,IncludeKeyDown"")
         }
 
         #endregion private founctions
-
     }
 }
