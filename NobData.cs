@@ -62,7 +62,6 @@ namespace NOBApp
         public RECT 原視窗;
         public int NowHeight;
         public int NowWidth;
-
         static Random random = new Random();
         #region 記憶體讀取位置
         public string Account => ReadString("<nobolHD.bng> +" + AddressData.Acc, 0, 15);
@@ -115,6 +114,8 @@ namespace NOBApp
                 return 戰鬥中判定 > 3;
             }
         }
+        public bool 登入畫面 => ReadInt(AddressData.登入畫面, 0) == 0;
+
         public bool 第三人稱 => ReadInt("<nobolHD.bng> +" + AddressData.視角, 0) == 0;
 
         public string 觀察對象Str => ReadData("<nobolHD.bng> + " + AddressData.是否有觀察對象, 2);
@@ -193,6 +194,7 @@ namespace NOBApp
         }
         #endregion
 
+        public bool 已通知斷線 = false;
         public bool 特殊者 = false;
         public bool 贊助者 = false;
         public bool 驗證完成 = false;
@@ -514,7 +516,10 @@ namespace NOBApp
             啟動自動輔助中 = false;
         }
         public void 更改F8追隨() => MainWindow.dmSoft!.WriteString(Hwnd, "<nobolHD.bng> + " + AddressData.快捷F8, 1, "／追蹤：％Ｌ");
-
+        public void 更改字型(int i)
+        {
+            MainWindow.dmSoft?.WriteInt(Hwnd, AddressData.UI字型, 0, i);
+        }
         public void MoveToNPC(int npcID)
         {
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);

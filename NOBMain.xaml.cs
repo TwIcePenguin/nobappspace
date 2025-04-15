@@ -389,17 +389,20 @@ namespace NOBApp
             if (MainNob == null)
                 return;
 
-            MainNob.IsUseAutoSkill = UseSkill_CB.IsChecked == true;
-            if (MainNob.IsUseAutoSkill)
+            bool useAutoSkill = UseSkill_CB.IsChecked == true;
+
+            SaveSetting();
+            foreach (var item in 隊員智能功能組)
             {
-                SaveSetting();
-                foreach (var item in 隊員智能功能組)
+                if (item == null || item.NOB == null)
+                    continue;
+
+                item.NOB.IsUseAutoSkill = useAutoSkill;
+
+                if (item.NOB.啟動自動輔助中 == false)
                 {
-                    if (item?.NOB?.啟動自動輔助中 == false)
-                    {
-                        MainNob.Log($"啟動自動輔助中");
-                        Task.Run(item.NOB.BattleUpdate);
-                    }
+                    MainNob.Log($"啟動自動輔助中");
+                    Task.Run(item.NOB.BattleUpdate);
                 }
             }
         }

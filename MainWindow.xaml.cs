@@ -204,6 +204,10 @@ namespace NOBApp
             主窗狀態 = MainWindowsStatusMsgBox;
             winHeight = 企鵝之野望.Height;
             企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
+
+#if DEBUG
+            企鵝專用測試A.Visibility = Visibility.Visible;
+#endif
         }
 
         private void RegButtonEvent()
@@ -222,36 +226,24 @@ namespace NOBApp
 
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
         {
-            //var MainNob = null;
-            //if (MainNob != null)
-            //{
-            //    Debug.WriteLine(sender.ToString());
-            //    if (sender.ToString()!.Contains("企鵝A"))
-            //    {
-            //        if (MainNob.GetTargetIDINT() != -1)
-            //            Debug.WriteLine("NPC ID=>" + MainNob.GetTargetIDINT());
-
-            //        //GetNPCIDs();
-
-            //        Debug.WriteLine($"1- {Dis(MainNob.PosX, MainNob.PosY, 14986, 14281)}");
-            //        Debug.WriteLine($"2- {Dis(MainNob.PosX, MainNob.PosY, 14716, 4492)}");
-            //        Debug.WriteLine($"3- {Dis(MainNob.PosX, MainNob.PosY, 5051, 4770)}");
-            //        Debug.WriteLine($"4- {Dis(MainNob.PosX, MainNob.PosY, 5246, 14497)}");
-
-            //        //效能測試
-            //        //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
-            //        //橘 565ABD
-            //        var c1 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
-            //        //藍 565ABD
-            //        var c2 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "565ABD");
-            //        //紅 6363EE 
-            //        var c3 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
-            //        var c4 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
-            //        var c5 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
-
-            //        Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5}");
-            //    }
-            //}
+            if (NBTabControl.SelectedItem is TabItem tabItem && ((TabItem)NBTabControl.SelectedItem).Content != null)
+            {
+                NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
+                if (page != null && page.MainNob != null)
+                {
+                    //效能測試
+                    //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
+                    //橘 565ABD
+                    var c1 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
+                    //藍 565ABD
+                    var c2 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "565ABD");
+                    //紅 6363EE 
+                    var c3 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
+                    var c4 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
+                    var c5 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
+                    Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5}");
+                }
+            }
         }
 
         private void Btn_AutoRefresh_Click(object sender, RoutedEventArgs e)
@@ -397,11 +389,9 @@ namespace NOBApp
         /// </summary>
         private async void Btn_Update_Click(object sender, RoutedEventArgs e)
         {
+            await CheckForUpdatesAsync();
             if (!_updateAvailable)
-            {
-                await CheckForUpdatesAsync();
                 return;
-            }
 
             var result = MessageBox.Show($"是否更新至 {_latestVersion} 版本？\n\n更新後應用將重新啟動。",
                 "更新確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
