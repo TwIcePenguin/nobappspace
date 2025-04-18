@@ -1,23 +1,15 @@
-﻿using NOBApp.GoogleData;
-using NOBApp.Sports;
-using RegisterDmSoftConsoleApp.Configs;
+﻿using RegisterDmSoftConsoleApp.Configs;
 using RegisterDmSoftConsoleApp.DmSoft;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.Arm;
 using System.Security.Principal;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace NOBApp
 {
@@ -51,7 +43,8 @@ namespace NOBApp
 
         private bool _updateAvailable = false;
         private string _latestVersion = string.Empty;
-
+        static System.Timers.Timer networkCheckTimer = new System.Timers.Timer(10000); // 每10秒檢查一次
+        static bool StartCheck = false;
         public Setting CodeSetting = new();
         public MainWindow()
         {
@@ -91,6 +84,11 @@ namespace NOBApp
             InitializeTabItems();
             // 檢查更新是否成功完成
             CheckUpdateSuccess();
+
+            networkCheckTimer.Elapsed += (sender, e) =>
+            {
+                CheckNetworkAvailable();
+            };
             // 在其他初始化之前加載 GitHub 配置
             this.Loaded += (s, e) => CheckForUpdatesAsync();
         }
@@ -116,6 +114,16 @@ namespace NOBApp
             }
             //  MainNob.Log("共有 : " + nobList.Count);
             UIUpdate.RefreshNOBID_Sec(comboBoxes, nobWindowsList);
+        }
+
+        public static void StartCheckNetworkAvailable()
+        {
+            if (StartCheck)
+                return;
+
+            StartCheck = true;
+            networkCheckTimer.Stop();
+            networkCheckTimer.Start();
         }
 
         public static Point GetResolutioSize()
@@ -162,6 +170,21 @@ namespace NOBApp
         #endregion public functions
 
         #region private founctions
+        private void CheckNetworkAvailable()
+        {
+            bool isConnected = Tools.IsNetworkAvailable();
+            if (!isConnected)
+            {
+                NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
+                string name = "";
+                name = page!.MainNob!.PlayerName;
+                _ = TelegramNotifier.SendNotificationAsync(name, "網路已斷線，請檢查連線");
+                StartCheck = false;
+                networkCheckTimer.Stop();
+                // 執行斷線處理邏輯
+            }
+        }
+
         private void AdminRelauncher()
         {
             if (!IsRunAsAdmin())

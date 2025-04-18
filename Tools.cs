@@ -619,6 +619,60 @@ namespace NOBApp
             long dy = y2 - y1;
             return (int)(dx * dx + dy * dy);
         }
+
+        /// <summary>
+        /// 檢查網路連線是否可用
+        /// </summary>
+        /// <returns>如果網路連線可用返回 true，否則返回 false</returns>
+        public static bool IsNetworkAvailable()
+        {
+            try
+            {
+                // 方法 1: 檢查是否有可用的網路介面
+                if (!NetworkInterface.GetIsNetworkAvailable())
+                    return false;
+
+                // 方法 2: 檢查是否有活動的網路連線
+                var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(ni => ni.OperationalStatus == OperationalStatus.Up &&
+                          (ni.NetworkInterfaceType != NetworkInterfaceType.Loopback) &&
+                          (ni.NetworkInterfaceType != NetworkInterfaceType.Tunnel));
+
+                if (!networkInterfaces.Any())
+                    return false;
+
+                // 方法 3: 嘗試 Ping 可靠的外部伺服器
+                return PingHost("8.8.8.8");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"檢查網路連線時發生錯誤: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 嘗試 Ping 指定的主機
+        /// </summary>
+        /// <param name="hostNameOrAddress">主機名稱或 IP 地址</param>
+        /// <returns>如果能成功 Ping 通則返回 true，否則返回 false</returns>
+        private static bool PingHost(string hostNameOrAddress)
+        {
+            try
+            {
+                using (var ping = new Ping())
+                {
+                    var reply = ping.Send(hostNameOrAddress, 2000);
+                    return reply != null && reply.Status == IPStatus.Success;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
     }
 }
 
