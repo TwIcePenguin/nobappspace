@@ -407,7 +407,7 @@ namespace NOBApp.Sports
                     Task.Delay(100).Wait();
                     if (MainNob.出現直式選單)
                     {
-                        if (MainNob.取得最下面選項().Contains("關於"))
+                        if (MainNob.取得最下面選項(8).Contains("商品"))
                         {
                             MainNob.KeyPress(VKeys.KEY_ENTER, 100, 100);
                             Task.Delay(200).Wait();
@@ -427,13 +427,13 @@ namespace NOBApp.Sports
                     }
                     else
                     {
-                        Task.Delay(100).Wait();
+                        Task.Delay(500).Wait();
                         if (MainNob.對話與結束戰鬥)
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
                     }
 
                     mTErrorCheck = mTErrorCheck + 1;
-                    if (mTErrorCheck > 20)
+                    if (mTErrorCheck > 50)
                     {
                         mTErrorCheck = 0;
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);

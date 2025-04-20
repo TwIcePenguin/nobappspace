@@ -223,7 +223,8 @@ namespace NOBApp
         public bool F5解無敵 = false;
         //使用 Enter 點怪(舊式)
         public bool isUseEnter = false;
-
+        int errorCheckCount = 0;
+        string cacheStatus = "";
         string cacheLog = string.Empty;
         public void Log(string str)
         {
@@ -262,6 +263,21 @@ namespace NOBApp
                 }
 
                 RunCode.腳本運作();
+
+                if (cacheStatus != StateA)
+                {
+                    cacheStatus = StateA;
+                    errorCheckCount = 0;
+                }
+                else
+                {
+                    errorCheckCount++;
+                    if (errorCheckCount > 1000)
+                    {
+                        errorCheckCount = 0;
+                        TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
+                    }
+                }
             }
         }
 
