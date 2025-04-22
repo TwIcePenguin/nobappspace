@@ -14,6 +14,7 @@ namespace NOBApp.Sports
         public int SetClass = 0;
         public int 接任務NPCID = 0;
         int cache地圖 = 7800;
+        int 青龍ID = 0;
 
         public override void 初始化()
         {
@@ -27,7 +28,6 @@ namespace NOBApp.Sports
             cache地圖 = MainNob!.MAPID;
         }
 
-        int 絕ID = 0;
         public override void 腳本運作()
         {
             if (MainNob != null)
@@ -45,7 +45,7 @@ namespace NOBApp.Sports
                         {
                             mUseNOB = MainNob;
                             Task.Run(接任務);
-                              MainNob.Log($"---- {mUseNOB!.PlayerName}");
+                            MainNob.Log($"---- {mUseNOB!.PlayerName}");
                             Task.Delay(5000).Wait();
                             for (int i = 0; i < NobTeam.Count; i++)
                             {
@@ -91,47 +91,8 @@ namespace NOBApp.Sports
                                     Task.Delay(50).Wait();
                                 }
                             }
-                            //使用道具
-                            //while (MainNob.StartRunCode)
-                            //{
-                            //    MainNob.KeyPress(VKeys.KEY_F7);
-                            //    MainNob.KeyPress(VKeys.KEY_ENTER, 2, 500);
-                            //    Task.Delay(500).Wait();
-                            //    break;
-                            //}
-                            ////絕 15 對話開始
-                            //while (MainNob.StartRunCode)
-                            //{
-                            //    if (MainNob.GetTargetIDINT() != -1)
-                            //    {
-                            //        var c2 = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 100), "F6F67A");
-                            //        if (c2 == 15)
-                            //        {
-                            //            絕ID = MainNob.GetTargetIDINT();
-                            //            MainNob.MoveToNPC(絕ID);
-                            //        }
-                            //        else
-                            //        {
-                            //            MainNob.KeyPressT(VKeys.KEY_Q, 100);
-                            //            MainNob.KeyPress(VKeys.KEY_J);
-                            //            Task.Delay(100).Wait();
-                            //        }
-                            //        if (MainNob.GetTargetIDINT() == 絕ID && MainNob.對話與結束戰鬥)
-                            //        {
-                            //            MainNob.KeyPress(VKeys.KEY_ENTER, 10);
-                            //            Task.Delay(100);
-                            //            MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
-                            //            break;
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        MainNob.KeyPressT(VKeys.KEY_Q, 100);
-                            //        MainNob.KeyPress(VKeys.KEY_J);
-                            //        Task.Delay(100).Wait();
-                            //    }
 
-                            //}
+                            MainNob.第三人稱 = true;
 
                             //四聖
                             移動點.Clear();
@@ -183,6 +144,10 @@ namespace NOBApp.Sports
                             移動點.Add(new(3687, 14229));
                             移動點.Add(new(2140, 11052));
                             移動到定點();
+
+                            Task.Delay(1000).Wait();
+                            MainNob.Log("達到青龍定點");
+                            MainNob.第三人稱 = false;
                         }
                         int battleCheck = 0;
                         int battleIn = 0;
@@ -318,10 +283,10 @@ namespace NOBApp.Sports
                                         MainNob.KeyPress(VKeys.KEY_J);
                                         MainNob.KeyPress(VKeys.KEY_ENTER);
                                         Task.Delay(1500).Wait();
-                                        MainNob.鎖定NPC(絕ID);
-                                        if (MainNob.GetTargetIDINT() == 絕ID)
+                                        MainNob.鎖定NPC(青龍ID);
+                                        if (MainNob.GetTargetIDINT() == 青龍ID)
                                         {
-                                            MainNob.MoveToNPC(絕ID);
+                                            MainNob.MoveToNPC(青龍ID);
                                             Task.Delay(500);
                                             break;
                                         }
@@ -353,15 +318,14 @@ namespace NOBApp.Sports
                             while (MainNob.StartRunCode)
                             {
                                 Task.Delay(500);
-                                  MainNob.Log($"離開 尋找絕ID = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
-                                MainNob.目前動作 = $"離開 尋找絕 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
-                                if (絕ID == -1)
+                                MainNob.Log($"離開 尋找ID = {青龍ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
+                                if (青龍ID == -1)
                                 {
-                                    絕ID = 顏色尋目標前往(15, E_TargetColor.藍NPC);
+                                    青龍ID = 顏色尋目標前往(15, E_TargetColor.藍NPC);
                                 }
                                 else
                                 {
-                                    if (MainNob.GetTargetIDINT() == 絕ID && MainNob.對話與結束戰鬥)
+                                    if (MainNob.GetTargetIDINT() == 青龍ID && MainNob.對話與結束戰鬥)
                                     {
                                         MainNob.KeyPress(VKeys.KEY_ENTER, 10);
                                         Task.Delay(100);
@@ -371,7 +335,7 @@ namespace NOBApp.Sports
                                     }
                                     else
                                     {
-                                        MainNob.MoveToNPC(絕ID);
+                                        MainNob.MoveToNPC(青龍ID);
                                         Task.Delay(500).Wait();
                                     }
                                 }
@@ -408,9 +372,9 @@ namespace NOBApp.Sports
                                     while (MainNob.StartRunCode)
                                     {
                                         Task.Delay(500).Wait();
-                                          MainNob.Log($"離開 尋找信長 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
-                                        MainNob.目前動作 = $"離開 尋找信長 = {絕ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
-                                        if (MainNob.GetTargetIDINT() == 絕ID && MainNob.對話與結束戰鬥)
+                                        MainNob.Log($"離開 尋找信長 = {青龍ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
+                                        MainNob.目前動作 = $"離開 尋找信長 = {青龍ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}";
+                                        if (MainNob.GetTargetIDINT() == 青龍ID && MainNob.對話與結束戰鬥)
                                         {
                                             MainNob.KeyPress(VKeys.KEY_ENTER, 10);
                                             Task.Delay(100);
@@ -419,7 +383,7 @@ namespace NOBApp.Sports
                                         }
                                         else
                                         {
-                                            MainNob.MoveToNPC(絕ID);
+                                            MainNob.MoveToNPC(青龍ID);
                                             Task.Delay(500).Wait();
                                         }
                                     }
@@ -449,13 +413,13 @@ namespace NOBApp.Sports
             int mErrorCheck = 0;
             if (useNOB != null)
             {
-                  MainNob.Log("接任務 " + useNOB?.PlayerName);
+                useNOB.Log("接任務 " + useNOB?.PlayerName);
                 useNOB.副本進入完成 = false;
                 useNOB.目前動作 = "尋找NPC對話..";
                 //入場對話
                 int x = 0;
                 int y = 0;
-                while (MainNob.StartRunCode)
+                while (MainNob != null && MainNob.StartRunCode)
                 {
                     Task.Delay(200).Wait();
                     useNOB.目前動作 = "入場中.." + useNOB.StateA;
@@ -517,7 +481,7 @@ namespace NOBApp.Sports
                         mErrorCheck++;
                         if (mErrorCheck > 20)
                         {
-                              MainNob.Log(" ErrorCheck ");
+                            MainNob.Log(" ErrorCheck ");
                             mErrorCheck = 0;
                             if (useNOB.出現左右選單)
                             {

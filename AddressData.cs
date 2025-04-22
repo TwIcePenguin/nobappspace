@@ -50,7 +50,7 @@ namespace NOBApp
         public static string 直選框 = "4C4D008";   //跳出選擇視窗[0~n選擇] ccTalkBox1
         public static string 直選框文字 = "AD9944";      //確認選擇視窗文字 只會出現最後 ccTalkBox
         public static string 搜尋身邊NPCID起始 = "5C53F10";
-        public static string 視角 = $"{FIXED_APPNAME_STR} + 5C5C8A0"; //0-俯視 1-第一人稱
-        public static string UI字型 = $"{FIXED_APPNAME_STR} + 4C4C124"; //0~
+        public static string 視角 = $"5C5C8A0"; //0-俯視 1-第一人稱
+        public static string UI字型 = $"4C4C124"; //0~
     }
 }

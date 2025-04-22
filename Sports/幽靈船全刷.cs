@@ -115,6 +115,9 @@ namespace NOBApp.Sports
 
         void 尋找目標()
         {
+            if (MainNob == null)
+                return;
+
             int findCheck = 0;
             NobMainCodePage.NpcCountToRead = 30;
             var allNPCIDs = NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC, 0, 70000);

@@ -50,8 +50,6 @@ namespace NOBApp
         private const string TAB_STATE_FILENAME = "TabState.json";
         private TabControlState _tabState = new TabControlState();
 
-        static System.Timers.Timer networkCheckTimer = new System.Timers.Timer(10000); // 每10秒檢查一次
-        static bool StartCheck = false;
         public Setting CodeSetting = new();
 
         #region Initialize
@@ -93,11 +91,6 @@ namespace NOBApp
             InitializeTabItems();
             // 檢查更新是否成功完成
             CheckUpdateSuccess();
-
-            networkCheckTimer.Elapsed += (sender, e) =>
-            {
-                CheckNetworkAvailable();
-            };
 
             // 在其他初始化之前加載 GitHub 配置
             this.Loaded += (s, e) => CheckForUpdatesAsync();
@@ -189,16 +182,6 @@ namespace NOBApp
             }
             //  MainNob.Log("共有 : " + nobList.Count);
             UIUpdate.RefreshNOBID_Sec(comboBoxes, nobWindowsList);
-        }
-
-        public static void StartCheckNetworkAvailable()
-        {
-            if (StartCheck)
-                return;
-
-            StartCheck = true;
-            networkCheckTimer.Stop();
-            networkCheckTimer.Start();
         }
 
         public static Point GetResolutioSize()
@@ -346,20 +329,6 @@ namespace NOBApp
                     content.AutoRestoreState = true;
                     content.PlayerToRestore = state.PlayerName;
                 }
-            }
-        }
-        private void CheckNetworkAvailable()
-        {
-            bool isConnected = Tools.IsNetworkAvailable();
-            if (!isConnected)
-            {
-                NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
-                string name = "";
-                name = page!.MainNob!.PlayerName;
-                _ = DiscordNotifier.SendNotificationAsync(name, "網路已斷線，請檢查連線");
-                StartCheck = false;
-                networkCheckTimer.Stop();
-                // 執行斷線處理邏輯
             }
         }
 

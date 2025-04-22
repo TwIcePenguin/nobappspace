@@ -329,9 +329,9 @@ namespace NOBApp.Sports
                     MainNob.StartRunCode = false;
                     DiscordNotifier.SendNotificationAsync(MainNob.PlayerName, "嘗試多次都沒有進入 戰局 多次卡住 自動登出 避免其他問題");
                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
+                    MainNob.KeyPress(VKeys.KEY_ENTER);
                     MainNob.KeyPress(VKeys.KEY_F5, 3);
                     MessageBox.Show($"{MainNob.PlayerName} 嘗試多次都沒有進入 戰局 多次卡住 自動關掉視窗 程式暫停避免其他問題");
-
                     //Environment.Exit(0);
                 }
                 MainNob.Log("-----大黑天ID------ " + 大黑天ID);

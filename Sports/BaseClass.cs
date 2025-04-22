@@ -24,6 +24,8 @@ namespace NOBApp.Sports
         private const int LoopDelayMs = 20;                       // 迴圈延遲 (毫秒)
         #endregion
 
+        /// <summary>隊長
+        /// </summary>
         public NOBDATA? MainNob { get; private set; }
         /// <summary>
         /// 包含隊長自己
@@ -812,8 +814,6 @@ namespace NOBApp.Sports
 
             return false; // 如果迴圈因為 MainNob.StartRunCode 為 false 而結束，也返回 false
         }
-
-
     }
 
     public enum E_TargetColor

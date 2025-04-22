@@ -1044,7 +1044,6 @@ namespace NOBApp
                     }
                 }
             }
-            MainWindow.StartCheckNetworkAvailable();
             Btn_Refresh.IsEnabled = !mChecked;
         }
 
