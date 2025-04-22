@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using NOBApp.Sports;
 using static NOBApp.NobMainCodePage;
 
@@ -114,7 +115,6 @@ namespace NOBApp
                 return 戰鬥中判定 > 3;
             }
         }
-        public bool 登入畫面 => ReadInt(AddressData.登入畫面, 0) == 0;
 
         public bool 第三人稱 => ReadInt("<nobolHD.bng> +" + AddressData.視角, 0) == 0;
 
@@ -247,7 +247,6 @@ namespace NOBApp
             EMTeamData.Clear();
             SKNames.Clear();
         }
-
         public void CodeUpdate()
         {
             bool _init = false;
@@ -275,12 +274,14 @@ namespace NOBApp
                     if (errorCheckCount > 1000)
                     {
                         errorCheckCount = 0;
-                        TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
+                        StartRunCode = false;
+                        string msg = $"{RunCode?.GetType().Name ?? "無腳本"} 狀態長時間沒有變化 需要請企鵝確認";
+                        DiscordNotifier.SendNotificationAsync(PlayerName, msg);
+                        MessageBox.Show($"{PlayerName} -> {msg}");//TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
                     }
                 }
             }
         }
-
         public async Task BattleUpdate()
         {
             Log($"1 啟動自動輔助中");

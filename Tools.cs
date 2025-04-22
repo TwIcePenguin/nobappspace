@@ -133,8 +133,6 @@ namespace NOBApp
         {
             return (int.Parse(str, NumberStyles.HexNumber) + i).ToString("X");
         }
-
-        static public bool timeUpUpdate = false;
         /// <summary>
         /// 取得電腦的唯一識別碼
         /// </summary>
@@ -474,7 +472,6 @@ namespace NOBApp
             int.TryParse(oldMultiBootNum, out mulitnum);
             registryKey.SetValue("MultiBootNum", mulitnum);
         }
-
         private static void TryNewSessions(Process nob, string path)
         {
             Process tool = new Process();
@@ -530,7 +527,6 @@ namespace NOBApp
                 Debug.WriteLine($"儲存新的成功Session Index: {successfulSessionIndex.Value}");
             }
         }
-
         /// <summary>
         /// 從註冊表載入Session Index
         /// </summary>
@@ -557,7 +553,6 @@ namespace NOBApp
 
             return null;
         }
-
         /// <summary>
         /// 將Session Index儲存到註冊表
         /// </summary>
@@ -573,7 +568,6 @@ namespace NOBApp
                 Debug.WriteLine($"儲存Session Index到註冊表失敗: {ex.Message}");
             }
         }
-
         /// <summary>
         /// 清除註冊表中的Session Index
         /// </summary>
@@ -671,8 +665,6 @@ namespace NOBApp
                 return false;
             }
         }
-
-
     }
 }
 

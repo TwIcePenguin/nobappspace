@@ -2,10 +2,13 @@
 using RegisterDmSoftConsoleApp.DmSoft;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,9 +46,15 @@ namespace NOBApp
 
         private bool _updateAvailable = false;
         private string _latestVersion = string.Empty;
+
+        private const string TAB_STATE_FILENAME = "TabState.json";
+        private TabControlState _tabState = new TabControlState();
+
         static System.Timers.Timer networkCheckTimer = new System.Timers.Timer(10000); // 每10秒檢查一次
         static bool StartCheck = false;
         public Setting CodeSetting = new();
+
+        #region Initialize
         public MainWindow()
         {
             InitializeComponent();
@@ -63,8 +72,8 @@ namespace NOBApp
             {
                 Directory.CreateDirectory(DmConfig.DmGlobalPath);
             }
-            UIDefault();
-            RegButtonEvent();
+            InitUIStatus();
+            InitButtonEvent();
 
             dmSoft.SetPath(DmConfig.DmGlobalPath);
 
@@ -89,9 +98,75 @@ namespace NOBApp
             {
                 CheckNetworkAvailable();
             };
+
             // 在其他初始化之前加載 GitHub 配置
             this.Loaded += (s, e) => CheckForUpdatesAsync();
         }
+
+        private void InitializeTabItems()
+        {
+            if (NBTabControl == null)
+                return;
+
+            NBTabControl.Items.Clear();
+            // 嘗試載入之前的標籤頁狀態
+            LoadTabState();
+
+            // 確保始終有8個標籤頁
+            // 如果載入的標籤頁少於8個，添加到8個
+            while (_tabState.TabItems.Count < 8)
+            {
+                var index = _tabState.TabItems.Count;
+                var tabItemState = new TabItemState
+                {
+                    Header = $"角色{index}",
+                    PlayerName = "",
+                    IsVerified = false
+                };
+                _tabState.TabItems.Add(tabItemState);
+            }
+
+            // 如果載入的標籤頁超過8個，只保留前8個
+            if (_tabState.TabItems.Count > 8)
+            {
+                _tabState.TabItems = _tabState.TabItems.Take(8).ToList();
+            }
+
+            // 根據狀態創建標籤頁
+            for (int i = 0; i < _tabState.TabItems.Count; i++)
+            {
+                var state = _tabState.TabItems[i];
+                CreateTabItem(state, i);
+            }
+
+            // 設置活動標籤頁
+            if (NBTabControl.Items.Count > 0)
+            {
+                NBTabControl.SelectedIndex = Math.Min(_tabState.ActiveTabIndex, NBTabControl.Items.Count - 1);
+            }
+        }
+
+        private void InitUIStatus()
+        {
+            主窗狀態 = MainWindowsStatusMsgBox;
+            winHeight = 企鵝之野望.Height;
+            企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
+
+#if DEBUG
+            企鵝專用測試A.Visibility = Visibility.Visible;
+#endif
+        }
+
+        private void InitButtonEvent()
+        {
+            企鵝專用測試A.Click += 企鵝專用測試_Click;
+            企鵝專用測試B.Click += 企鵝專用測試_Click;
+            企鵝專用測試C.Click += 企鵝專用測試_Click;
+
+            Btn_AutoRefresh.Click += Btn_AutoRefresh_Click;
+        }
+
+        #endregion Initialize
 
         #region static public functions
         public static void RefreshNOBID(ComboBox CB_HID, ComboBox[] comboBoxes)
@@ -167,9 +242,112 @@ namespace NOBApp
             企鵝之野望.Height = winHeight + tA + tB;
         }
 
+        /// <summary>
+        /// 保存標籤頁狀態
+        /// </summary>
+        public void SaveTabState()
+        {
+            try
+            {
+                _tabState.ActiveTabIndex = NBTabControl.SelectedIndex;
+                _tabState.TabItems.Clear();
+
+                foreach (TabItem tabItem in NBTabControl.Items)
+                {
+                    if (tabItem.Content is NobMainCodePage page)
+                    {
+                        var state = new TabItemState
+                        {
+                            Header = tabItem.Header.ToString() ?? "",
+                            PlayerName = page.MainNob?.PlayerName ?? "",
+                            IsVerified = page.MainNob != null && page.MainNob.驗證完成
+                        };
+                        _tabState.TabItems.Add(state);
+                    }
+                }
+
+                // 確保有8個標籤頁記錄
+                while (_tabState.TabItems.Count < 8)
+                {
+                    var index = _tabState.TabItems.Count;
+                    _tabState.TabItems.Add(new TabItemState
+                    {
+                        Header = $"角色{index}",
+                        PlayerName = "",
+                        IsVerified = false
+                    });
+                }
+
+                string json = JsonSerializer.Serialize(_tabState);
+                File.WriteAllText(TAB_STATE_FILENAME, json);
+                Debug.WriteLine("保存標籤頁狀態成功");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"保存標籤頁狀態失敗: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 載入標籤頁狀態
+        /// </summary>
+        private void LoadTabState()
+        {
+            try
+            {
+                if (File.Exists(TAB_STATE_FILENAME))
+                {
+                    string json = File.ReadAllText(TAB_STATE_FILENAME);
+                    _tabState = JsonSerializer.Deserialize<TabControlState>(json) ?? new TabControlState();
+                    Debug.WriteLine("載入標籤頁狀態成功");
+                }
+                else
+                {
+                    _tabState = new TabControlState();
+                    Debug.WriteLine("未找到標籤頁狀態文件，使用默認設置");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"載入標籤頁狀態失敗: {ex.Message}");
+                _tabState = new TabControlState();
+            }
+        }
+        // 在應用程式關閉時保存標籤頁狀態
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            SaveTabState();
+            base.OnClosing(e);
+        }
+
         #endregion public functions
 
         #region private founctions
+        private void CreateTabItem(TabItemState state, int index)
+        {
+            var tabItem = new TabItem();
+            tabItem.Header = state.Header;
+            tabItem.MouseDoubleClick += OnTabFocus;
+
+            var content = new NobMainCodePage();
+            tabItem.Content = content;
+            content.RootTabItem = tabItem;
+            content.PageIndex = index; // 設置頁面索引
+
+            NBTabControl.Items.Add(tabItem);
+
+            // 如果有已保存的遊戲角色，且已驗證，則恢復狀態
+            if (!string.IsNullOrEmpty(state.PlayerName) && state.IsVerified)
+            {
+                var nobData = AllNobWindowsList.Find(n => n.PlayerName == state.PlayerName);
+                if (nobData != null)
+                {
+                    // 設置自動恢復狀態屬性
+                    content.AutoRestoreState = true;
+                    content.PlayerToRestore = state.PlayerName;
+                }
+            }
+        }
         private void CheckNetworkAvailable()
         {
             bool isConnected = Tools.IsNetworkAvailable();
@@ -178,7 +356,7 @@ namespace NOBApp
                 NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
                 string name = "";
                 name = page!.MainNob!.PlayerName;
-                _ = TelegramNotifier.SendNotificationAsync(name, "網路已斷線，請檢查連線");
+                _ = DiscordNotifier.SendNotificationAsync(name, "網路已斷線，請檢查連線");
                 StartCheck = false;
                 networkCheckTimer.Stop();
                 // 執行斷線處理邏輯
@@ -220,26 +398,6 @@ namespace NOBApp
             {
                 return false;
             }
-        }
-
-        private void UIDefault()
-        {
-            主窗狀態 = MainWindowsStatusMsgBox;
-            winHeight = 企鵝之野望.Height;
-            企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
-
-#if DEBUG
-            企鵝專用測試A.Visibility = Visibility.Visible;
-#endif
-        }
-
-        private void RegButtonEvent()
-        {
-            企鵝專用測試A.Click += 企鵝專用測試_Click;
-            企鵝專用測試B.Click += 企鵝專用測試_Click;
-            企鵝專用測試C.Click += 企鵝專用測試_Click;
-
-            Btn_AutoRefresh.Click += Btn_AutoRefresh_Click;
         }
 
         private void Button_Click_手把(object sender, RoutedEventArgs e)
@@ -346,27 +504,6 @@ namespace NOBApp
                 {
                     Debug.WriteLine($"讀取更新狀態檔案發生錯誤: {ex.Message}");
                 }
-            }
-        }
-
-        private void InitializeTabItems()
-        {
-            if (NBTabControl == null)
-                return;
-
-            NBTabControl.Items.Clear();
-
-            for (int i = 0; i < 8; i++)
-            {
-                var tabItem = new TabItem();
-                tabItem.Header = $"角色{i}";
-
-                tabItem.MouseDoubleClick += OnTabFocus;
-
-                var content = new NobMainCodePage();
-                tabItem.Content = content;
-                content.RootTabItem = tabItem;
-                NBTabControl.Items.Add(tabItem);
             }
         }
 

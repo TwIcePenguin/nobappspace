@@ -52,6 +52,5 @@ namespace NOBApp
         public static string 搜尋身邊NPCID起始 = "5C53F10";
         public static string 視角 = $"{FIXED_APPNAME_STR} + 5C5C8A0"; //0-俯視 1-第一人稱
         public static string UI字型 = $"{FIXED_APPNAME_STR} + 4C4C124"; //0~
-        public static string 登入畫面 = $"{FIXED_APPNAME_STR} + B5B764"; //0 -登出 1-登入
     }
 }

@@ -1,7 +1,11 @@
 public class VersionInfo
 {
-    public const string Version = "0.72.2";
+    public const string Version = "0.72.6";
 }
+
+
+
+
 
 
 

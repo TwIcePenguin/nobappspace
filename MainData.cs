@@ -127,4 +127,41 @@ namespace NOBApp
         public int 線路 { get; set; }
         public bool Enter點怪 { get; set; }
     }
+
+    /// <summary>
+    /// 保存標籤頁狀態的類別
+    /// </summary>
+    public class TabControlState
+    {
+        /// <summary>
+        /// 已開啟的標籤頁索引
+        /// </summary>
+        public int ActiveTabIndex { get; set; } = 0;
+
+        /// <summary>
+        /// 標籤頁設定列表
+        /// </summary>
+        public List<TabItemState> TabItems { get; set; } = new List<TabItemState>();
+    }
+
+    /// <summary>
+    /// 單一標籤頁狀態
+    /// </summary>
+    public class TabItemState
+    {
+        /// <summary>
+        /// 標籤頁標題
+        /// </summary>
+        public string Header { get; set; } = "";
+
+        /// <summary>
+        /// 指向的遊戲角色名稱
+        /// </summary>
+        public string PlayerName { get; set; } = "";
+
+        /// <summary>
+        /// 是否已經驗證通過
+        /// </summary>
+        public bool IsVerified { get; set; } = false;
+    }
 }

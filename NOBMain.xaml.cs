@@ -39,14 +39,18 @@ namespace NOBApp
         /// </summary>
         public bool 全隊追蹤 = false;
 
-        public bool 準備進入下一階段 = false;
-        public bool 完成進入下一階段 = false;
         public int 限點數量 = 2;
         public bool UpdateNPCDataUI = false;
         public ComboBox[] comboBoxes;
         public TabItem RootTabItem;
         Thickness oThickness;
         bool pageA_isExpanded = false, pageB_isExpanded = false;
+        // 用於標記是否需要自動恢復狀態
+        public bool AutoRestoreState { get; set; } = false;
+
+        // 需要恢復的玩家名稱
+        public string PlayerToRestore { get; set; } = "";
+
         public NobMainCodePage()
         {
             InitializeComponent();
@@ -73,6 +77,56 @@ namespace NOBApp
             oThickness = 戰鬥輔助面.Margin;
 
             MainWindow.RefreshNOBID(CB_HID, comboBoxes);
+
+            // 添加自動恢復邏輯
+            if (AutoRestoreState && !string.IsNullOrEmpty(PlayerToRestore))
+            {
+                this.Loaded += async (s, e) =>
+                {
+                    await Task.Delay(500); // 給UI一些時間初始化
+                    TryRestoreState();
+                };
+            }
+        }
+
+        // 嘗試恢復狀態的方法
+        private void TryRestoreState()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(PlayerToRestore))
+                    return;
+
+                // 檢查指定的玩家是否存在
+                var player = MainWindow.AllNobWindowsList.Find(p => p.PlayerName == PlayerToRestore);
+                if (player == null)
+                {
+                    Debug.WriteLine($"無法找到玩家: {PlayerToRestore}");
+                    return;
+                }
+
+                // 設置下拉選單並觸發驗證流程
+                if (CB_HID.Items.Contains(PlayerToRestore))
+                {
+                    CB_HID.SelectedItem = PlayerToRestore;
+
+                    // 設置自動驗證
+                    認證2CB.IsChecked = true;
+
+                    // 自動點擊驗證按鈕
+                    LockButton_Click(LockBtn, new RoutedEventArgs());
+
+                    Debug.WriteLine($"自動恢復標籤頁 {RootTabItem.Header} 的狀態: {PlayerToRestore}");
+                }
+                else
+                {
+                    Debug.WriteLine($"下拉選單中找不到玩家: {PlayerToRestore}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"自動恢復標籤頁狀態失敗: {ex.Message}");
+            }
         }
 
         void UIStatus_Default()
@@ -522,6 +576,9 @@ namespace NOBApp
                             UpdateSelectMenu();
                             LoadSetting();
                             讀取隊員技能組();
+
+                            // 通知MainWindow保存標籤頁狀態
+                            MainWindow.Instance?.SaveTabState();
                         }
                         else
                         {
