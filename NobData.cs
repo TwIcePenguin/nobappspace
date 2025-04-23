@@ -335,8 +335,9 @@ namespace NOBApp
                 }
                 else
                 {
+                    Task.Delay(50).Wait();
                     errorCheckCount++;
-                    if (errorCheckCount > 1000)
+                    if (errorCheckCount > 10000)
                     {
                         errorCheckCount = 0;
                         StartRunCode = false;
