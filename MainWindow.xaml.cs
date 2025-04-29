@@ -1,4 +1,5 @@
-﻿using RegisterDmSoftConsoleApp.Configs;
+﻿using Microsoft.VisualBasic.Logging;
+using RegisterDmSoftConsoleApp.Configs;
 using RegisterDmSoftConsoleApp.DmSoft;
 using System;
 using System.Collections.Generic;
@@ -381,6 +382,8 @@ namespace NOBApp
                 NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
                 if (page != null && page.MainNob != null)
                 {
+                    var speed = page.MainNob.速度;
+                    狀態訊息(speed.ToString());
                     //效能測試
                     //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
                     //橘 565ABD

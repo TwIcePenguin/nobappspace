@@ -708,6 +708,9 @@ namespace NOBApp
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
         }
+
+        public int 速度 => MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+00AFB254] + 26a", 0, 128);
+
         public void 直向選擇(int num, int delay = 300, bool passCheck = false)
         {
             MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+4C4C154] + C4", 0, num);
