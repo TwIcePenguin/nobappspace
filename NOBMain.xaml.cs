@@ -180,6 +180,8 @@ namespace NOBApp
             List_忽略名單.SelectionChanged += 排序_SelectionChanged;
             List_目前名單.SelectionChanged += 排序_SelectionChanged;
 
+            VIPSP.Checked += (s, e) => { if (MainNob != null) MainNob.VIPSP = true; };
+
         }
 
         #region 目標選擇UI
@@ -561,11 +563,10 @@ namespace NOBApp
                         到期計時.Content = $"到期日:{MainNob.到期日}";
 
                         //暫時將到期關閉
-                        //if (DateTime.Now > MainNob.到期日)
-                        //{
-                        //    isPass = false;
-                        //    MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 感謝各位");
-                        //}
+                        if (MainNob.到期日 >= DateTime.Now)
+                        {
+                            VIPSP.IsEnabled = true;
+                        }
 
                         if (isPass)
                         {

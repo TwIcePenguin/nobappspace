@@ -63,6 +63,7 @@ namespace NOBApp
         public RECT 原視窗;
         public int NowHeight;
         public int NowWidth;
+        public bool VIPSP = false;
         private static readonly Random _random = new Random();
 
         #region 記憶體讀取位置
@@ -350,6 +351,9 @@ namespace NOBApp
         }
         public async Task BattleUpdate()
         {
+            if (VIPSP)
+                速度();
+
             // 避免重複執行
             if (啟動自動輔助中) return;
 
@@ -709,7 +713,7 @@ namespace NOBApp
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
         }
 
-        public int 速度 => MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+00AFB254] + 26a", 0, 128);
+        public void 速度() => MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+00AFB254] + 26a", 0, 128);
 
         public void 直向選擇(int num, int delay = 300, bool passCheck = false)
         {
@@ -840,6 +844,11 @@ namespace NOBApp
                 }
                 else
                 {
+                    if (待機)
+                    {
+                        KeyPress(VKeys.KEY_ESCAPE, 1);
+                    }
+
                     checkDoneCount++;
                     if (checkDoneCount > 3)
                     {
