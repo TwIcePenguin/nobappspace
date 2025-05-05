@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static NOBApp.NobMainCodePage;
 
@@ -23,6 +24,11 @@ namespace NOBApp.Sports
         private const int BattleEndCheckRetries = 3;              // 戰鬥結束檢查重試次數
         private const int LoopDelayMs = 20;                       // 迴圈延遲 (毫秒)
         #endregion
+
+        // Windows API常量
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TRANSPARENT = 0x00000020;
+        private const int WS_EX_LAYERED = 0x00080000;
 
         /// <summary>隊長
         /// </summary>
@@ -813,6 +819,49 @@ namespace NOBApp.Sports
             }
 
             return false; // 如果迴圈因為 MainNob.StartRunCode 為 false 而結束，也返回 false
+        }
+
+
+        // Windows API函數導入
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hwnd, int index);
+
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
+
+        private const uint LWA_ALPHA = 0x2;
+        private const uint LWA_COLORKEY = 0x1;
+
+        private bool _isClickThrough = false;
+
+        /// <summary>
+        /// 設置視窗是否允許鼠標點擊穿透
+        /// </summary>
+        /// <param name="isClickThrough">true表示點擊穿透，false表示正常接收點擊</param>
+        public void SetClickThrough(bool isClickThrough)
+        {
+            if (MainNob == null || _isClickThrough == isClickThrough)
+                return;
+
+            _isClickThrough = isClickThrough;
+
+            // 獲取當前視窗樣式
+            int extendedStyle = GetWindowLong(MainNob.Hwnd, GWL_EXSTYLE);
+
+            if (isClickThrough)
+            {
+                // 添加點擊穿透樣式
+                SetWindowLong(MainNob.Hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+                //SetLayeredWindowAttributes(MainNob.Hwnd, 0, 128, LWA_ALPHA); // 設置半透明效果，可調整
+            }
+            else
+            {
+                // 移除點擊穿透樣式，但保留分層視窗屬性
+                SetWindowLong(MainNob.Hwnd, GWL_EXSTYLE, extendedStyle & ~WS_EX_TRANSPARENT);
+            }
         }
     }
 

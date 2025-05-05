@@ -158,6 +158,33 @@ namespace NOBApp
             企鵝專用測試C.Click += 企鵝專用測試_Click;
 
             Btn_AutoRefresh.Click += Btn_AutoRefresh_Click;
+            Btn_SetLoad.Click += Btn_SetLoad_Click;
+            Btn_SetApply.Click += Btn_SetApply_Click;
+        }
+
+        private void Btn_SetApply_Click(object sender, RoutedEventArgs e)
+        {
+            if (NBTabControl.SelectedItem is TabItem tabItem && ((TabItem)NBTabControl.SelectedItem).Content != null)
+            {
+                NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
+                if (page != null && page.MainNob != null)
+                {
+                    page.MainNob.CodeSetting = CodeSetting;
+                    page.SetToUI();
+                }
+            }
+        }
+        private void Btn_SetLoad_Click(object sender, RoutedEventArgs e)
+        {
+            if (NBTabControl.SelectedItem is TabItem tabItem && ((TabItem)NBTabControl.SelectedItem).Content != null)
+            {
+                NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
+                if (page != null && page.MainNob != null)
+                {
+                    Btn_SetLoad.Content = $"取得{page.MainNob.PlayerName}設定";
+                    CodeSetting = page.MainNob.CodeSetting;
+                }
+            }
         }
 
         #endregion Initialize
@@ -206,8 +233,13 @@ namespace NOBApp
             return stateAMapping.TryGetValue(stateA, out var description) ? description : stateA;
         }
 
-        public static void 狀態訊息(string msg)
+        public static void 狀態訊息(string msg, bool clear = false)
         {
+            if (主窗狀態 == null)
+                return;
+
+            if (clear)
+                主窗狀態.Text = "";
             主窗狀態?.AppendText(msg);
         }
         public static void 清除狀態訊息()
@@ -392,9 +424,10 @@ namespace NOBApp
                     var c2 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "565ABD");
                     //紅 6363EE 
                     var c3 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
-                    var c4 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
+                    var c4 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(100, 240), new System.Drawing.Point(35, 70), "FFFFFF");
                     var c5 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
                     Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5}");
+                    page.MainNob.ML_Click(125, 260);
                 }
             }
         }

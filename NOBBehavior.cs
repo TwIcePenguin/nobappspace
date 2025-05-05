@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -28,7 +29,9 @@ namespace NOBApp
             {
                 if (StartRunCode == false && IsUseAutoSkill == false)
                     break;
-
+#if DEBUG
+                Debug.WriteLine($"i : {i}");
+#endif
                 Proc.MainWindowHandle.KeyPress(keyCode);
                 if (loopNum > 1)
                     Task.Delay(delay).Wait();
@@ -47,9 +50,17 @@ namespace NOBApp
         {
             Proc.MainWindowHandle.KeyPress(keyCode, ss);
         }
-        public void MR_Clik(int x, int y)
+        public void MR_Click(int x, int y)
         {
-            Proc.MainWindowHandle.M_RClick(x, y);
+            Proc.MainWindowHandle.M_RClick(x, y - 31);
+        }
+        public void ML_Click(int x, int y, int num = 1, int delay = 50)
+        {
+            for (int i = 0; i < num; i++)
+            {
+                Proc.MainWindowHandle.M_LClick(x, y - 31);
+                Task.Delay(delay).Wait();
+            }
         }
         public void KeyDown(VKeys keyCode)
         {

@@ -15,9 +15,10 @@
             <TextBox x:Name="TB_GamePadName" Height="20" TextWrapping="Wrap" Width="55" Cursor="" HorizontalAlignment="Left" Canvas.Left="296" Canvas.Top="7" VerticalAlignment="Top" Visibility="Visible" Margin="151,7,0,0"/>
             <ComboBox x:Name="CMB_Resolution" Height="20" Width="90" IsEditable="True" SelectedIndex="0" HorizontalAlignment="Left" Canvas.Left="260" Canvas.Top="26" VerticalAlignment="Top" Margin="116,32,0,0"/>
             <TextBox x:Name="OpenGameWindows" Height="25" Text="2" Width="25" ToolTip="多開數量" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Canvas.Left="387" Canvas.Top="26" VerticalAlignment="Top" Margin="70,5,0,0" MaxLines="3"/>
-            <Button x:Name="Btn_Update" Content="手動檢查更新" Height="20" Width="135" Click="Btn_Update_Click" 
-        HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,32,0,0" Background="#FF62FF73" FontWeight="Bold"/>
+            <Button x:Name="Btn_Update" Content="手動檢查更新" Height="20" Width="135" Click="Btn_Update_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,32,0,0" Background="#FF62FF73" FontWeight="Bold"/>
             <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Height="25" Width="56" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,5,0,0"/>
+            <Button x:Name="Btn_SetLoad" Content="設定取得" Height="25" Width="39" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="306,5,0,0" FontSize="8"/>
+            <Button x:Name="Btn_SetApply" Content="設定套用" Height="25" Width="40" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="266,5,0,0" FontSize="8"/>
             <Button x:Name="企鵝專用測試A" Content="企鵝A" Height="24" Width="36" Canvas.Left="265" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="5,30,0,0"/>
             <Button x:Name="企鵝專用測試B" Content="企鵝B" Height="24" Width="36" Canvas.Left="306" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="40,30,0,0"/>
             <Button x:Name="企鵝專用測試C" Content="企鵝C" Height="24" Width="36" Canvas.Left="347" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="75,30,0,0"/>

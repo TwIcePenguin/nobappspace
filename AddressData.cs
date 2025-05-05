@@ -12,7 +12,7 @@ namespace NOBApp
         public static string Acc = "5B69918";
         public static string Pas = Acc.AddressAdd(21);
         public static string 角色名稱 = "4C4D210";
-        public static string 地圖座標X = "5B695BC";
+        public static string 地圖座標X = "5B695CC";
         public static string 地圖位置 = "4C4BC34";
         public static string 地圖座標Y = 地圖座標X.AddressAdd(8);
         public static string 快捷F8 = "5C33812";  //差222
@@ -45,7 +45,7 @@ namespace NOBApp
         public static string 戰鬥列隊 = "5B92BAC";
         public static string 戰鬥結算 = "5B69E2C"; //結算出現 = 2 回地圖會變成 = 1
         public static string 戰鬥結算UI = "AFB904"; //1-結算中 0-沒有結算畫面
-        public static string 是否有觀察對象 = "4C4BA18"; //沒有的話是 FFFFFFFF\
+        public static string 是否有觀察對象 = "4C4BA1C"; //沒有的話是 FFFFFFFF\
         public static string 特殊狀態判斷 = "96CC14";  //win11的狀態
         public static string 直選框 = "4C4D008";   //跳出選擇視窗[0~n選擇] ccTalkBox1
         public static string 直選框文字 = "AD9944";      //確認選擇視窗文字 只會出現最後 ccTalkBox

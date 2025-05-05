@@ -52,6 +52,9 @@ namespace NOBApp
 
         public static void 讀取認證訊息Json(NOBDATA user, string json)
         {
+            if (user == null || string.IsNullOrEmpty(json))
+                return;
+
             string dJson = Encoder.AesDecrypt(json, "CHECKNOBPENGUIN", "CHECKNOB");
             PNobUserData nobUseData = JsonSerializer.Deserialize<PNobUserData>(dJson);
             if (nobUseData != null && string.IsNullOrEmpty(nobUseData.Acc) == false &&
@@ -64,10 +67,10 @@ namespace NOBApp
                     user.特殊者 = true;
                     儲存認證訊息(user, nobUseData);
                 }
-                else
-                {
-                    MessageBox.Show("驗證失敗，時間到期 請找企鵝延長時間");
-                }
+                //else
+                //{
+                //    MessageBox.Show("驗證失敗，時間到期 請找企鵝延長時間");
+                //}
             }
             else
             {

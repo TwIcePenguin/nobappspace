@@ -121,6 +121,10 @@ namespace NOBApp
         public int 目標A { get; set; }
         public int 目標B { get; set; }
         public int 目標C { get; set; }
+        public int 目標D { get; set; }
+        public int 目標E { get; set; }
+        public int 目標F { get; set; }
+
         public int 其他選項A { get; set; }
         public int 其他選項B { get; set; }
         public int 搜尋範圍 { get; set; }

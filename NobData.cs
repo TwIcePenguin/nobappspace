@@ -315,6 +315,9 @@ namespace NOBApp
         }
         public void CodeUpdate()
         {
+            if (RunCode == null)
+                return;
+
             bool _init = false;
             while (StartRunCode && RunCode != null)
             {
@@ -348,12 +351,10 @@ namespace NOBApp
                     }
                 }
             }
+            RunCode?.SetClickThrough(false);
         }
         public async Task BattleUpdate()
         {
-            if (VIPSP)
-                速度();
-
             // 避免重複執行
             if (啟動自動輔助中) return;
 
@@ -713,7 +714,14 @@ namespace NOBApp
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
         }
 
-        public void 速度() => MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+00AFB254] + 26a", 0, 128);
+        public async void 速度()
+        {
+            while (VIPSP)
+            {
+                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+00AFB254] + 26a", 0, 128);
+                await Task.Delay(500);
+            }
+        }
 
         public void 直向選擇(int num, int delay = 300, bool passCheck = false)
         {
@@ -839,7 +847,7 @@ namespace NOBApp
                     checkDoneCount = 0;
                     int x = inPosX + _random.Next(-100, 100);
                     int y = inPosY + _random.Next(-50, 50);
-                    MR_Clik(x, y);
+                    MR_Click(x, y);
                     Task.Delay(50).Wait();
                 }
                 else
