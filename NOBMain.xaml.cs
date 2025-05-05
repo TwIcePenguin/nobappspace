@@ -1042,7 +1042,7 @@ namespace NOBApp
 
                 foreach (var user in 隊員智能功能組)
                 {
-                    if (user.同步 && list!.Find(c => { return c.PlayerName == user.NOB.PlayerName; }) == null)
+                    if (user != null && user.同步 && list!.Find(c => { return c.PlayerName == user.NOB!.PlayerName; }) == null)
                         list.Add(user.NOB);
                 }
                 if (list?.Find(c => c.PlayerName == MainNob.PlayerName) == null)
