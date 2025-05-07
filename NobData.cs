@@ -403,7 +403,7 @@ namespace NOBApp
         // 處理背景Enter模式
         private bool ProcessBackgroundEnterMode()
         {
-            if (!AutoSkillSet.背景Enter) return false;
+            if (!AutoSkillSet.背景Enter || !IsUseAutoSkill) return false;
 
             KeyPressPP(VKeys.KEY_ENTER);
             Task.Delay(AutoSkillSet.程式速度 <= 0 ? 100 : AutoSkillSet.程式速度).Wait();
