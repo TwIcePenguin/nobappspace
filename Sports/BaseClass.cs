@@ -13,8 +13,8 @@ namespace NOBApp.Sports
         #region 移動相關常數 - 建議值，可根據遊戲調整
         private const int InitialDelayMs = 300;                  // 初始延遲 (毫秒)
         private const int BattleCheckDelayMs = 500;               // 戰鬥檢查延遲 (毫秒)
-        private const int DistanceThresholdForWaypoint = 300;     // 中途點距離閾值 (像素)
-        private const int DistanceThresholdForFinalWaypoint = 200;  // 最終點距離閾值 (像素)
+        private const int DistanceThresholdForWaypoint = 400;     // 中途點距離閾值 (像素)
+        private const int DistanceThresholdForFinalWaypoint = 300;  // 最終點距離閾值 (像素)
         private const int AngleToleranceDegrees = 5;              // 角度容忍度 (度)
         private const int DistanceThresholdForSlowDown = 200;     // 減速距離閾值 (像素)
         private const int MoveErrorCheckLimit = 1000;             // 移動錯誤檢查次數上限
@@ -175,7 +175,7 @@ namespace NOBApp.Sports
                         MainNob.KeyUp(VKeys.KEY_W); // 角度偏差大時，先停止前進，專注調整角度
                     }
 
-                    int oold = oldDistance == int.MaxValue ? oldDistance : oldDistance + 30;
+                    int oold = oldDistance == int.MaxValue ? oldDistance : oldDistance + 20;
                     if (oold > dis) // 距離持續縮短，重置 moveErrorCheck
                     {
                         moveErrorCheck = 0;

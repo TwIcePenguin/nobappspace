@@ -60,8 +60,8 @@ namespace NOBApp
             if (nobUseData != null && string.IsNullOrEmpty(nobUseData.Acc) == false &&
                 string.IsNullOrEmpty(user.Account) == false)
             {
-                DateTime getOnlineTime = NetworkTime.GetNetworkTimeAsync();
-                if (DateTime.TryParse(nobUseData.StartTimer, out user.到期日) && user.到期日.AddDays(1) > getOnlineTime)
+                //DateTime getOnlineTime = NetworkTime.GetNetworkTimeAsync();
+                if (DateTime.TryParse(nobUseData.StartTimer, out user.到期日))
                 {
                     user.驗證完成 = true;
                     user.特殊者 = true;

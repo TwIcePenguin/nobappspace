@@ -426,8 +426,10 @@ namespace NOBApp
                     var c3 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
                     var c4 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(200, 190), new System.Drawing.Point(45, 55), "FFFFFF");
                     var c5 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
-                    Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5}");
-                    page.MainNob.ML_Click(125, 260);
+
+                    var c6 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(50, 130), "47ADE8");
+                    Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5} - {c6}");
+                    //page.MainNob.ML_Click(125, 260);
                 }
             }
         }

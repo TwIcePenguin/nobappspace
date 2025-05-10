@@ -611,7 +611,7 @@ namespace NOBApp
         {
             long dx = x2 - x1;
             long dy = y2 - y1;
-            return (int)(dx * dx + dy * dy);
+            return (int)Math.Sqrt(dx * dx + dy * dy);
         }
 
         /// <summary>

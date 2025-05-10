@@ -180,9 +180,9 @@ namespace NOBApp
 
             戰鬥輔助面.LayoutUpdated += 戰鬥輔助面_LayoutUpdated;
 
-            List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
-            List_忽略名單.SelectionChanged += 排序_SelectionChanged;
-            List_目前名單.SelectionChanged += 排序_SelectionChanged;
+            //List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
+            //List_忽略名單.SelectionChanged += 排序_SelectionChanged;
+            //List_目前名單.SelectionChanged += 排序_SelectionChanged;
 
             VIPSP.Checked += (s, e) =>
             {
@@ -466,7 +466,7 @@ namespace NOBApp
                 return;
 
             bool useAutoSkill = UseSkill_CB.IsChecked == true;
-
+            MainNob.IsUseAutoSkill = useAutoSkill;
             SaveSetting();
             儲存隊員技能組();
             foreach (var item in 隊員智能功能組)
@@ -689,7 +689,7 @@ namespace NOBApp
                     CB_定位點.Visibility = 後退時間.Visibility = Btn_TargetC.Visibility
                     = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "冥宮", () => { useMenu = new 冥宮();  } },
-                { "鬼島", () => { useMenu = new 鬼島(); Btn_TargetA.Content = "村長-補符"; TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible; 其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
+                { "鬼島", () => { useMenu = new 鬼島(); UpdateNPCDataUI = true; Btn_TargetA.Content = "村長-補符"; TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible; 其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
                 { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
                 //{ "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
 
@@ -710,10 +710,96 @@ namespace NOBApp
 
         public void CustomUpdate(object? sender, EventArgs e)
         {
-            if (MainNob == null)
+            // 基本檢查
+            if (MainNob == null || (LockBtn != null && LockBtn.Content.ToString()!.Contains("驗證")))
+                return;
+
+            try
+            {
+                // 狀態視窗更新
+                UpdateStatusWindow();
+
+                // NPC 目標列表更新
+                UpdateNPCTargetsIfNeeded();
+
+                // 自動按 Enter
+                if (CB_BKAutoEnter.IsChecked == true && MainNob != null)
+                {
+                    MainNob.KeyPress(VKeys.KEY_ENTER);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 記錄錯誤但不中斷應用程序
+                Debug.WriteLine($"CustomUpdate 發生錯誤: {ex.Message}");
+            }
+
+
+            #region OLD_CODE
+
+#if false
+ if (MainNob == null)
             {
                 return;
             }
+
+            if ((LockBtn != null && LockBtn.Content.ToString()!.Contains("驗證")))
+                return;
+
+            if (MainNob != null && useMenu != null && useMenu.NobTeam != null && 視窗狀態 != null)
+            {
+                視窗狀態.Clear();
+                string stateADescription = MainWindow.GetStateADescription(MainNob.StateA);
+                視窗狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
+                for (int i = 0; i < useMenu.NobTeam.Count; i++)
+                {
+                    NOBDATA nob = useMenu.NobTeam[i];
+                    if (nob != null)
+                    {
+                        視窗狀態.AppendText($@"{nob.PlayerName} : {nob.目前動作} " + Environment.NewLine);
+                    }
+                }
+            }
+            //更新搜尋目標
+            if (MainNob!.待機 && UpdateNPCDataUI && TargetViewPage.Visibility == Visibility.Visible)
+            {
+                try
+                {
+                    List_忽略名單.ItemsSource = null;
+                    List_鎖定名單.ItemsSource = null;
+                    List_目前名單.ItemsSource = null;
+
+                    List_忽略名單.ItemsSource = IgnoredIDs;
+                    List_鎖定名單.ItemsSource = TargetsID;
+                    List_目前名單.ItemsSource = AllNPCIDs;
+                    if (AllNPCIDs.Count > 0)
+                        List_目前名單.Items.Refresh();
+                    else
+                        List_目前名單.ItemsSource = null;
+
+                    if (TargetsID.Count > 0)
+                        List_鎖定名單.Items.Refresh();
+                    else
+                        List_鎖定名單.ItemsSource = null;
+
+                    if (IgnoredIDs.Count > 0)
+                        List_忽略名單.Items.Refresh();
+                    else
+                        List_忽略名單.ItemsSource = null;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"更新搜尋目標錯誤: {ex}");
+                }
+            }
+
+            if (CB_BKAutoEnter.IsChecked == true && MainNob != null)
+            {
+                MainNob.KeyPress(VKeys.KEY_ENTER);
+            }
+#endif
+
+            #endregion
 
             //if (DateTime.Now > MainNob.到期日)
             //{
@@ -734,40 +820,98 @@ namespace NOBApp
             //    MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 贊助後再按一次 [需鎖定] 會自動更新日期 感謝各位夥伴的支持");
             //}
 
-            if ((LockBtn != null && LockBtn.Content.ToString()!.Contains("驗證")))
-                return;
-
-            if (MainNob != null && useMenu != null && useMenu.NobTeam != null && 視窗狀態 != null)
-            {
-                視窗狀態.Clear();
-                string stateADescription = MainWindow.GetStateADescription(MainNob.StateA);
-                視窗狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
-                for (int i = 0; i < useMenu.NobTeam.Count; i++)
-                {
-                    NOBDATA nob = useMenu.NobTeam[i];
-                    if (nob != null)
-                    {
-                        視窗狀態.AppendText($@"{nob.PlayerName} : {nob.目前動作} " + Environment.NewLine);
-                    }
-                }
-            }
-            //更新搜尋目標
-            if (UpdateNPCDataUI && TargetViewPage.Visibility == Visibility.Visible)
-            {
-                List_忽略名單.ItemsSource = IgnoredIDs;
-                List_鎖定名單.ItemsSource = TargetsID;
-                List_目前名單.ItemsSource = AllNPCIDs;
-                List_鎖定名單.Items.Refresh();
-                List_目前名單.Items.Refresh();
-                List_忽略名單.Items.Refresh();
-            }
-
-            if (CB_BKAutoEnter.IsChecked == true && MainNob != null)
-            {
-                MainNob.KeyPress(VKeys.KEY_ENTER);
-            }
         }
 
+        /// <summary>
+        /// 更新狀態視窗，只在狀態變化時執行
+        /// </summary>
+        private void UpdateStatusWindow()
+        {
+            if (MainNob == null || useMenu == null || useMenu.NobTeam == null || 視窗狀態 == null)
+                return;
+
+            // 檢查狀態是否變化
+            string stateADescription = MainWindow.GetStateADescription(MainNob.StateA);
+            bool stateChanged = (_lastStateADescription != stateADescription);
+
+            if (!stateChanged)
+                return;
+
+            _lastStateADescription = stateADescription;
+
+            // 使用低優先級調度來更新UI，避免UI凍結
+            this.Dispatcher.InvokeAsync(() =>
+            {
+                視窗狀態.Clear();
+                視窗狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
+
+                // 幫助 GC，減少內存占用
+                using (var teamEnum = useMenu.NobTeam.GetEnumerator())
+                {
+                    while (teamEnum.MoveNext())
+                    {
+                        var nob = teamEnum.Current;
+                        if (nob != null)
+                        {
+                            視窗狀態.AppendText($@"{nob.PlayerName} : {nob.目前動作} " + Environment.NewLine);
+                        }
+                    }
+                }
+            }, System.Windows.Threading.DispatcherPriority.Background);
+        }
+        // 定義私有成員用於快取狀態
+        private string _lastStateADescription = string.Empty;
+        private bool _lastNPCListUpdateStatus = false;
+        private DateTime _lastNPCUpdateTime = DateTime.MinValue;
+        private const int MIN_NPC_UPDATE_INTERVAL_MS = 300;
+
+        /// <summary>
+        /// 根據需要更新 NPC 目標列表，避免頻繁更新
+        /// </summary>
+        private void UpdateNPCTargetsIfNeeded()
+        {
+            // 確定是否需要更新
+            bool shouldUpdateNPCList = MainNob!.待機 && UpdateNPCDataUI &&
+                                      TargetViewPage.Visibility == Visibility.Visible;
+
+            // 檢查更新時間間隔
+            bool intervalElapsed = (DateTime.Now - _lastNPCUpdateTime).TotalMilliseconds >= MIN_NPC_UPDATE_INTERVAL_MS;
+
+            // 僅在需要且間隔足夠時更新
+            if (shouldUpdateNPCList && (intervalElapsed || shouldUpdateNPCList != _lastNPCListUpdateStatus))
+            {
+                _lastNPCListUpdateStatus = shouldUpdateNPCList;
+                _lastNPCUpdateTime = DateTime.Now;
+
+                this.Dispatcher.InvokeAsync(() =>
+                {
+                    try
+                    {
+                        lock (typeof(NobMainCodePage)) // 鎖定類型以保護靜態成員
+                        {
+                            // 創建臨時集合
+                            var tempIgnoredIDs = new List<long>(NobMainCodePage.IgnoredIDs);
+                            var tempTargetsID = new List<long>(NobMainCodePage.TargetsID);
+                            var tempAllNPCIDs = new List<long>(NobMainCodePage.AllNPCIDs);
+
+                            // 更新UI (批量更新減少重繪)
+                            List_忽略名單.ItemsSource = tempIgnoredIDs.Count > 0 ? tempIgnoredIDs : null;
+                            List_鎖定名單.ItemsSource = tempTargetsID.Count > 0 ? tempTargetsID : null;
+                            List_目前名單.ItemsSource = tempAllNPCIDs.Count > 0 ? tempAllNPCIDs : null;
+
+                            // 只在需要時刷新
+                            if (tempAllNPCIDs.Count > 0) List_目前名單.Items.Refresh();
+                            if (tempTargetsID.Count > 0) List_鎖定名單.Items.Refresh();
+                            if (tempIgnoredIDs.Count > 0) List_忽略名單.Items.Refresh();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"更新NPC列表錯誤: {ex.Message}");
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+        }
         private void CB_HID_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (CB_HID.SelectedValue == null)
@@ -1058,7 +1202,6 @@ namespace NOBApp
                     NobTeams = list;
                     MainNob.RunCode = useMenu;
                     Task.Run(MainNob.CodeUpdate);
-
 
                     if (useMenu is 夢幻城)
                     {

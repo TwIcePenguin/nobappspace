@@ -70,7 +70,7 @@
                     <Button x:Name="Btn添加名單" Content="切換" Height="30" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="55" VerticalAlignment="Top"/>
                     <Button x:Name="Btn移除名單" Content="--" Height="29" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="85" VerticalAlignment="Top"/>
                     <Button x:Name="Btn鎖定目標添加" Content="鎖添" Height="27" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="27" VerticalAlignment="Top"/>
-                    <ListBox x:Name="List_忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" SelectionChanged="目前名單_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <ListBox x:Name="List_忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <CheckBox x:Name="E點怪" Content="ENT點怪" Canvas.Left="130" Canvas.Top="140" Width="73" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <TextBox x:Name="其他選項A" TextWrapping="Wrap" Text="2" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
                     <TextBox x:Name="其他選項B" TextWrapping="Wrap" Text="2" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="限制點怪 就是指打最上面搜尋到的 0 等於全部搜尋" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
