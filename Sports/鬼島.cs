@@ -159,6 +159,7 @@ namespace NOBApp.Sports
                                 else if (user.對話與結束戰鬥 || user.出現左右選單)
                                 {
                                     user.KeyPress(VKeys.KEY_ESCAPE);
+                                    continue;
                                 }
                                 else
                                 {
