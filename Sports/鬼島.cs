@@ -145,7 +145,7 @@ namespace NOBApp.Sports
                                     {
                                         Task.Delay(200);
                                         user.直向選擇(7);
-                                        Task.Delay(100);
+                                        Task.Delay(200);
                                         user.KeyPress(VKeys.KEY_ENTER, 2);
                                         Task.Delay(100);
                                         user.KeyPress(VKeys.KEY_ESCAPE, 5);
@@ -339,7 +339,7 @@ namespace NOBApp.Sports
                                         {
                                             switch (c)
                                             {
-                                                case 8:
+                                                //case 8:
                                                 case 6:
                                                 case 11:
                                                 case 5:

@@ -1130,6 +1130,9 @@ namespace NOBApp
                     Task.Run(() => WebRegistration.OnWebReg());
                 }
 
+                SaveSetting();
+                儲存隊員技能組();
+
                 MainNob!.CodeSetting.使用定位點 = CB_定位點.IsChecked ?? false;
                 MainNob.CodeSetting.定位點X = MainNob.PosX;
                 MainNob.CodeSetting.定位點Y = MainNob.PosY;
