@@ -118,7 +118,7 @@ namespace NOBApp.Sports
                     {
                         MainNob.Log($"狀態刷新判斷 戰鬥中");
                         統計販賣戰鬥 = 是否經過戰鬥 = true;
-                        Task.Delay(1000);
+                        Task.Delay(1000).Wait();
                         return false;
                     }
 

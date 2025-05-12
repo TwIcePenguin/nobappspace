@@ -139,15 +139,16 @@ namespace NOBApp.Sports
                             user.完成必須對話 = false;
                             while (MainNob.StartRunCode)
                             {
+                                Task.Delay(100).Wait();
                                 if (user.出現直式選單)
                                 {
                                     if (user.取得最下面選項().Contains("沒什"))
                                     {
-                                        Task.Delay(200);
+                                        Task.Delay(200).Wait();
                                         user.直向選擇(7);
-                                        Task.Delay(200);
+                                        Task.Delay(200).Wait();
                                         user.KeyPress(VKeys.KEY_ENTER, 2);
-                                        Task.Delay(100);
+                                        Task.Delay(100).Wait();
                                         user.KeyPress(VKeys.KEY_ESCAPE, 5);
                                         waitDone = waitDone + 1;
                                         MainNob.Log($"{user.PlayerName} 補符 完成");
@@ -164,7 +165,6 @@ namespace NOBApp.Sports
                                     user.MoveToNPC(MainNob.CodeSetting.目標A);
                                 }
                                 tryNum = tryNum + 1;
-                                Task.Delay(200);
                                 if (tryNum > 200 && 補符 == false)
                                 {
                                     MainNob.Log($"{user.PlayerName} 補符過程出現異常 強制結束");

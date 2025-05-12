@@ -100,7 +100,7 @@ namespace NOBApp.Sports
                                 if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                 {
                                     MainNob.KeyPress(VKeys.KEY_ENTER, 20);
-                                    Task.Delay(100);
+                                    Task.Delay(100).Wait();
                                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
                                     break;
                                 }
@@ -196,7 +196,7 @@ namespace NOBApp.Sports
                                 if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                 {
                                     MainNob.KeyPress(VKeys.KEY_ENTER, 20);
-                                    Task.Delay(100);
+                                    Task.Delay(100).Wait();
                                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
                                     break;
                                 }
@@ -209,7 +209,7 @@ namespace NOBApp.Sports
                                 {
                                     cache地圖 = MainNob.MAPID;
                                     MainNob.KeyPress(VKeys.KEY_ENTER, 20);
-                                    Task.Delay(100);
+                                    Task.Delay(100).Wait();
                                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
                                     break;
                                 }
@@ -233,7 +233,7 @@ namespace NOBApp.Sports
                         }
                         break;
                     case 檢查點.出場:
-                        Task.Delay(100);
+                        Task.Delay(100).Wait();
                         int checkTimeOut = 0;
                         while (MainNob.StartRunCode)
                         {
@@ -265,7 +265,7 @@ namespace NOBApp.Sports
                                         if (MainNob.GetTargetIDINT() == talkID_1 && MainNob.對話與結束戰鬥)
                                         {
                                             MainNob.KeyPress(VKeys.KEY_ENTER, 10);
-                                            Task.Delay(100);
+                                            Task.Delay(100).Wait();
                                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
                                             break;
                                         }

@@ -287,7 +287,7 @@ namespace NOBApp.Sports
                                         if (MainNob.GetTargetIDINT() == 青龍ID)
                                         {
                                             MainNob.MoveToNPC(青龍ID);
-                                            Task.Delay(500);
+                                            Task.Delay(500).Wait();
                                             break;
                                         }
                                     }
@@ -317,7 +317,7 @@ namespace NOBApp.Sports
                             cache地圖 = MainNob.MAPID;
                             while (MainNob.StartRunCode)
                             {
-                                Task.Delay(500);
+                                Task.Delay(500).Wait();
                                 MainNob.Log($"離開 尋找ID = {青龍ID} | {MainNob.GetTargetIDINT()} | {MainNob.對話與結束戰鬥}");
                                 if (青龍ID == -1)
                                 {
@@ -328,7 +328,7 @@ namespace NOBApp.Sports
                                     if (MainNob.GetTargetIDINT() == 青龍ID && MainNob.對話與結束戰鬥)
                                     {
                                         MainNob.KeyPress(VKeys.KEY_ENTER, 10);
-                                        Task.Delay(100);
+                                        Task.Delay(100).Wait();
                                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
                                         Point = 檢查點.出場;
                                         break;
@@ -345,7 +345,7 @@ namespace NOBApp.Sports
                         }
                         break;
                     case 檢查點.出場:
-                        Task.Delay(100);
+                        Task.Delay(100).Wait();
                         int checkTimeOut = 0;
                         while (MainNob.StartRunCode)
                         {
@@ -377,7 +377,7 @@ namespace NOBApp.Sports
                                         if (MainNob.GetTargetIDINT() == 青龍ID && MainNob.對話與結束戰鬥)
                                         {
                                             MainNob.KeyPress(VKeys.KEY_ENTER, 10);
-                                            Task.Delay(100);
+                                            Task.Delay(100).Wait();
                                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 10);
                                             break;
                                         }
