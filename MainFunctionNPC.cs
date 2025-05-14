@@ -41,8 +41,21 @@ namespace NOBApp
                 query = query.Where(npc => (npc.Type & flags) != 0);
             }
 
-            // 過濾距離
-            query = query.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance);
+            // 分別處理不同類型的 NPC
+            if (flags.HasFlag(TargetTypes.TreasureBox))
+            {
+                // 如果包含寶箱類型，將結果拆分為寶箱和非寶箱兩部分
+                var treasureBoxes = query.Where(npc => npc.Type == TargetTypes.TreasureBox); // 寶箱不過濾距離
+                var others = query.Where(npc => npc.Type != TargetTypes.TreasureBox)
+                                 .Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance); // 其他類型過濾距離
+
+                query = treasureBoxes.Concat(others); // 合併結果
+            }
+            else
+            {
+                // 如果不包含寶箱類型，正常過濾距離
+                query = query.Where(npc => npc.Distance >= minDistance && npc.Distance <= maxDistance);
+            }
 
             // 過濾 ID
             if (minID.HasValue)

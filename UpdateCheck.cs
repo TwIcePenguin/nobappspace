@@ -45,7 +45,17 @@ namespace NOBApp
         private static bool IsUpdateAvailable(string latestVersion)
         {
             Debug.WriteLine($"Version -> {latestVersion}");
-            return string.Compare(latestVersion, VersionInfo.Version, StringComparison.Ordinal) > 0;
+            try
+            {
+                var latest = new Version(latestVersion);
+                var current = new Version(VersionInfo.Version);
+                return latest > current;
+            }
+            catch
+            {
+                // 若格式錯誤，保守不升級
+                return false;
+            }
         }
 
         public class UpdateDownloader

@@ -44,7 +44,7 @@
 
         <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本進階設定區" Margin="5,110,5,0" VerticalAlignment="Top" Height="250">
             <Grid x:Name="ControlGrid" UseLayoutRounding="False" HorizontalAlignment="Left" VerticalAlignment="Top" Height="218" Width="552" IsEnabled="False" Margin="0,5,0,0">
-                <Canvas x:Name="武技設定頁面">
+                <Canvas x:Name="武技設定頁面" d:IsHidden="True">
                     <StackPanel Orientation="Horizontal">
                         <TextBox x:Name="TB_選擇關卡" Height="20" TextWrapping="Wrap" Text="2" Width="30" MaxLines="1" MaxLength="2" ToolTip="1-上杉2-武田3-北條" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="10" Canvas.Top="30" VerticalAlignment="Top"/>
                         <TextBox x:Name="TB_選擇難度" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="0-弱1-普2-強3-如鬼" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="70" Canvas.Top="30" VerticalAlignment="Top"/>
@@ -58,7 +58,7 @@
                 <TextBox x:Name="FNPCID" HorizontalAlignment="Left" Height="20" Margin="57,25,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="118" Visibility="Hidden" Grid.ColumnSpan="2"/>
                 <TextBox x:Name="SMENU1" HorizontalAlignment="Left" Height="20" Margin="71,50,0,0" TextWrapping="Wrap" Text="6" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
                 <CheckBox x:Name="CB_AllIn" Content="全邀請" Margin="79,122,0,0" VerticalAlignment="Top" Visibility="Hidden" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="56"/>
-                <Canvas x:Name="TargetViewPage" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" d:IsHidden="True">
+                <Canvas x:Name="TargetViewPage" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top">
                     <CheckBox x:Name="解無敵" Content="F5解無敵" Canvas.Left="55" Canvas.Top="140" HorizontalAlignment="Left" VerticalAlignment="Center" Width="74"/>
                     <CheckBox x:Name="CB_開打" Content="開打" Canvas.Left="0" Canvas.Top="140" HorizontalAlignment="Center" VerticalAlignment="Top"/>
                     <TextBox x:Name="TBX搜尋範圍" TextWrapping="Wrap" Text="1000" Width="69" Canvas.Left="0" Canvas.Top="65" HorizontalAlignment="Left" VerticalAlignment="Top" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍"/>
@@ -72,8 +72,8 @@
                     <Button x:Name="Btn鎖定目標添加" Content="鎖添" Height="27" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="27" VerticalAlignment="Top"/>
                     <ListBox x:Name="List_忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <CheckBox x:Name="E點怪" Content="ENT點怪" Canvas.Left="130" Canvas.Top="140" Width="73" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <TextBox x:Name="其他選項A" TextWrapping="Wrap" Text="2" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
-                    <TextBox x:Name="其他選項B" TextWrapping="Wrap" Text="2" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="限制點怪 就是指打最上面搜尋到的 0 等於全部搜尋" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
+                    <TextBox x:Name="其他選項A" TextWrapping="Wrap" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
+                    <TextBox x:Name="其他選項B" TextWrapping="Wrap" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="限制點怪 就是指打最上面搜尋到的 0 等於全部搜尋" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
                 </Canvas>
                 <Canvas x:Name="有目標類Page" d:IsHidden="True">
                     <WrapPanel Margin="0,25,0,0" ItemHeight="20" ItemWidth="60" UseLayoutRounding="False" Width="200" Height="60" Orientation="Vertical">

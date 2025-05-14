@@ -30,6 +30,8 @@ namespace NOBApp.Sports
         private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int WS_EX_LAYERED = 0x00080000;
 
+        public bool 多人同時執行 = false;
+
         /// <summary>隊長
         /// </summary>
         public NOBDATA? MainNob { get; private set; }

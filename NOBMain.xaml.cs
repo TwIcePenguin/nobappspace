@@ -133,8 +133,6 @@ namespace NOBApp
 
         void UIStatus_Default()
         {
-
-            其他選項A.Visibility =
             Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
             List_鎖定名單.Visibility =
             CB_定位點.Visibility = 武技設定頁面.Visibility =
@@ -689,7 +687,10 @@ namespace NOBApp
                     CB_定位點.Visibility = 後退時間.Visibility = Btn_TargetC.Visibility
                     = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "冥宮", () => { useMenu = new 冥宮();  } },
-                { "鬼島", () => { useMenu = new 鬼島(); UpdateNPCDataUI = true; Btn_TargetA.Content = "村長-補符"; TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible; 其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
+                { "鬼島", () => { useMenu = new 鬼島();
+                    UpdateNPCDataUI = true; Btn_TargetA.Content = "村長-補符"; 其他選項B.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible;
+                    其他選項A.ToolTip = "幾場後 找村長補符";
+                    其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
                 { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
                 //{ "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
 
@@ -699,7 +700,11 @@ namespace NOBApp
                 { "隨機打怪", () => { useMenu = new 隨機打怪(); UpdateNPCDataUI = true; CB自動鎖定PC.Visibility = List_目前名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB鎖定後自動黑槍.Visibility = Visibility.Hidden; } }
             };
             if (VIPSP.IsEnabled == false)
+            {
                 SelectMenu.Items.Remove("生產破魔");
+                SelectMenu.Items.Remove("刷熊本城");
+                SelectMenu.Items.Remove("四聖青龍");
+            }
             SelectMenu.UpdateLayout();
         }
 
@@ -1130,7 +1135,6 @@ namespace NOBApp
                     Task.Run(() => WebRegistration.OnWebReg());
                 }
 
-                SaveSetting();
                 儲存隊員技能組();
 
                 MainNob!.CodeSetting.使用定位點 = CB_定位點.IsChecked ?? false;
@@ -1189,7 +1193,7 @@ namespace NOBApp
 
                 foreach (var user in 隊員智能功能組)
                 {
-                    if (user != null && user.同步 && list!.Find(c => { return c.PlayerName == user.NOB!.PlayerName; }) == null)
+                    if (user != null && user.NOB != null && user.同步 && list!.Find(c => { return c.PlayerName == user.NOB!.PlayerName; }) == null)
                         list.Add(user.NOB);
                 }
                 if (list?.Find(c => c.PlayerName == MainNob.PlayerName) == null)
@@ -1206,39 +1210,47 @@ namespace NOBApp
                     MainNob.RunCode = useMenu;
                     Task.Run(MainNob.CodeUpdate);
 
-                    if (useMenu is 夢幻城)
+                    // 通用方法處理所有支持多人同時執行的腳本
+                    if (useMenu.多人同時執行)
                     {
                         Task.Delay(200).Wait();
-                        //  MainNob.Log("隊員智能功能組 : " + 隊員智能功能組.Count);
+
+                        // 獲取選擇的腳本類型以進行動態實例化
+                        Type scriptType = useMenu.GetType();
+                        string scriptName = scriptType.Name;
+
+                        MainNob.Log($"多人同時執行: {scriptName}, 隊員數量: {隊員智能功能組.Count}");
+
                         foreach (var user in 隊員智能功能組)
                         {
-                            //  MainNob.Log($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
                             if (user != null && user.同步 && !user.NOB!.PlayerName.Contains(MainNob.PlayerName))
                             {
-                                user.NOB.RunCode = new 夢幻城();
-                                user.NOB.CodeSetting = MainNob.CodeSetting;
-                                Task.Run(user.NOB.CodeUpdate);
-                                Task.Delay(200).Wait();
+                                // 使用反射動態創建相同類型的腳本實例
+                                BaseClass? newScript = null;
+                                try
+                                {
+                                    // 反射創建實例
+                                    newScript = (BaseClass)Activator.CreateInstance(scriptType);
+                                    MainNob.Log($"為 {user.NOB.PlayerName} 創建 {scriptName} 腳本");
+                                }
+                                catch (Exception ex)
+                                {
+                                    MainNob.Log($"創建腳本實例失敗: {ex.Message}");
+                                    continue;
+                                }
+
+                                if (newScript != null)
+                                {
+                                    // 設置腳本並啟動
+                                    user.NOB.RunCode = newScript;
+                                    user.NOB.CodeSetting = MainNob.CodeSetting; // 共用設定
+                                    Task.Run(user.NOB.CodeUpdate);
+                                    Task.Delay(200).Wait();
+                                }
                             }
                         }
                     }
 
-                    if (useMenu is 戰場製炮)
-                    {
-                        Task.Delay(200).Wait();
-                        //  MainNob.Log("隊員智能功能組 : " + 隊員智能功能組.Count);
-                        foreach (var user in 隊員智能功能組)
-                        {
-                            //  MainNob.Log($"隊員智能功能組 : {user.同步} {user.NOB.PlayerName}-");
-                            if (user != null && user.同步 && !user.NOB!.PlayerName.Contains(MainNob.PlayerName))
-                            {
-                                user.NOB.RunCode = new 戰場製炮();
-                                user.NOB.CodeSetting = MainNob.CodeSetting;
-                                Task.Run(user.NOB.CodeUpdate);
-                                Task.Delay(200).Wait();
-                            }
-                        }
-                    }
                 }
             }
             Btn_Refresh.IsEnabled = !mChecked;

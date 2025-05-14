@@ -909,7 +909,7 @@ namespace NOBApp
             離開戰鬥確認 = true;
         }
 
-        public void 離開戰鬥B()
+        public async Task 離開戰鬥B()
         {
             var width = 原視窗.Right - 原視窗.Left;
             var height = 原視窗.Bottom - 原視窗.Top;
@@ -918,7 +918,7 @@ namespace NOBApp
             int inPosY = (height / 2) - 100;
             離開戰鬥確認 = false;
             int checkDoneCount = 0;
-            Task.Delay(100).Wait();
+            await Task.Delay(100);
             do
             {
                 if (戰鬥中) { break; }
@@ -929,7 +929,7 @@ namespace NOBApp
                     int x = inPosX + _random.Next(-100, 100);
                     int y = inPosY + _random.Next(-20, 80);
                     MR_Click(x, y);
-                    Task.Delay(50).Wait();
+                    await Task.Delay(50);
                 }
                 else
                 {
