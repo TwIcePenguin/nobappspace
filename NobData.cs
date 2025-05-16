@@ -27,6 +27,7 @@ namespace NOBApp
                 }
                 Task.Delay(100).Wait();
             }
+            LogID = Account;
         }
 
         /// <summary>
@@ -129,6 +130,7 @@ namespace NOBApp
                 MainWindow.dmSoft?.WriteInt(Hwnd, GetFullAddress(AddressData.視角), 0, value ? 0 : 1);
             }
         }
+        public bool 輸入數量視窗 => ReadInt(GetFullAddress(AddressData.輸入數量視窗), 0) == 39 || ReadInt(GetFullAddress(AddressData.輸入數量視窗), 0) == 34;
         // 觀察與交互系統
         public string 觀察對象Str => ReadData(GetFullAddress(AddressData.是否有觀察對象), 2);
         public bool 有觀察對象 => !ReadData(GetFullAddress(AddressData.是否有觀察對象), 2).Contains("FF FF");
@@ -267,7 +269,6 @@ namespace NOBApp
         public float 比例 = 1;
         public bool 副本進入完成 = false;
         public bool 副本離開完成 = false;
-        public string 目前動作 = "";
         public string NOBCDKEY = "";
         public BaseClass? RunCode;
         public List<BTData> MYTeamData = new List<BTData>();
@@ -291,17 +292,7 @@ namespace NOBApp
         public bool isUseEnter = false;
         int errorCheckCount = 0;
         string cacheStatus = "";
-        string cacheLog = string.Empty;
-        public void Log(string str)
-        {
-            if (cacheLog == str || cacheLog.Contains(str))
-            {
-                return;
-            }
 
-            目前動作 = cacheLog = str;
-            Debug.WriteLine($"{PlayerName}->{str}");
-        }
         public void CloseGame()
         {
             Proc.Kill();
@@ -909,7 +900,7 @@ namespace NOBApp
             離開戰鬥確認 = true;
         }
 
-        public async Task 離開戰鬥B()
+        public void 離開戰鬥B()
         {
             var width = 原視窗.Right - 原視窗.Left;
             var height = 原視窗.Bottom - 原視窗.Top;
@@ -918,7 +909,7 @@ namespace NOBApp
             int inPosY = (height / 2) - 100;
             離開戰鬥確認 = false;
             int checkDoneCount = 0;
-            await Task.Delay(100);
+            Task.Delay(50).Wait();
             do
             {
                 if (戰鬥中) { break; }
@@ -929,7 +920,7 @@ namespace NOBApp
                     int x = inPosX + _random.Next(-100, 100);
                     int y = inPosY + _random.Next(-20, 80);
                     MR_Click(x, y);
-                    await Task.Delay(50);
+                    Task.Delay(50).Wait();
                 }
                 else
                 {

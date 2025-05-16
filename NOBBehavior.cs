@@ -30,8 +30,9 @@ namespace NOBApp
                 if (StartRunCode == false && IsUseAutoSkill == false)
                     break;
 #if DEBUG
-                //Debug.WriteLine($"i : {i}");
+                Log(i.ToString());
 #endif
+
                 Proc.MainWindowHandle.KeyPress(keyCode);
                 if (loopNum > 1)
                     Task.Delay(delay).Wait();

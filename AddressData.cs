@@ -52,5 +52,7 @@ namespace NOBApp
         public static string 搜尋身邊NPCID起始 = "5C53F10";
         public static string 視角 = $"5C5C8A0"; //0-俯視 1-第一人稱
         public static string UI字型 = $"4C4C124"; //0~
+        public static string 輸入數量視窗 = $"5BB2584";
+        
     }
 }

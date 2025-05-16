@@ -83,7 +83,7 @@ namespace NOBApp.Sports
                     MainNob.MoveToNPC(MainNob.CodeSetting.目標E);
                     if (MainNob.對話與結束戰鬥)
                     {
-                        var cr = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(100, 240), new System.Drawing.Point(35, 70), "FFFFFF");
+                        var cr = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(200, 190), new System.Drawing.Point(45, 55), "FFFFFF");
                         if (cr == 9)
                         {
                             Task.Delay(200).Wait();
@@ -99,11 +99,11 @@ namespace NOBApp.Sports
                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 5, 200);
                             MainNob.KeyPress(VKeys.KEY_ENTER);
                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 5, 200);
-                            break;
+                            mPoint = 0;
                         }
                         else
                         {
-                            MainNob.KeyPress(VKeys.KEY_ENTER);
+                            MainNob.KeyPress(VKeys.KEY_ESCAPE);
                         }
                     }
                 }
@@ -115,9 +115,11 @@ namespace NOBApp.Sports
         }
         void 採購物品()
         {
+
             mSpBuyNum = mSpBuy % 3 == 0 ? 7 : 5;
             if (MainNob == null)
                 return;
+            int cc = 0;
             int tryCheck = 0;
             while (MainNob.StartRunCode)
             {
@@ -138,12 +140,20 @@ namespace NOBApp.Sports
                         Task.Delay(200).Wait();
                         MainNob.ML_Click(225, 205, 2);
                         Task.Delay(200).Wait();
-                        MainNob.直向選擇(13);
                         for (int i = 0; i < 5; i++)
                         {
+                            while (MainNob.StartRunCode)
+                            {
+                                cc = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+
+                                MainNob.直向選擇(13);
+                                Task.Delay(50).Wait();
+                                if (MainNob.輸入數量視窗 || cc == 33)
+                                    break;
+                            }
                             MainNob.KeyPress(VKeys.KEY_J, 5, 100);
-                            MainNob.KeyPress(VKeys.KEY_ENTER, 3, 200);
-                            Task.Delay(200).Wait();
+                            MainNob.KeyPress(VKeys.KEY_ENTER, 2, 200);
+                            Task.Delay(300).Wait();
                         }
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 10, 300);
                         break;
@@ -181,20 +191,36 @@ namespace NOBApp.Sports
                         Task.Delay(200).Wait();
                         if (buyIndex == 0)
                         {
-                            MainNob.直向選擇(5);
                             for (int i = 0; i < 5; i++)
                             {
+                                while (MainNob.StartRunCode)
+                                {
+                                    cc = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+
+                                    MainNob.直向選擇(5);
+                                    Task.Delay(50).Wait();
+                                    if (MainNob.輸入數量視窗 || cc == 33)
+                                        break;
+                                }
                                 MainNob.KeyPress(VKeys.KEY_J, 5, 100);
-                                MainNob.KeyPress(VKeys.KEY_ENTER, 3, 200);
-                                Task.Delay(200).Wait();
+                                MainNob.KeyPress(VKeys.KEY_ENTER, 2, 200);
+                                Task.Delay(300).Wait();
                             }
                             MainNob.KeyPress(VKeys.KEY_ESCAPE);
-                            MainNob.直向選擇(8);
                             for (int i = 0; i < 2; i++)
                             {
+                                while (MainNob.StartRunCode)
+                                {
+                                    cc = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+
+                                    MainNob.直向選擇(8);
+                                    Task.Delay(50).Wait();
+                                    if (MainNob.輸入數量視窗 || cc == 33)
+                                        break;
+                                }
                                 MainNob.KeyPress(VKeys.KEY_J, 5, 100);
-                                MainNob.KeyPress(VKeys.KEY_ENTER, 3, 200);
-                                Task.Delay(200).Wait();
+                                MainNob.KeyPress(VKeys.KEY_ENTER, 2, 200);
+                                Task.Delay(300).Wait();
                             }
 
                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 10, 300);
@@ -203,12 +229,21 @@ namespace NOBApp.Sports
                         }
                         else
                         {
-                            MainNob.直向選擇(1);
+                            Task.Delay(300).Wait();
                             for (int i = 0; i < mSpBuyNum; i++)
                             {
+                                while (MainNob.StartRunCode)
+                                {
+                                    cc = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+
+                                    MainNob.直向選擇(1);
+                                    Task.Delay(50).Wait();
+                                    if (MainNob.輸入數量視窗 || cc == 33)
+                                        break;
+                                }
                                 MainNob.KeyPress(VKeys.KEY_J, 5, 100);
-                                MainNob.KeyPress(VKeys.KEY_ENTER, 3, 200);
-                                Task.Delay(200).Wait();
+                                MainNob.KeyPress(VKeys.KEY_ENTER, 2, 200);
+                                Task.Delay(300).Wait();
                             }
 
                             MainNob.KeyPress(VKeys.KEY_ESCAPE, 10, 300);
@@ -247,23 +282,39 @@ namespace NOBApp.Sports
                         Task.Delay(200).Wait();
                         MainNob.ML_Click(225, 205, 2);
                         Task.Delay(200).Wait();
-                        MainNob.直向選擇(8);
                         Task.Delay(500).Wait();
                         for (int i = 0; i < mSpBuyNum; i++)
                         {
+                            while (MainNob.StartRunCode)
+                            {
+                                cc = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+
+                                MainNob.直向選擇(8);
+                                Task.Delay(50).Wait();
+                                if (MainNob.輸入數量視窗 || cc == 33)
+                                    break;
+                            }
                             MainNob.KeyPress(VKeys.KEY_J, 5, 100);
-                            MainNob.KeyPress(VKeys.KEY_ENTER, 3, 200);
-                            Task.Delay(200).Wait();
+                            MainNob.KeyPress(VKeys.KEY_ENTER, 2, 200);
+                            Task.Delay(300).Wait();
                         }
                         Task.Delay(200).Wait();
                         MainNob.KeyPress(VKeys.KEY_ESCAPE);
                         Task.Delay(200).Wait();
-                        MainNob.直向選擇(14);
                         for (int i = 0; i < (mSpBuy % 4 == 0 ? 12 : 9); i++)
                         {
+                            while (MainNob.StartRunCode)
+                            {
+                                cc = ColorTools.GetColorNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+
+                                MainNob.直向選擇(14);
+                                Task.Delay(50).Wait();
+                                if (MainNob.輸入數量視窗 || cc == 33)
+                                    break;
+                            }
                             MainNob.KeyPress(VKeys.KEY_J, 5, 100);
-                            MainNob.KeyPress(VKeys.KEY_ENTER, 3, 200);
-                            Task.Delay(200).Wait();
+                            MainNob.KeyPress(VKeys.KEY_ENTER, 2, 200);
+                            Task.Delay(300).Wait();
                         }
 
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 10, 300);

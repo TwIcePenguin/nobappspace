@@ -678,6 +678,8 @@ namespace NOBApp
                 { "採集輔助", () => { useMenu = new 採集輔助(); } },
                 { "生產輔助", () => { useMenu = new 生產輔助(); CB_定位點.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "生產破魔", () => { useMenu = new 生產破魔(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Btn_TargetE.Visibility = Visibility.Visible; } },
+                { "生產剛破", () => { useMenu = new 生產剛破(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Visibility.Visible; } },
+
 
                 { "戰場製炮", () => {
                     useMenu = new 戰場製炮();

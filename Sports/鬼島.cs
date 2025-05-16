@@ -190,7 +190,7 @@ namespace NOBApp.Sports
                             MainNob.目前動作 = "結算對話中";
                             mBCHCount++;
                             Task.Delay(500).Wait();
-                            if (mBCHCount > 3)
+                            if (mBCHCount > 4)
                             {
                                 mBCHCount = 0;
                                 MainNob.Log($"隊員智能功能組 {NobTeam.Count}");
