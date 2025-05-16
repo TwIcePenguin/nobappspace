@@ -170,7 +170,7 @@ namespace NOBApp
                 if (page != null && page.MainNob != null)
                 {
                     page.MainNob.CodeSetting = CodeSetting;
-                    page.SetToUI();
+                    page.SettingLoadToUI();
                 }
             }
         }

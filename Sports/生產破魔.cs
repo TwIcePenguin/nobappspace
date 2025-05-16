@@ -13,11 +13,11 @@ namespace NOBApp.Sports
         int mSpBuyNum = 0;
         public override void 初始化()
         {
-            //MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
-            //MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
-            mPoint = 0;
             if (MainNob != null)
+            {
                 MainNob.選擇目標類型(7);
+                mPoint = MainNob.CodeSetting.MPoint;
+            }
         }
         public override void 腳本運作()
         {

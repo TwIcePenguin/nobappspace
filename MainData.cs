@@ -102,6 +102,10 @@ namespace NOBApp
 
     public class Setting
     {
+        /// <summary>
+        /// 腳本運行點
+        /// </summary>
+        public int MPoint { get; set; }
         public bool 使用定位點 { get; set; }
         public int 定位點X { get; set; }
         public int 定位點Y { get; set; }

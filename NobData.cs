@@ -936,6 +936,7 @@ namespace NOBApp
                         離開戰鬥確認 = true;
                         break;
                     }
+                    Task.Delay(100).Wait();
                 }
             } while (StartRunCode || IsUseAutoSkill);
         }

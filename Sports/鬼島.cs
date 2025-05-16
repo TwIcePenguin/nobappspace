@@ -10,9 +10,6 @@ namespace NOBApp.Sports
 {
     internal class 鬼島 : BaseClass
     {
-        public Action? UpdateUI = null;
-
-        bool F5解無敵 = false;
         bool 補符 = true;
         int mBCHCount = 0;
         int 戰鬥回合 = 5;
@@ -180,7 +177,6 @@ namespace NOBApp.Sports
                         {
                             MainNob.目前動作 = "戰鬥中";
                             cacheIGID.Clear();
-                            F5解無敵 = false;
                             mBCHCount = 0;
                             return;
                         }
@@ -473,13 +469,11 @@ namespace NOBApp.Sports
                                 skipID = new List<long>();
                             }
                         }
-
-
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine(e.ToString());
+                    MainNob.Log($"Code Error {e.ToString()}");
                 }
             }
         }

@@ -680,7 +680,6 @@ namespace NOBApp
                 { "生產破魔", () => { useMenu = new 生產破魔(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Btn_TargetE.Visibility = Visibility.Visible; } },
                 { "生產剛破", () => { useMenu = new 生產剛破(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Visibility.Visible; } },
 
-
                 { "戰場製炮", () => {
                     useMenu = new 戰場製炮();
                     Btn_TargetA.Content = "目付";
@@ -707,6 +706,10 @@ namespace NOBApp
                 SelectMenu.Items.Remove("刷熊本城");
                 SelectMenu.Items.Remove("四聖青龍");
             }
+
+#if DEBUG == false
+            SelectMenu.Items.Remove("生產剛破");
+#endif
             SelectMenu.UpdateLayout();
         }
 
@@ -1142,6 +1145,10 @@ namespace NOBApp
                 MainNob!.CodeSetting.使用定位點 = CB_定位點.IsChecked ?? false;
                 MainNob.CodeSetting.定位點X = MainNob.PosX;
                 MainNob.CodeSetting.定位點Y = MainNob.PosY;
+                if (int.TryParse(腳本Point.Text, out int mpoint))
+                {
+                    MainNob.CodeSetting.MPoint = mpoint;
+                }
                 int tryIntNum = 0;
                 if (int.TryParse(其他選項A.Text, out tryIntNum))
                 {
@@ -1495,7 +1502,7 @@ namespace NOBApp
                 if (set != null)
                 {
                     MainNob.CodeSetting = set;
-                    SetToUI();
+                    SettingLoadToUI();
                 }
             }
 
@@ -1547,7 +1554,7 @@ namespace NOBApp
             #endregion
         }
 
-        public void SetToUI()
+        public void SettingLoadToUI()
         {
             if (MainNob == null)
             {
@@ -1578,6 +1585,8 @@ namespace NOBApp
                     comboBoxes[i].Text = set.組隊玩家技能[i];
                 }
             }
+
+            腳本Point.Text = set.MPoint.ToString();
 
             if (set.目標A != 0)
             {
