@@ -118,10 +118,16 @@ namespace NOBApp.Sports
 
                     MainNob.目前動作 = "前進" + mErrorCheck;
                     MainNob.前進(300);
+                    if (MainNob.CodeSetting.延遲係數 > 0)
+                    {
+                        Task.Delay(MainNob.CodeSetting.延遲係數).Wait();
+                    }
                     Task.Delay(200).Wait();
                     MainNob.KeyPress(VKeys.KEY_J);
                     Task.Delay(200).Wait();
                     MainNob.KeyPress(VKeys.KEY_ENTER);
+
+
                     mErrorCheck++;
                     if (mErrorCheck > mMaxErrorCheck)
                     {

@@ -112,6 +112,8 @@ namespace NOBApp
         public int 後退時間 { get; set; }
         public int 上覽線 { get; set; }
 
+        public int 延遲係數 { get; set; }
+
         public 隊伍技能紀錄 隊伍技能 { get; set; } = new 隊伍技能紀錄();
         public string UseSkillName { get; set; } = string.Empty;
         public string 上次使用的腳本 { get; set; } = string.Empty;

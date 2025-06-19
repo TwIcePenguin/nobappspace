@@ -124,6 +124,8 @@ namespace NOBApp
             }
             else
             {
+
+
                 targetColorInt = _cachedTargetColorInt;
             }
             //  MainNob.Log($"Import {targetColorInt:X8}");

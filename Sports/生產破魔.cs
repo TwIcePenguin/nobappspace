@@ -23,7 +23,6 @@ namespace NOBApp.Sports
         {
             if (MainNob == null)
                 return;
-            SetClickThrough(true);
             if (mPoint == 0)
                 採購物品();
             else

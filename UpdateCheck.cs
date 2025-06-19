@@ -44,15 +44,19 @@ namespace NOBApp
 
         private static bool IsUpdateAvailable(string latestVersion)
         {
-            Debug.WriteLine($"Version -> {latestVersion}");
             try
             {
+                latestVersion = latestVersion.Replace("v", "");
+                Debug.WriteLine($"Version C -> {VersionInfo.Version} S -> {latestVersion}");
                 var latest = new Version(latestVersion);
                 var current = new Version(VersionInfo.Version);
+
+                Debug.WriteLine($"Version C -> {current} S -> {latest}");
                 return latest > current;
             }
             catch
             {
+                Debug.WriteLine($"若格式錯誤，保守不升級");
                 // 若格式錯誤，保守不升級
                 return false;
             }

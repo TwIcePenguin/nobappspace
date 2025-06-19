@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Threading;
 
@@ -140,6 +141,8 @@ namespace NOBApp
             FNPCID.Visibility = SMENU1.Visibility =
             Btn_TargetF.Visibility = Btn_TargetD.Visibility = Btn_TargetE.Visibility =
             Btn_TargetC.Visibility = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Hidden;
+
+            通用欄.Visibility = Visibility.Hidden;
         }
 
         void UIEventAdd()
@@ -178,15 +181,24 @@ namespace NOBApp
 
             戰鬥輔助面.LayoutUpdated += 戰鬥輔助面_LayoutUpdated;
 
-            //List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
-            //List_忽略名單.SelectionChanged += 排序_SelectionChanged;
-            //List_目前名單.SelectionChanged += 排序_SelectionChanged;
+            List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
+            List_忽略名單.SelectionChanged += 排序_SelectionChanged;
+            List_目前名單.SelectionChanged += 排序_SelectionChanged;
+
+            IGMouse.Checked += (s, e) =>
+            {
+                MainNob!.SetClickThrough(true);
+            };
+            IGMouse.Unchecked += (s, e) =>
+            {
+                MainNob!.SetClickThrough(false);
+            };
 
             VIPSP.Checked += (s, e) =>
             {
                 if (MainNob != null)
                     MainNob.VIPSP = true;
-                Task.Run(MainNob!.速度);
+                //Task.Run(MainNob!.速度);
             };
             VIPSP.Unchecked += (s, e) =>
             {
@@ -200,6 +212,11 @@ namespace NOBApp
             Btn_TargetD.Click += OnTargetClick;
             Btn_TargetE.Click += OnTargetClick;
             Btn_TargetF.Click += OnTargetClick;
+        }
+
+        private void IGMouse_Checked(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #region 目標選擇UI
@@ -471,9 +488,11 @@ namespace NOBApp
             {
                 if (item == null || item.NOB == null)
                     continue;
-
+                item.NOB.自動結束_A = MainNob.自動結束_A;
+                item.NOB.自動結束_B = MainNob.自動結束_B;
                 item.NOB.IsUseAutoSkill = useAutoSkill;
-
+                item.NOB.VIPSP = MainNob.VIPSP;
+                item.NOB.追蹤 = 全隊追蹤;
                 if (item.NOB.啟動自動輔助中 == false)
                 {
                     MainNob.Log($"啟動自動輔助中");
@@ -581,6 +600,7 @@ namespace NOBApp
                         視窗狀態.AppendText($"驗證完成.. 更新時間 -> {MainNob.到期日}\n");
                         到期計時.Content = $"到期日:{MainNob.到期日}";
 
+                        IGMouse.IsEnabled = true;
                         //暫時將到期關閉
                         if (MainNob.到期日 >= DateTime.Now)
                         {
@@ -674,7 +694,7 @@ namespace NOBApp
                 { "討伐2025_白石", () => { useMenu = new 討伐2025_白石(); Btn_TargetA.Content = "安土奉行"; Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "幽靈船全刷", () => { useMenu = new 幽靈船全刷(); Btn_TargetA.Content = "九鬼"; SMENU2.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
 
-                { "夢幻城", () => { useMenu = new 夢幻城(); } },
+                { "夢幻城", () => { useMenu = new 夢幻城(); useMenu.多人同時執行 = true; } },
                 { "採集輔助", () => { useMenu = new 採集輔助(); } },
                 { "生產輔助", () => { useMenu = new 生產輔助(); CB_定位點.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "生產破魔", () => { useMenu = new 生產破魔(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Btn_TargetE.Visibility = Visibility.Visible; } },
@@ -685,9 +705,10 @@ namespace NOBApp
                     Btn_TargetA.Content = "目付";
                     Btn_TargetB.Content = "砲基座";
                     Btn_TargetC.Content = "生砲道具";
+                    useMenu.多人同時執行 = true;
                     CB_定位點.Visibility = 後退時間.Visibility = Btn_TargetC.Visibility
                     = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "冥宮", () => { useMenu = new 冥宮();  } },
+                { "冥宮", () => { useMenu = new 冥宮(); 通用欄.Visibility = Visibility.Visible;  } },
                 { "鬼島", () => { useMenu = new 鬼島();
                     UpdateNPCDataUI = true; Btn_TargetA.Content = "村長-補符"; 其他選項B.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible;
                     其他選項A.ToolTip = "幾場後 找村長補符";
@@ -853,8 +874,11 @@ namespace NOBApp
             this.Dispatcher.InvokeAsync(() =>
             {
                 視窗狀態.Clear();
+#if DEBUG
+                視窗狀態.AppendText($@"POS: new({MainNob.PosX}, {MainNob.PosH}, {MainNob.PosY}),LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
+#else
                 視窗狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
-
+#endif
                 // 幫助 GC，減少內存占用
                 using (var teamEnum = useMenu.NobTeam.GetEnumerator())
                 {
@@ -1094,17 +1118,20 @@ namespace NOBApp
         public void 全員離開戰鬥()
         {
             var r = MainWindow.GetResolutioSize();
-            foreach (var nob in NobTeams)
+            foreach (var user in 隊員智能功能組)
             {
-                if (nob != null)
+                if (user != null && user.NOB != null && user.同步)
                 {
-                    int inPosX = (int)r.X / 2;
-                    int inPosY = (int)r.Y / 2 - 50;
-                    nob.MR_Click(inPosX + 16, inPosY);
-                    Task.Delay(50).Wait();
-                    nob.MR_Click(inPosX - 100, inPosY);
-                    Task.Delay(50).Wait();
-                    nob.MR_Click(inPosX - 100, inPosY + 100);
+                    if (user.NOB != null)
+                    {
+                        int inPosX = (int)r.X / 2;
+                        int inPosY = (int)r.Y / 2 - 50;
+                        user.NOB.MR_Click(inPosX + 16, inPosY);
+                        Task.Delay(50).Wait();
+                        user.NOB.MR_Click(inPosX - 100, inPosY);
+                        Task.Delay(50).Wait();
+                        user.NOB.MR_Click(inPosX - 100, inPosY + 100);
+                    }
                 }
             }
         }
@@ -1187,6 +1214,10 @@ namespace NOBApp
                 {
                     MainNob.CodeSetting.搜尋範圍 = ssa;
                 }
+                if (int.TryParse(延遲係數.Text, out int delay))
+                {
+                    MainNob.CodeSetting.延遲係數 = delay;
+                }
                 MainNob.CodeSetting.AllInTeam = (CB_AllIn.IsChecked ?? false);
                 if (int.TryParse(TB_Set家臣.Text, out int sn))
                 {
@@ -1227,7 +1258,7 @@ namespace NOBApp
                         // 獲取選擇的腳本類型以進行動態實例化
                         Type scriptType = useMenu.GetType();
                         string scriptName = scriptType.Name;
-
+                        Debug.WriteLine($"scriptName -> {scriptName}");
                         MainNob.Log($"多人同時執行: {scriptName}, 隊員數量: {隊員智能功能組.Count}");
 
                         foreach (var user in 隊員智能功能組)
@@ -1250,11 +1281,14 @@ namespace NOBApp
 
                                 if (newScript != null)
                                 {
+                                    user.NOB.StartRunCode = MainNob.StartRunCode;
                                     // 設置腳本並啟動
                                     user.NOB.RunCode = newScript;
                                     user.NOB.CodeSetting = MainNob.CodeSetting; // 共用設定
+
                                     Task.Run(user.NOB.CodeUpdate);
                                     Task.Delay(200).Wait();
+
                                 }
                             }
                         }
@@ -1262,6 +1296,18 @@ namespace NOBApp
 
                 }
             }
+
+            if (!mChecked)
+            {
+                foreach (var user in 隊員智能功能組)
+                {
+                    if (user != null && user.同步 && !user.NOB!.PlayerName.Contains(MainNob.PlayerName))
+                    {
+                        user.NOB.StartRunCode = false;
+                    }
+                }
+            }
+
             Btn_Refresh.IsEnabled = !mChecked;
         }
 

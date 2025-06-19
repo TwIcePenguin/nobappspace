@@ -22,13 +22,9 @@ namespace NOBApp.Sports
         private const int SideStepDelayMs = 1500;                 // 側向移動延遲 (毫秒)
         private const int BattleEndCheckDelayMs = 500;            // 戰鬥結束檢查延遲 (毫秒)
         private const int BattleEndCheckRetries = 3;              // 戰鬥結束檢查重試次數
-        private const int LoopDelayMs = 20;                       // 迴圈延遲 (毫秒)
+        private const int LoopDelayMs = 100;                       // 迴圈延遲 (毫秒)
         #endregion
 
-        // Windows API常量
-        private const int GWL_EXSTYLE = -20;
-        private const int WS_EX_TRANSPARENT = 0x00000020;
-        private const int WS_EX_LAYERED = 0x00080000;
 
         public bool 多人同時執行 = false;
 
@@ -81,6 +77,75 @@ namespace NOBApp.Sports
 
         public virtual void 初始化() { }
         public virtual void 腳本運作() { }
+
+
+        public bool 移動到定點New()
+        {
+            if (MainNob != null)
+            {
+                Task.Delay(InitialDelayMs).Wait(); // 初始延遲
+                MoveIndex = 0;
+                int dis = 0;
+                bool runCheck = false;
+                MainNob.ML_Click((int)MainNob.NowWidth / 2, MainNob.NowHeight / 2);
+                while (MainNob.StartRunCode && 移動點.Count > MoveIndex)
+                {
+                    if (MainNob.戰鬥中)
+                    {
+                        Task.Delay(BattleCheckDelayMs).Wait();
+                        continue; // 戰鬥中，暫停移動邏輯
+                    }
+
+                    // 戰鬥結束處理邏輯 (與原程式碼相同)
+                    if (MainNob.進入結算)
+                    {
+                        MainNob.離開戰鬥B();
+                        runCheck = false;
+                        Task.Delay(BattleCheckDelayMs).Wait();
+                        MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
+                        MainNob.KeyPress(VKeys.KEY_S, 3);
+                        continue;
+                    }
+
+                    if (MainNob.待機)
+                    {
+                        int 目標座標X = 移動點[MoveIndex].X;
+                        int 目標座標Y = 移動點[MoveIndex].Y;
+                        int 目標座標Z = 移動點[MoveIndex].Z;
+
+                        dis = Tools.Dis(MainNob.PosX, MainNob.PosY, 目標座標X, 目標座標Z);
+                        MainNob.目前動作 = $"index : {MoveIndex} dis : {dis} {Environment.NewLine} X {MainNob.PosX}, Y {MainNob.PosY} {Environment.NewLine} MX {目標座標X} MY{目標座標Y}";
+
+                        int checkDoneDis = 移動點.Count != MoveIndex ? 255 : 50;
+                        if (dis <= checkDoneDis) // 到達目標點
+                        {
+                            Debug.WriteLine($"NEXT");
+                            MoveIndex++;
+                            runCheck = false;
+                            continue; // 移動到下一個目標點
+                        }
+
+                        if (runCheck && MainNob.精準移動Index == 0)
+                        {
+                            runCheck = false;
+                        }
+
+                        if (runCheck == false)
+                        {
+                            Debug.WriteLine($"移動 {目標座標X},{目標座標Y},{目標座標Z}");
+                            runCheck = true;
+                            MainNob.準確目標移動(目標座標X, 目標座標Y, 目標座標Z);
+                        }
+                    }
+
+                    Task.Delay(LoopDelayMs).Wait(); // 迴圈延遲
+                }
+
+                return true;
+            }
+
+            return false;
+        }
 
         public bool 移動到定點(int maxTry = 10000)
         {
@@ -151,9 +216,9 @@ namespace NOBApp.Sports
                     if (Math.Abs(角度差) > AngleToleranceDegrees)
                     {
                         if (角度差 > 0)
-                            MainNob.KeyPress(VKeys.KEY_Q); // 微調角度 (向左)
+                            MainNob.KeyPress(MainNob.第三人稱 ? VKeys.KEY_Q : VKeys.KEY_A); // 微調角度 (向左)
                         else
-                            MainNob.KeyPress(VKeys.KEY_E); // 微調角度 (向右)
+                            MainNob.KeyPress(MainNob.第三人稱 ? VKeys.KEY_E : VKeys.KEY_D); // 微調角度 (向右)
                     }
 
                     // 更精細的距離控制 與 移動速度監控
@@ -466,6 +531,16 @@ namespace NOBApp.Sports
                 移動點.Clear();
                 移動點.AddRange(movePosList);
                 移動到定點();
+            }
+        }
+
+        public void 目標地移動new(List<座標> movePosList)
+        {
+            if (movePosList.Count > 0)
+            {
+                移動點.Clear();
+                移動點.AddRange(movePosList);
+                移動到定點New();
             }
         }
 
@@ -824,47 +899,6 @@ namespace NOBApp.Sports
         }
 
 
-        // Windows API函數導入
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hwnd, int index);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
-
-        [DllImport("user32.dll")]
-        private static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
-
-        private const uint LWA_ALPHA = 0x2;
-        private const uint LWA_COLORKEY = 0x1;
-
-        private bool _isClickThrough = false;
-
-        /// <summary>
-        /// 設置視窗是否允許鼠標點擊穿透
-        /// </summary>
-        /// <param name="isClickThrough">true表示點擊穿透，false表示正常接收點擊</param>
-        public void SetClickThrough(bool isClickThrough)
-        {
-            if (MainNob == null || _isClickThrough == isClickThrough)
-                return;
-
-            _isClickThrough = isClickThrough;
-
-            // 獲取當前視窗樣式
-            int extendedStyle = GetWindowLong(MainNob.Hwnd, GWL_EXSTYLE);
-
-            if (isClickThrough)
-            {
-                // 添加點擊穿透樣式
-                SetWindowLong(MainNob.Hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
-                //SetLayeredWindowAttributes(MainNob.Hwnd, 0, 128, LWA_ALPHA); // 設置半透明效果，可調整
-            }
-            else
-            {
-                // 移除點擊穿透樣式，但保留分層視窗屬性
-                SetWindowLong(MainNob.Hwnd, GWL_EXSTYLE, extendedStyle & ~WS_EX_TRANSPARENT);
-            }
-        }
     }
 
     public enum E_TargetColor
@@ -876,12 +910,14 @@ namespace NOBApp.Sports
 
     public struct 座標
     {
-        public 座標(int x, int y)
+        public 座標(int x, int y, int z = 0)
         {
             X = x;
             Y = y;
+            Z = z;
         }
         public int X;
         public int Y;
+        public int Z;
     }
 }

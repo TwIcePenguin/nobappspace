@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using static NOBApp.MainWindow;
 
 namespace NOBApp.Sports
 {
@@ -48,7 +44,7 @@ namespace NOBApp.Sports
         }
 
         Dictionary<int, int> cacheIGID = new();
-
+        bool allDoneCheck = true;
         static int waitDone = 0;
         public override void 腳本運作()
         {
@@ -137,21 +133,18 @@ namespace NOBApp.Sports
                             while (MainNob.StartRunCode)
                             {
                                 Task.Delay(100).Wait();
-                                if (user.出現直式選單)
+                                if (user.出現直式選單 && user.取得最下面選項().Contains("沒什"))
                                 {
-                                    if (user.取得最下面選項().Contains("沒什"))
-                                    {
-                                        Task.Delay(200).Wait();
-                                        user.直向選擇(7);
-                                        Task.Delay(200).Wait();
-                                        user.KeyPress(VKeys.KEY_ENTER, 2);
-                                        Task.Delay(100).Wait();
-                                        user.KeyPress(VKeys.KEY_ESCAPE, 5);
-                                        waitDone = waitDone + 1;
-                                        MainNob.Log($"{user.PlayerName} 補符 完成");
-                                        user.完成必須對話 = true;
-                                        break;
-                                    }
+                                    Task.Delay(200).Wait();
+                                    user.直向選擇(7);
+                                    Task.Delay(200).Wait();
+                                    user.KeyPress(VKeys.KEY_ENTER, 2);
+                                    Task.Delay(100).Wait();
+                                    user.KeyPress(VKeys.KEY_ESCAPE, 5);
+                                    waitDone = waitDone + 1;
+                                    MainNob.Log($"{user.PlayerName} 補符 完成");
+                                    user.完成必須對話 = true;
+                                    break;
                                 }
                                 else if (user.對話與結束戰鬥 || user.出現左右選單)
                                 {
@@ -175,61 +168,73 @@ namespace NOBApp.Sports
                     {
                         if (MainNob.戰鬥中)
                         {
+                            MainWindow.MainState = "戰鬥中";
                             MainNob.目前動作 = "戰鬥中";
+                            MainNob.戰鬥中判定 = 0;
                             cacheIGID.Clear();
                             mBCHCount = 0;
+                            allDoneCheck = false;
                             return;
+                        }
+
+                        if (MainNob.進入結算)
+                        {
+                            MainNob.目前動作 = "進入結算";
+                            Task.Delay(200).Wait();
+                            foreach (var user in NobTeam)
+                            {
+                                user.離開戰鬥確認 = false;
+                                if (user != null)
+                                    Task.Run(user.離開戰鬥B);
+                            }
+                            int tryNum = 0;
+                            while (MainNob.StartRunCode)
+                            {
+                                allDoneCheck = true;
+                                foreach (var user in NobTeam)
+                                {
+                                    Task.Delay(400).Wait();
+                                    if (user.待機)
+                                    {
+                                        continue;
+                                    }
+                                    if (user.離開戰鬥確認 == false)
+                                    {
+                                        allDoneCheck = false;
+                                    }
+                                }
+                                tryNum = tryNum + 1;
+                                MainNob.Log($"LOG -- {allDoneCheck} {tryNum}");
+                                if (tryNum > 120 || allDoneCheck)
+                                {
+                                    全部追隨();
+                                    戰鬥回合 = 戰鬥回合 + 1;
+                                    mBCHCount = 0;
+                                    MainWindow.MainState = $"完成離開 {allDoneCheck} {tryNum}";
+                                    allDoneCheck = true;
+                                    break;
+                                }
+                                else
+                                {
+                                    MainWindow.MainState = "等待玩家離開";
+                                    Task.Delay(500).Wait();
+                                }
+
+                            }
+
+                            mBCHCount = 0;
                         }
 
                         if (MainNob.對話與結束戰鬥)
                         {
-                            MainNob.目前動作 = "結算對話中";
-                            mBCHCount++;
-                            Task.Delay(500).Wait();
-                            if (mBCHCount > 4)
-                            {
-                                mBCHCount = 0;
-                                MainNob.Log($"隊員智能功能組 {NobTeam.Count}");
-                                foreach (var user in NobTeam)
-                                {
-                                    if (user != null)
-                                        Task.Run(user.離開戰鬥B);
-                                }
-                                int tryNum = 0;
-                                while (MainNob.StartRunCode)
-                                {
-                                    bool allDoneCheck = true;
-                                    foreach (var user in NobTeam)
-                                    {
-                                        if (user.離開戰鬥確認 == false)
-                                        {
-                                            allDoneCheck = false;
-                                        }
-                                    }
-                                    tryNum = tryNum + 1;
-                                    if (tryNum > 120 || allDoneCheck)
-                                    {
-                                        全部追隨();
-                                        戰鬥回合 = 戰鬥回合 + 1;
-                                        mBCHCount = 0;
-                                        MainWindow.MainState = "完成離開";
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        MainWindow.MainState = "等待玩家離開";
-                                        Task.Delay(500).Wait();
-                                    }
-
-                                }
-                            }
-                            return;
+                            MainNob.KeyPress(VKeys.KEY_ESCAPE);
+                            Task.Delay(200).Wait();
                         }
 
-                        if (MainNob.待機)
+                        if (allDoneCheck && MainNob.待機)
                         {
                             MainNob.Log($"搜尋新敵人");
-                            MainNob.目前動作 = "搜尋新敵人";
+                            MainWindow.MainState = "搜尋新敵人";
                             NobMainCodePage.AllNPCIDs.Clear();
                             Task.Delay(300).Wait();
                             NobMainCodePage.GetFilteredNPCs(MainNob, TargetTypes.NPC | TargetTypes.TreasureBox, 4, MainNob.CodeSetting.搜尋範圍);

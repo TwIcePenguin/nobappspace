@@ -65,6 +65,7 @@ namespace NOBApp
         public int NowHeight;
         public int NowWidth;
         public bool VIPSP = false;
+        public bool 追蹤 = false;
         private static readonly Random _random = new Random();
 
         #region 記憶體讀取位置
@@ -84,6 +85,7 @@ namespace NOBApp
         // 位置和地圖資訊
         public int MAPID => ReadInt(GetFullAddress(AddressData.地圖位置), 1);
         public int PosX => ReadInt(GetFullAddress(AddressData.地圖座標X), 0);
+        public int PosH => ReadInt(GetFullAddress(AddressData.地圖座標H), 0);
         public int PosY => ReadInt(GetFullAddress(AddressData.地圖座標Y), 0);
         public float CamX => ReadFloat(GetFullAddress(AddressData.攝影機角度A));
         public float CamY => ReadFloat(GetFullAddress(AddressData.攝影機角度B));
@@ -92,19 +94,11 @@ namespace NOBApp
         public string 取得最下面選項(int num = 4) => ReadString(GetFullAddress(AddressData.直選框文字), 1, num);
         public bool 任務選擇框 => IsInState(GameState.QuestSelect);
         public bool 對話與結束戰鬥 => IsInState(GameState.Dialog);
-        public bool 待機 => CheckAndUpdateBattleStatus(GameState.Idle);
-        public bool 戰鬥中 => CheckAndUpdateBattleStatus(GameState.InBattle, true);
+        public bool 待機 => IsInState(GameState.Idle);
+        public bool 戰鬥中 => IsInState(GameState.InBattle);
 
         public int 戰鬥中判定 = -1;
-        private bool CheckAndUpdateBattleStatus(GameState stateToCheck, bool setBattleFlagIfMatched = false)
-        {
-            bool result = IsInState(stateToCheck);
-            if (result)
-            {
-                戰鬥中判定 = setBattleFlagIfMatched ? 0 : -1;
-            }
-            return result;
-        }
+
         // 結算相關
         public bool 進入結算
         {
@@ -113,7 +107,7 @@ namespace NOBApp
                 if (戰鬥中判定 >= 0 && IsInState(GameState.Dialog))
                 {
                     戰鬥中判定++;
-                    Task.Delay(50).Wait();
+                    Task.Delay(100).Wait();
                 }
                 return 戰鬥中判定 > 3;
             }
@@ -135,6 +129,7 @@ namespace NOBApp
         public string 觀察對象Str => ReadData(GetFullAddress(AddressData.是否有觀察對象), 2);
         public bool 有觀察對象 => !ReadData(GetFullAddress(AddressData.是否有觀察對象), 2).Contains("FF FF");
         public int 確認選單 => ReadInt(GetFullAddress(AddressData.直選框), 1);
+        public int 製作Index => ReadInt(GetFullAddress(AddressData.製作Index), 1);
         public bool 出現左右選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 2;
         public bool 出現直式選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 1;
         public int GetSStatus => ReadInt(GetFullAddress(AddressData.特殊狀態判斷), 2);
@@ -166,6 +161,7 @@ namespace NOBApp
         {
             get
             {
+                //Log($"Update Raw - {_rawStateA}");
                 // 檢查是否需要更新狀態緩存
                 if ((DateTime.Now - _lastStateCheck).TotalMilliseconds > STATE_CACHE_MS)
                 {
@@ -184,7 +180,18 @@ namespace NOBApp
         /// <summary>
         /// 檢查當前是否處於指定狀態
         /// </summary>
-        public bool IsInState(GameState state) => _currentState == state;
+        public bool IsInState(GameState state)
+        {
+            if ((DateTime.Now - _lastStateCheck).TotalMilliseconds > STATE_CACHE_MS)
+            {
+                速度();
+                _rawStateA = ReadData(GetFullAddress(AddressData.判別狀態A), 2);
+                UpdateGameState();
+                _lastStateCheck = DateTime.Now;
+            }
+            //Debug.WriteLine($"Update -> {StateARaw}");
+            return _currentState == state;
+        }
 
         /// <summary>
         /// 更新遊戲狀態
@@ -192,9 +199,15 @@ namespace NOBApp
         private void UpdateGameState()
         {
             if (_rawStateA.Contains("A0 98"))
+            {
                 _currentState = GameState.InBattle;
+                戰鬥中判定 = 0;
+            }
             else if (_rawStateA.Contains("F0 B8"))
+            {
                 _currentState = GameState.Idle;
+                戰鬥中判定 = -1;
+            }
             else if (_rawStateA.Contains("F0 F8"))
                 _currentState = GameState.Dialog;
             else if (_rawStateA.Contains("E0 F0"))
@@ -212,7 +225,7 @@ namespace NOBApp
                 string[][] addressPairs = new string[][]
                 {
             new[] { AddressData.頻道認證B, "0", "192", "384" },
-            new[] { AddressData.頻道認證, "0", "192", "384" }
+            new[] { AddressData.頻道認證A, "0", "192", "384" }
                 };
 
                 foreach (var basePair in addressPairs)
@@ -342,7 +355,7 @@ namespace NOBApp
                     }
                 }
             }
-            RunCode?.SetClickThrough(false);
+            //RunCode?.SetClickThrough(false);
         }
 
         public async Task BattleUpdate()
@@ -353,9 +366,7 @@ namespace NOBApp
             Log($"2 啟動自動輔助中");
             啟動自動輔助中 = true;
 
-            int endBattleCheckNum = 0;
             bool 希望完成 = false;
-            bool 進入過戰鬥畫面 = false;
             bool 已經放過一次 = false;
             bool 放技能完成 = false;
             while (IsUseAutoSkill)
@@ -363,8 +374,7 @@ namespace NOBApp
                 if (MainWindow.dmSoft == null)
                     return;
 
-
-                Log($"IsUseAutoSkill->{IsUseAutoSkill}");
+                //Log($"IsUseAutoSkill->{IsUseAutoSkill}");
 
                 if (AutoSkillSet.背景Enter)
                 {
@@ -375,11 +385,10 @@ namespace NOBApp
 
                 if (戰鬥中)
                 {
+                    Log($"進入戰鬥中 {AutoSkillSet.一次放 || AutoSkillSet.重複放}");
                     #region 戰鬥中
                     //目前選數量 
-                    endBattleCheckNum = 0;
                     希望完成 = false;
-                    進入過戰鬥畫面 = true;
                     var index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
                     if (index > 0 && (MYTeamData == null || MYTeamData.Count == 0))
                     {
@@ -410,10 +419,9 @@ namespace NOBApp
                                 if (AutoSkillSet.特殊運作)
                                 {
                                     int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
-                                    Debug.WriteLine("setindex : " + setindex);
+                                    Log("setindex : " + setindex);
 
                                     Task.Delay(AutoSkillSet.程式速度).Wait();
-                                    Debug.WriteLine("setindex : " + setindex);
                                     if (setindex == 0)
                                     {
                                         直向選擇(AutoSkillSet.技能段1, AutoSkillSet.程式速度);
@@ -436,7 +444,8 @@ namespace NOBApp
                                         }
                                         else
                                         {
-                                            直向選擇(0, AutoSkillSet.程式速度);
+                                            KeyPress(VKeys.KEY_ENTER);
+                                            KeyPress(VKeys.KEY_K);
                                         }
                                     }
 
@@ -455,8 +464,8 @@ namespace NOBApp
                                         }
                                         else
                                         {
-                                            直向選擇(1, AutoSkillSet.程式速度);
-                                            直向選擇(0, AutoSkillSet.程式速度);
+                                            KeyPress(VKeys.KEY_ENTER);
+                                            KeyPress(VKeys.KEY_K);
                                         }
                                     }
 
@@ -475,8 +484,8 @@ namespace NOBApp
                                         }
                                         else
                                         {
-                                            直向選擇(2, AutoSkillSet.程式速度);
-                                            直向選擇(1, AutoSkillSet.程式速度);
+                                            KeyPress(VKeys.KEY_ENTER);
+                                            KeyPress(VKeys.KEY_K);
                                         }
                                     }
 
@@ -489,8 +498,8 @@ namespace NOBApp
                                         }
                                         else
                                         {
-                                            直向選擇(2, AutoSkillSet.程式速度);
-                                            直向選擇(0, AutoSkillSet.程式速度);
+                                            KeyPress(VKeys.KEY_ENTER);
+                                            KeyPress(VKeys.KEY_K);
                                         }
                                     }
 
@@ -522,7 +531,34 @@ namespace NOBApp
 
                     #endregion 戰鬥中
                 }
+                #region 對話框出現 + 戰鬥結束
+                if (進入結算)
+                {
+                    Debug.WriteLine($"進入結算");
+                    放技能完成 = false;
+                    已經放過一次 = false;
+                    if (希望取得 && 希望完成 == false)
+                    {
+                        希望完成 = true;
+                        Task.Delay(1000).Wait();
+                        KeyPress(VKeys.KEY_ENTER, 6, 300);
+                        Task.Delay(100).Wait();
+                    }
+                    if (自動結束_A)
+                    {
+                        離開戰鬥A();
+                    }
+                    if (自動結束_B)
+                    {
+                        離開戰鬥B();
+                    }
 
+                    if (追蹤)
+                    {
+                        KeyPressPP(VKeys.KEY_F8);
+                    }
+                }
+                #endregion
                 if (對話與結束戰鬥)
                 {
                     #region 對話與結束戰鬥
@@ -530,67 +566,12 @@ namespace NOBApp
                     #endregion
                 }
 
-                switch (StateA)
-                {
-                    // 戰鬥中
-                    case "A0 98":
-                        break;
-                    //沒有任何視窗野外
-                    case "F0 B8":
-                        #region 野外
-                        已經放過一次 = false;
-                        進入過戰鬥畫面 = false;
-
-                        if (自動追蹤隊長)
-                        {
-                            KeyPress(VKeys.KEY_F8);
-                            Task.Delay(500).Wait();
-                        }
-                        #endregion 野外
-                        break;
-                    //開寶 出現對話框 戰鬥結束
-                    case "F0 F8":
-                        #region 對話框出現 + 戰鬥結束
-                        if (進入過戰鬥畫面)
-                        {
-                            if (endBattleCheckNum < 3)
-                            {
-                                endBattleCheckNum = endBattleCheckNum + 1;
-                                Task.Delay(100).Wait();
-                            }
-                            else
-                            {
-                                endBattleCheckNum = 0;
-                                放技能完成 = false;
-                                已經放過一次 = false;
-                                if (希望取得 && 希望完成 == false)
-                                {
-                                    希望完成 = true;
-                                    Task.Delay(1000).Wait();
-                                    KeyPress(VKeys.KEY_ENTER, 6, 300);
-                                    Task.Delay(100).Wait();
-                                }
-
-                                if (自動結束_A)
-                                {
-                                    離開戰鬥A();
-                                }
-                                if (自動結束_B)
-                                {
-                                    離開戰鬥B();
-                                }
-                            }
-                        }
-                        #endregion
-                        break;
-                }
 
                 Task.Delay(AutoSkillSet.程式速度 <= 0 ? 100 : AutoSkillSet.程式速度).Wait();
             }
-
+            //Log($"啟動自動輔助中 關閉->{IsUseAutoSkill}");
             啟動自動輔助中 = false;
         }
-
 
         // 處理戰鬥結束動作
         private void ProcessBattleEndActions()
@@ -780,30 +761,153 @@ namespace NOBApp
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
         }
+
+        public void MoveToNPC2(int npcID)
+        {
+            while (StartRunCode)
+            {
+                if (GetTargetIDINT() == npcID && 對話與結束戰鬥)
+                {
+                    break;
+                }
+                else
+                {
+                    MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
+                    MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
+                    MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
+                    Task.Delay(500).Wait();
+                }
+            }
+        }
+
         public void 鎖定NPC(int npcID)
         {
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
         }
 
-        public async void 速度()
+        public void 生產到底()
         {
-            while (VIPSP)
+            int checkDone = 0;
+            int checkIndex = 製作Index;
+            KeyPress(VKeys.KEY_ENTER, 5);
+            while (StartRunCode)
             {
-                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+00AFB254] + 26a", 0, 128);
-                await Task.Delay(500);
+                KeyPress(VKeys.KEY_ENTER, 10, 10);
+                //Debug.WriteLine($"出現左右選單 -- {出現左右選單}");
+                if (checkIndex != 製作Index)
+                {
+                    checkIndex = 製作Index;
+                    checkDone = 0;
+                    continue;
+                }
+
+                checkDone++;
+                Task.Delay(50).Wait();
+                if (checkDone > 7)
+                {
+                    KeyPress(VKeys.KEY_ESCAPE, 10);
+                    break;
+                }
+            }
+        }
+
+        public void 速度()
+        {
+            if (VIPSP)
+            {
+                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC274] + 26a", 0, 3081718408);
+                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC274] + 260", 0, 3081718408);
+                //await Task.Delay(500);
+            }
+        }
+
+        //檢查是否有歸0
+
+        const string SelectData = @"[<nobolHD.bng>+4C4D174] + C4";
+        public void 直向選擇ZC(int num, int delay = 300, bool passCheck = false)
+        {
+            int indexCheck = -1;
+
+            while (StartRunCode)
+            {
+                indexCheck = (int)MainWindow.dmSoft!.ReadInt(Hwnd, SelectData, 0);
+                if (indexCheck == 0)
+                {
+                    MainWindow.dmSoft!.WriteInt(Hwnd, SelectData, 0, num);
+                    Task.Delay(delay).Wait();
+                    if (passCheck)
+                        KeyPressPP(VKeys.KEY_ENTER);
+                    else
+                        KeyPress(VKeys.KEY_ENTER);
+
+                    break;
+                }
+                else
+                    KeyPress(VKeys.KEY_ESCAPE);
+
+                Task.Delay(500).Wait();
             }
         }
 
         public void 直向選擇(int num, int delay = 300, bool passCheck = false)
         {
-            MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+4C4C154] + C4", 0, num);
+            MainWindow.dmSoft!.WriteInt(Hwnd, SelectData, 0, num);
             Task.Delay(delay).Wait();
             if (passCheck)
                 KeyPressPP(VKeys.KEY_ENTER);
             else
                 KeyPress(VKeys.KEY_ENTER);
         }
+
+        public int 精準移動Index => (int)MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0);
+
+        public void 準確目標移動(float x, float y, float z)
+        {
+            while (StartRunCode)
+            {
+                if (精準移動Index == 0 || 精準移動Index == 1)
+                {
+                    var x1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +58");
+                    var y1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +5C");
+                    var z1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +60");
+                    var x2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +68");
+                    var y2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +6C");
+                    var z2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +70");
+
+                    var ii = MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0);
+                    float f = 0;
+                    if (x1 < 0 || x2 < 0 || y1 < 0 || y2 < 0 || z1 < 0 || z2 < 0 ||
+                        !float.TryParse(x1.ToString(), out f) ||
+                        !float.TryParse(y1.ToString(), out f) ||
+                        !float.TryParse(z1.ToString(), out f))
+                    {
+                        ML_Click((int)NowWidth / 2, NowHeight / 2);
+                        Debug.WriteLine($"出現問題 重新修正位置");
+                        continue;
+                    }
+
+                    Debug.WriteLine($"-- Read {x1} {y1} {z1} {x2} {y2} {z2} {ii}");
+
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +58", x);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +5C", y);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +60", z);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +68", x);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +6C", y);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +70", z);
+                    Debug.WriteLine("寫入完成");
+                    MainWindow.dmSoft!.WriteInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0, 1);
+                    Debug.WriteLine("開始移動");
+                    break;
+                }
+                else
+                {
+                    ML_Click((int)NowWidth / 2, NowHeight / 2);
+                }
+            }
+        }
+
+        public int 點移動 => (int)MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0);
 
         public void 選擇目標類型(int num)
         {
@@ -914,29 +1018,33 @@ namespace NOBApp
             {
                 if (戰鬥中) { break; }
                 //  MainNob.Log($"結算中 : {checkDoneCount}");
+
+                if (待機)
+                {
+                    戰鬥中判定 = -1;
+                    離開戰鬥確認 = true;
+                    KeyPress(VKeys.KEY_ESCAPE, 3);
+                    break;
+                }
+
                 if (對話與結束戰鬥)
                 {
                     checkDoneCount = 0;
                     int x = inPosX + _random.Next(-100, 100);
                     int y = inPosY + _random.Next(-20, 80);
                     MR_Click(x, y);
-                    Task.Delay(50).Wait();
+                    Task.Delay(100).Wait();
                 }
                 else
                 {
-                    if (待機)
-                    {
-                        KeyPress(VKeys.KEY_ESCAPE, 1);
-                    }
-
                     checkDoneCount++;
-                    if (checkDoneCount > 3)
+                    if (checkDoneCount > 5)
                     {
                         戰鬥中判定 = -1;
                         離開戰鬥確認 = true;
                         break;
                     }
-                    Task.Delay(100).Wait();
+                    Task.Delay(400).Wait();
                 }
             } while (StartRunCode || IsUseAutoSkill);
         }
