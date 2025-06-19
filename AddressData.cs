@@ -33,7 +33,7 @@ namespace NOBApp
         //"F0 F8" 開寶 出現對話框 戰鬥結束
         public static string 判別狀態A = "5C5B420";
         //0 沒有畫面 7-第一頁面 8-輔助 C-技能 2奧義 -僅判斷
-        public static string 戰鬥可輸入判斷 = "5BA5734";
+        public static string 戰鬥可輸入判斷 = "5BA6744";
         public static string 戰鬥可輸入判斷II = "5BA57D0";
         public static string 戰鬥輔助 = "5BA57E0";  //0-正常化面 1-輔助畫面
         public static string 戰鬥輸入 = "5BA572C";
