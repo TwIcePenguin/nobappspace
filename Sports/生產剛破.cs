@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.VisualBasic.Logging;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NOBApp.Sports
 {
@@ -9,6 +11,8 @@ namespace NOBApp.Sports
         int mPoint = 0;
         int mSpBuy = 0;
         int mSpBuyNum = 0;
+        int maxMakeRound = 7;
+        int nowMakeRound = 0;
         public override void 初始化()
         {
             if (MainNob != null)
@@ -22,6 +26,13 @@ namespace NOBApp.Sports
             if (MainNob == null)
                 return;
             //SetClickThrough(true);
+
+            if (nowMakeRound < maxMakeRound)
+            {
+                MessageBox.Show($"製作次數: {nowMakeRound} / {maxMakeRound} 結束", "製作剛破", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+                MainNob.StartRunCode = false;
+                return;
+            }
             switch (mPoint)
             {
                 default:
@@ -30,6 +41,7 @@ namespace NOBApp.Sports
                     break;
                 case 1:
                     製作();
+                    nowMakeRound++;
                     break;
                 case 2:
                     販賣();

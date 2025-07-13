@@ -29,6 +29,8 @@ namespace NOBApp.Sports
         private int mErrorCheck = 0;
         private int mTErrorCheck = 0;
         private int mENDCheck = 0;
+        int maxBattleCheck = 3;
+        int nowBattleNum = 0;
         public override void 初始化()
         {
             統計販賣戰鬥 = false;
@@ -151,9 +153,19 @@ namespace NOBApp.Sports
                         FBAT = false;
                         是否經過戰鬥 = false;
                         mErrorCheck = 0;
-                        m目標ID = 0;
 
-                        Task.Delay(500).Wait();
+                        MainNob.鎖定NPC(m目標ID);
+                        if (MainNob.GetTargetClass() != 255)
+                        {
+                            nowBattleNum++;
+                            while (nowBattleNum < maxBattleCheck && MainNob.GetTargetIDINT() == m目標ID)
+                            {
+                                Task.Delay(200).Wait();
+                            }
+                        }
+
+                        m目標ID = 0;
+                        Task.Delay(200).Wait();
                     }
 
                     if (!FBAT && mErrorCheck > 15)
@@ -192,7 +204,6 @@ namespace NOBApp.Sports
                         #region 有目標的狀態
                         if (MainNob.對話與結束戰鬥)
                         {
-                            Task.Delay(500).Wait();
                             if (MainNob.出現左右選單)
                             {
                                 Task.Delay(100).Wait();
@@ -204,11 +215,12 @@ namespace NOBApp.Sports
                             {
                                 MainNob.KeyPress(VKeys.KEY_ESCAPE);
                             }
+                            Task.Delay(200).Wait();
                         }
                         else
                         {
                             MainNob.MoveToNPC(m目標ID);
-                            Task.Delay(400).Wait();
+                            Task.Delay(300).Wait();
                         }
                         //點到家臣
                         if (MainNob.出現直式選單 && MainNob.取得最下面選項().Contains("其他"))
@@ -229,9 +241,10 @@ namespace NOBApp.Sports
                             {
                                 if (MainNob.取得最下面選項().Contains("妙院"))
                                 {
-                                    Task.Delay(200).Wait();
+                                    nowBattleNum = 0;
+                                    Task.Delay(100).Wait();
                                     MainNob.直向選擇(MainNob.CodeSetting.線路);
-                                    Task.Delay(200).Wait();
+                                    Task.Delay(100).Wait();
                                     for (int i = 0; i < 5; i++)
                                     {
                                         MainNob.KeyPress(VKeys.KEY_J);
@@ -390,6 +403,7 @@ namespace NOBApp.Sports
                 if (mTErrorCheck > 20)
                 {
                     mTErrorCheck = 0;
+                    MainNob.KeyPress(VKeys.KEY_S, 5);
                     MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
                     MainNob.KeyPress(VKeys.KEY_ENTER);
                 }
