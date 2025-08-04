@@ -143,7 +143,7 @@ namespace NOBApp.Sports
                 MainNob.Log($"狀態刷新判斷:{c}");
                 if (c)
                 {
-                    MainNob.Log("尋找戰鬥:" + MainNob.GetSStatus + " : " + MainNob.MAPID);
+                    MainNob.Log("尋找戰鬥:" + MainNob.MAPID);
                     if (是否經過戰鬥)
                     {
                         if (m目標ID != 0)

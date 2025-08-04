@@ -47,6 +47,7 @@ namespace NOBApp.Sports
                 }
 
                 MainWindow.MainState = Point.ToString();
+                Debug.WriteLine($"Point--> {Point}");
                 switch (Point)
                 {
                     case 檢查點.入場:
@@ -74,7 +75,7 @@ namespace NOBApp.Sports
                             }
                             else
                             {
-
+                                Debug.WriteLine("自動移動-->");
                                 MainWindow.dmSoft!.WriteString(MainNob.Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCA");
                                 Task.Delay(100).Wait();
                                 MainNob.KeyPress(VKeys.KEY_F12);

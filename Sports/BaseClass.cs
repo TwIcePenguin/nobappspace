@@ -114,8 +114,10 @@ namespace NOBApp.Sports
                         int 目標座標Z = 移動點[MoveIndex].Z;
 
                         dis = Tools.Dis(MainNob.PosX, MainNob.PosY, 目標座標X, 目標座標Z);
-                        MainNob.目前動作 = $"index : {MoveIndex} dis : {dis} {Environment.NewLine} X {MainNob.PosX}, Y {MainNob.PosY} {Environment.NewLine} MX {目標座標X} MY{目標座標Y}";
+                        string logStr = $"index : {MoveIndex} dis : {dis} {Environment.NewLine} X {MainNob.PosX}, Y {MainNob.PosY} {Environment.NewLine} MX {目標座標X} MY{目標座標Y}";
 
+                        MainNob.目前動作 = logStr;
+                        Debug.WriteLine(logStr);
                         int checkDoneDis = 移動點.Count != MoveIndex ? 255 : 50;
                         if (dis <= checkDoneDis) // 到達目標點
                         {

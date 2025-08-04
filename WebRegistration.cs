@@ -18,6 +18,7 @@ namespace NOBApp
                 List<FPDATA> dataList = new();
                 Parallel.ForEach(MainWindow.AllNobWindowsList, nob =>
                 {
+                    Debug.WriteLine($"nob.Account {nob.Account} PASS:{nob.Password}");
                     if (nob != null && !string.IsNullOrEmpty(nob.Account) && !string.IsNullOrEmpty(nob.Password))
                     {
                         if (DataSendDoneList.Contains(nob.Account))

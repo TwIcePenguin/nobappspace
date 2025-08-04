@@ -132,7 +132,6 @@ namespace NOBApp
         public int 製作Index => ReadInt(GetFullAddress(AddressData.製作Index), 1);
         public bool 出現左右選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 2;
         public bool 出現直式選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 1;
-        public int GetSStatus => ReadInt(GetFullAddress(AddressData.特殊狀態判斷), 2);
         public string StateA => StateARaw;
         public bool ResetPoint = false;
 
@@ -235,6 +234,7 @@ namespace NOBApp
                     {
                         string offset = basePair[i];
                         string addr = offset == "0" ? baseAddr : baseAddr.AddressAdd(int.Parse(offset));
+
                         if (驗證國家字串包含("胖鵝科技", addr))
                         {
                             return true;
@@ -247,6 +247,7 @@ namespace NOBApp
 
         private bool 驗證國家字串包含(string 搜尋字串, string address)
         {
+            Debug.WriteLine(MainWindow.dmSoft?.ReadString(Hwnd, $"{BASE_ADDRESS}{address}", 1, 16));
             return MainWindow.dmSoft?.ReadString(Hwnd, $"{BASE_ADDRESS}{address}", 1, 16)?.Contains(搜尋字串) ?? false;
         }
 
@@ -758,6 +759,7 @@ namespace NOBApp
         public void MoveToNPC(int npcID)
         {
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目B, 0, npcID);
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
         }
@@ -774,6 +776,7 @@ namespace NOBApp
                 {
                     MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
                     MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
+                    MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目B, 0, npcID);
                     MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
                     Task.Delay(500).Wait();
                 }
@@ -783,7 +786,8 @@ namespace NOBApp
         public void 鎖定NPC(int npcID)
         {
             MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
-            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
+            MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目B, 0, npcID);
+            //MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
         }
 
         public void 生產到底()
@@ -816,15 +820,15 @@ namespace NOBApp
         {
             if (VIPSP)
             {
-                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC274] + 26a", 0, 3081718408);
-                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC274] + 260", 0, 3081718408);
+                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC234] + 26a", 0, 3081718408);
+                MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC234] + 260", 0, 3081718408);
                 //await Task.Delay(500);
             }
         }
 
         //檢查是否有歸0
 
-        const string SelectData = @"[<nobolHD.bng>+4C4D174] + C4";
+        const string SelectData = @"[<nobolHD.bng>+4C4D144] + C4";
         public void 直向選擇ZC(int num, int delay = 300, bool passCheck = false)
         {
             int indexCheck = -1;
@@ -860,7 +864,7 @@ namespace NOBApp
                 KeyPress(VKeys.KEY_ENTER);
         }
 
-        public int 精準移動Index => (int)MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0);
+        public int 精準移動Index => (int)MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +54", 0);
 
         public void 準確目標移動(float x, float y, float z)
         {
@@ -868,14 +872,14 @@ namespace NOBApp
             {
                 if (精準移動Index == 0 || 精準移動Index == 1)
                 {
-                    var x1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +58");
-                    var y1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +5C");
-                    var z1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +60");
-                    var x2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +68");
-                    var y2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +6C");
-                    var z2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +70");
+                    var x1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +58");
+                    var y1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +5C");
+                    var z1 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +60");
+                    var y2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +6C");
+                    var z2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +70");
+                    var x2 = MainWindow.dmSoft!.ReadFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +68");
 
-                    var ii = MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0);
+                    var ii = MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +54", 0);
                     float f = 0;
                     if (x1 < 0 || x2 < 0 || y1 < 0 || y2 < 0 || z1 < 0 || z2 < 0 ||
                         !float.TryParse(x1.ToString(), out f) ||
@@ -889,14 +893,14 @@ namespace NOBApp
 
                     Debug.WriteLine($"-- Read {x1} {y1} {z1} {x2} {y2} {z2} {ii}");
 
-                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +58", x);
-                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +5C", y);
-                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +60", z);
-                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +68", x);
-                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +6C", y);
-                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +70", z);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +58", x);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +5C", y);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +60", z);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +68", x);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +6C", y);
+                    MainWindow.dmSoft!.WriteFloat(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +70", z);
                     Debug.WriteLine("寫入完成");
-                    MainWindow.dmSoft!.WriteInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0, 1);
+                    MainWindow.dmSoft!.WriteInt(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +54", 0, 1);
                     Debug.WriteLine("開始移動");
                     break;
                 }
@@ -907,7 +911,7 @@ namespace NOBApp
             }
         }
 
-        public int 點移動 => (int)MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D174] + 164] +54", 0);
+        public int 點移動 => (int)MainWindow.dmSoft!.ReadInt(Hwnd, "[[<nobolHD.bng> + 04C4D144] + 164] +54", 0);
 
         public void 選擇目標類型(int num)
         {
