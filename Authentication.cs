@@ -8,7 +8,7 @@ namespace NOBApp
 {
     public class Authentication
     {
-        public static void Àx¦s»{ÃÒ°T®§(NOBDATA data, PNobUserData nobUseData)
+        public static void å„²å­˜èªè­‰è¨Šæ¯(NOBDATA data, PNobUserData nobUseData)
         {
             string jsonString = JsonSerializer.Serialize(nobUseData);
             try
@@ -25,21 +25,21 @@ namespace NOBApp
             }
         }
 
-        public static bool Åª¨ú»{ÃÒ°T®§Name(NOBDATA user)
+        public static bool è®€å–èªè­‰è¨Šæ¯Name(NOBDATA user)
         {
             if (File.Exists($@"{user.Account}_CDK.nob"))
             {
                 using StreamReader reader = new($@"{user.Account}_CDK.nob");
                 if (reader == null)
                 {
-                    Debug.WriteLine("¨S¦³¸Ó¸ê®Æ");
+                    Debug.WriteLine("æ²’æœ‰è©²è³‡æ–™");
                     return false;
                 }
                 string jsonString = reader.ReadToEnd();
                 user.NOBCDKEY = jsonString;
                 if (user != null)
                 {
-                    Åª¨ú»{ÃÒ°T®§Json(user, jsonString);
+                    è®€å–èªè­‰è¨Šæ¯Json(user, jsonString);
                     return true;
                 }
                 else
@@ -50,7 +50,7 @@ namespace NOBApp
             return false;
         }
 
-        public static void Åª¨ú»{ÃÒ°T®§Json(NOBDATA user, string json)
+        public static void è®€å–èªè­‰è¨Šæ¯Json(NOBDATA user, string json)
         {
             if (user == null || string.IsNullOrEmpty(json))
                 return;
@@ -61,20 +61,20 @@ namespace NOBApp
                 string.IsNullOrEmpty(user.Account) == false)
             {
                 //DateTime getOnlineTime = NetworkTime.GetNetworkTimeAsync();
-                if (DateTime.TryParse(nobUseData.StartTimer, out user.¨ì´Á¤é))
+                if (DateTime.TryParse(nobUseData.StartTimer, out user.åˆ°æœŸæ—¥))
                 {
-                    user.ÅçÃÒ§¹¦¨ = true;
-                    user.¯S®íªÌ = true;
-                    Àx¦s»{ÃÒ°T®§(user, nobUseData);
+                    user.é©—è­‰å®Œæˆ = true;
+                    user.ç‰¹æ®Šè€… = true;
+                    å„²å­˜èªè­‰è¨Šæ¯(user, nobUseData);
                 }
                 //else
                 //{
-                //    MessageBox.Show("ÅçÃÒ¥¢±Ñ¡A®É¶¡¨ì´Á ½Ğ§ä¥øÃZ©µªø®É¶¡");
+                //    MessageBox.Show("é©—è­‰å¤±æ•—ï¼Œæ™‚é–“åˆ°æœŸ è«‹æ‰¾ä¼éµå»¶é•·æ™‚é–“");
                 //}
             }
             else
             {
-                MessageBox.Show("ÅçÃÒ¥¢±Ñ¡A½Ğ½T»{»{ÃÒ½X¬O§_¥¿½T");
+                MessageBox.Show("é©—è­‰å¤±æ•—ï¼Œè«‹ç¢ºèªèªè­‰ç¢¼æ˜¯å¦æ­£ç¢º");
             }
         }
     }

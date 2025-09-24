@@ -14,9 +14,9 @@ namespace NOBApp.Sports
         }
 
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
-            throw new NotImplementedException();
+            return base.腳本運作();
         }
 
     }

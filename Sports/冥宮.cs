@@ -92,7 +92,7 @@ namespace NOBApp.Sports
             }
         }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -113,7 +113,7 @@ namespace NOBApp.Sports
 
                     if (!allDone)
                     {
-                        return;
+                        return base.腳本運作();
                     }
 
                     MainNob.目前動作 = "前進" + mErrorCheck;
@@ -172,6 +172,8 @@ namespace NOBApp.Sports
                     }
                 }
             }
+
+            return base.腳本運作();
         }
 
         public void 選擇()

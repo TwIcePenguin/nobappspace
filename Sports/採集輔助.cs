@@ -17,7 +17,7 @@ namespace NOBApp.Sports
             MainNob!.選擇目標類型(7);
         }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -63,7 +63,8 @@ namespace NOBApp.Sports
                 Task.Delay(500).Wait();
                 MainNob.KeyPress(VKeys.KEY_ESCAPE, 5, 200);
             }
-        }
 
+            return base.腳本運作();
+        }
     }
 }

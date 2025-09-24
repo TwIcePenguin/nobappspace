@@ -424,7 +424,9 @@ namespace NOBApp
         private void E點怪_Click(object sender, RoutedEventArgs e)
         {
             if (MainNob != null)
+            {
                 MainNob.isUseEnter = E點怪.IsChecked ?? false;
+            }
         }
 
         private void 解無敵_Click(object sender, RoutedEventArgs e)
@@ -604,6 +606,8 @@ namespace NOBApp
                         //暫時將到期關閉
                         if (MainNob.到期日 >= DateTime.Now)
                         {
+                            Tools.isBANACC = false;
+                            Tools.IsVIP = true;
                             VIPSP.IsEnabled = true;
                         }
 
@@ -669,7 +673,9 @@ namespace NOBApp
             // 獲取 Sports 命名空間中的所有類別，並排除 BaseClass
             var sportsClasses = Assembly.GetExecutingAssembly()
                                         .GetTypes()
-                                        .Where(t => t.IsClass && t.Namespace == "NOBApp.Sports" && t.Name != "BaseClass" && !t.Name.Contains("<"))
+                                        .Where(t => t.IsClass && t.Namespace == "NOBApp.Sports" &&
+                                                    t.Name != "ScriptExtensions" &&
+                                                    t.Name != "BaseClass" && !t.Name.Contains("<"))
                                         .Select(t => t.Name)
                                         .ToList();
 
@@ -681,6 +687,9 @@ namespace NOBApp
 
             menuMapping = new Dictionary<string, Action>
             {
+                { "黃泉盡頭", () => { useMenu = new 黃泉盡頭();Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; }  },
+                { "黃泉盡頭Gemini", () => { useMenu = new 黃泉盡頭Gemini();Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; }  },
+
                 { "刷熊本城", () => { useMenu = new 刷熊本城(); Btn_TargetA.Content = "入場NPC"; Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "四聖青龍", () => { useMenu = new 四聖青龍(); Btn_TargetA.Content = "老頭"; Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "討伐2025_酒井", () => { useMenu = new 討伐2025_酒井(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
@@ -721,8 +730,11 @@ namespace NOBApp
                 //{ "黑槍特搜", () => { useMenu = new 黑槍特搜(); CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; } },
                 { "隨機打怪", () => { useMenu = new 隨機打怪(); UpdateNPCDataUI = true; CB自動鎖定PC.Visibility = List_目前名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB鎖定後自動黑槍.Visibility = Visibility.Hidden; } }
             };
-            if (VIPSP.IsEnabled == false)
+
+            if (Tools.IsVIP == false)
             {
+                SelectMenu.Items.Remove("黃泉盡頭");
+                SelectMenu.Items.Remove("黃泉盡頭");
                 SelectMenu.Items.Remove("生產破魔");
                 SelectMenu.Items.Remove("刷熊本城");
                 SelectMenu.Items.Remove("四聖青龍");

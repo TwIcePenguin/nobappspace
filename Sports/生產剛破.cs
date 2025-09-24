@@ -21,17 +21,17 @@ namespace NOBApp.Sports
                 mPoint = MainNob.CodeSetting.MPoint;
             }
         }
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob == null)
-                return;
+                return base.腳本運作();
             //SetClickThrough(true);
 
             if (nowMakeRound < maxMakeRound)
             {
                 MessageBox.Show($"製作次數: {nowMakeRound} / {maxMakeRound} 結束", "製作剛破", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
                 MainNob.StartRunCode = false;
-                return;
+                return base.腳本運作();
             }
             switch (mPoint)
             {
@@ -47,6 +47,7 @@ namespace NOBApp.Sports
                     販賣();
                     break;
             }
+            return base.腳本運作();
         }
         void 製作()
         {

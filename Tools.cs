@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 
@@ -133,6 +134,9 @@ namespace NOBApp
         {
             return (int.Parse(str, NumberStyles.HexNumber) + i).ToString("X");
         }
+        public static bool IsVIP = false;
+        public static bool isBANACC = false;
+
         /// <summary>
         /// 取得電腦的唯一識別碼
         /// </summary>
@@ -140,6 +144,7 @@ namespace NOBApp
         {
             try
             {
+                isBANACC = GetMachineGuid().Contains("88B40D5033EF62CD0D2452F61165D8912CEE0CB3103AC8074524F4CB545D3021");
                 return GetMachineGuid();
             }
             catch (Exception ex)
@@ -391,7 +396,7 @@ namespace NOBApp
             string dir = strPath?.Substring(0, strPath.IndexOf(':') + 1);
             string runFilePath = @$"{strPath}\nobolHD.bng";
             Debug.WriteLine(@$"runFilePath : {runFilePath}");
-
+            int tryOpenCount = 0;
             // 從註冊表加載之前成功的Session Index
             int? sessionIndex = LoadSessionIndexFromRegistry();
 
@@ -464,6 +469,13 @@ namespace NOBApp
                     // 如果沒有已知的Session Index，嘗試新的Sessions
                     Debug.WriteLine("沒有已知的Session Index，開始探索新的Sessions");
                     TryNewSessions(nob, path);
+                }
+
+
+                tryOpenCount++;
+                if (tryOpenCount > 100)
+                {
+                    return;
                 }
             }
 

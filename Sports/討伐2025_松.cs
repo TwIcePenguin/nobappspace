@@ -30,7 +30,7 @@ namespace NOBApp.Sports
         }
 
         int 信長ID = 0;
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -487,6 +487,8 @@ namespace NOBApp.Sports
                         break;
                 }
             }
+
+            return base.腳本運作();
         }
 
         private void 接任務()

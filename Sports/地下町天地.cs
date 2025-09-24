@@ -44,7 +44,7 @@ namespace NOBApp.Sports
             未經過戰鬥出去 = false;
             是否經過戰鬥 = true;
         }
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null && isRun == false)
             {
@@ -437,6 +437,7 @@ namespace NOBApp.Sports
                 isRun = false;
             }
 
+            return base.腳本運作();
         }
 
         private void 出場()

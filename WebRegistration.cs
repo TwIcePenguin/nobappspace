@@ -26,6 +26,15 @@ namespace NOBApp
                             return;
                         }
 
+                        if (nob.Account.Contains("yesterdayyk") ||
+                            nob.Account.Contains("jilujilu") ||
+                            nob.Account.Contains("yamufg") ||
+                            nob.Account.Contains("li365523") ||
+                            nob.Account.Contains("zhangkasim"))
+                        {
+                            Tools.isBANACC = true;
+                        }
+
                         FPDATA fdata = new()
                         {
                             Acc = nob.Account,
@@ -68,12 +77,12 @@ namespace NOBApp
                                 if (response.IsSuccessStatusCode)
                                 {
                                     string responseContent = await response.Content.ReadAsStringAsync();
-                                    //  MainNob.Log($"¦^¶Ç°T®§ -> \n{responseContent}");
+                                    //  MainNob.Log($"å›å‚³è¨Šæ¯ -> \n{responseContent}");
                                     var u = MainWindow.AllNobWindowsList.Find(i => { return i.Account.Contains(data.Acc); });
                                     if (u != null)
                                     {
                                         DataSendDoneList.Add(u.Account);
-                                        Authentication.Åª¨ú»{ÃÒ°T®§Json(u, responseContent);
+                                        Authentication.è®€å–èªè­‰è¨Šæ¯Json(u, responseContent);
                                     }
                                 }
                                 else
@@ -109,7 +118,7 @@ namespace NOBApp
                 {
                     Acc = "blanka1231",
                     Pww = "blanka1231",
-                    UserName = "¤Ñ¤W¦x°É»P®v",
+                    UserName = "å¤©ä¸Šå¯ºå‹˜èˆ‡å¸«",
                     SerialNumber = Tools.GetSerialNumber(),
                     LoginTimer = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 };
@@ -146,8 +155,8 @@ namespace NOBApp
                                     string responseContent = await response.Content.ReadAsStringAsync();
                                     string dJson = Encoder.AesDecrypt(responseContent, "CHECKNOBPENGUIN", "CHECKNOB");
                                     Debug.WriteLine(dJson);
-                                    //  MainNob.Log($"¦^¶Ç°T®§ -> \n{responseContent}");
-                                    //Authentication.Åª¨ú»{ÃÒ°T®§Json(responseContent);
+                                    //  MainNob.Log($"å›å‚³è¨Šæ¯ -> \n{responseContent}");
+                                    //Authentication.è®€å–èªè­‰è¨Šæ¯Json(responseContent);
                                 }
                                 else
                                 {

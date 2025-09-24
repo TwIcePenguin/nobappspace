@@ -36,7 +36,7 @@ namespace NOBApp.Sports
             cache地圖 = MainNob!.MAPID;
         }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -321,6 +321,8 @@ namespace NOBApp.Sports
                         break;
                 }
             }
+
+            return base.腳本運作();
         }
 
 

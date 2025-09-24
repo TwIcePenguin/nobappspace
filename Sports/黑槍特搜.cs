@@ -52,10 +52,11 @@ namespace NOBApp.Sports
 
         }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             Task.Delay(100).Wait();
             UpdateUI?.Invoke();
+            return base.腳本運作();
         }
 
     }

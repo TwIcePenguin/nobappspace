@@ -40,9 +40,10 @@ namespace NOBApp.Sports
                 大黑天ID = MainNob.CodeSetting.目標A;
                 上覽小販 = MainNob.CodeSetting.目標B;
                 御所ID = MainNob.CodeSetting.目標C;
+                MainNob.選擇目標類型(1);
             }
         }
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null && MainNob.StartRunCode)
             {
@@ -58,7 +59,7 @@ namespace NOBApp.Sports
                         {
                             Task.Delay(500).Wait();
                             狀態刷新判斷();
-                            return;
+                            return base.腳本運作();
                         }
                         MainNob.Log($"{Point} - 尋找戰鬥");
                         尋找戰鬥();
@@ -74,6 +75,8 @@ namespace NOBApp.Sports
                 }
                 Task.Delay(100).Wait();
             }
+
+            return base.腳本運作();
         }
 
         void 狀態刷新判斷2()
@@ -382,7 +385,6 @@ namespace NOBApp.Sports
                         MainNob.直向選擇(MainNob.CodeSetting.選擇難度);
                         Task.Delay(100).Wait();
                         MainNob.KeyPress(VKeys.KEY_ENTER, 10, 200);
-                        Task.Delay(100).Wait();
                         Point = 1;
                         滿倉判別 = 0;
                         mTErrorCheck = 0;

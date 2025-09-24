@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using static NOBApp.NobMainCodePage;
 
@@ -76,8 +77,47 @@ namespace NOBApp.Sports
         }
 
         public virtual void 初始化() { }
-        public virtual void 腳本運作() { }
+        public virtual Task 腳本運作() { return Task.CompletedTask; }
 
+
+
+        /// <summary>
+        /// 【推薦】非同步地等待，直到指定的條件成立或超時。
+        /// 這比固定的 Task.Delay 更可靠，因为它等待的是實際的遊戲狀態變化。
+        /// </summary>
+        /// <param name="condition">要檢查的條件，這是一個會返回 bool 的 Lambda 運算式。</param>
+        /// <param name="timeoutMilliseconds">最長等待時間（毫秒）。</param>
+        /// <param name="pollingIntervalMilliseconds">每次檢查條件的間隔時間（毫秒）。</param>
+        /// <param name="actionName">（可選）操作的名稱，用於日誌記錄。</param>
+        /// <param name="cancellationToken">（可選）用於取消等待的 CancellationToken。</param>
+        /// <returns>如果條件在時間內達成，返回 true；如果超時，返回 false。</returns>
+        public static async Task<bool> WaitUntilAsync(
+            Func<bool> condition,
+            int timeoutMilliseconds,
+            int pollingIntervalMilliseconds = 200,
+            string actionName = "",
+            CancellationToken cancellationToken = default)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.ElapsedMilliseconds < timeoutMilliseconds)
+            {
+                // 如果外部請求取消，則立即拋出例外
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 檢查條件是否已滿足
+                if (condition())
+                {
+                    return true;
+                }
+
+                // 等待一小段時間再進行下一次檢查
+                await Task.Delay(pollingIntervalMilliseconds, cancellationToken);
+            }
+
+            // 如果迴圈結束條件仍未滿足，代表超時
+            Debug.WriteLine($"等待操作 '{actionName}' 超時（超過 {timeoutMilliseconds} 毫秒）。");
+            return false;
+        }
 
         public bool 移動到定點New()
         {

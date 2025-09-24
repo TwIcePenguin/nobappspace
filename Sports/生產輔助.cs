@@ -21,7 +21,7 @@ namespace NOBApp.Sports
             }
             SellNPC = MainNob.CodeSetting.目標A;
         }
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (SPoint == 0)
             {
@@ -53,6 +53,8 @@ namespace NOBApp.Sports
                     SPoint = 0;
                 }
             }
+
+            return base.腳本運作();
         }
 
     }

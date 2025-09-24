@@ -27,7 +27,7 @@ namespace NOBApp.Sports
             }
         }
 
-        public override async void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -37,7 +37,7 @@ namespace NOBApp.Sports
                     mCheckbattleCount = -1;
                     anyDoCheck = 0;
                     Task.Run(MainNob.離開戰鬥A).Wait();
-                    return;
+                    return base.腳本運作();
                 }
                 if (MainNob.戰鬥中)
                 {
@@ -46,14 +46,14 @@ namespace NOBApp.Sports
                     findNPCCheck = 0;
                     mCheckbattleCount = 0;
                     Task.Delay(500).Wait();
-                    return;
+                    return base.腳本運作();
                 }
                 if (mCheckbattleCount >= 0)
                 {
                     mCheckbattleCount++;
                     MainNob.Log("戰鬥中");
                     Task.Delay(500).Wait();
-                    return;
+                    return base.腳本運作();
                 }
 
                 MainNob.Log($"Point:{mPoint} resetPoint:{MainNob!.ResetPoint} Ready:{MainNob.準備完成} InNext:{準備進入下一階段}");
@@ -63,7 +63,7 @@ namespace NOBApp.Sports
                     MainNob.ResetPoint = false;
                     進行任務 = false;
                     mPoint = 0;
-                    return;
+                    return base.腳本運作();
                 }
 
                 if (MainNob!.出現直式選單)
@@ -99,13 +99,13 @@ namespace NOBApp.Sports
                     if (MainNob.待機)
                     {
                         MainNob.準備完成 = true;
-                        return;
+                        return base.腳本運作();
                     }
                     else
                     {
                         MainNob.準備完成 = false;
                         MainNob.KeyPress(VKeys.KEY_ESCAPE, 2);
-                        return;
+                        return base.腳本運作();
                     }
                 }
 
@@ -183,6 +183,8 @@ namespace NOBApp.Sports
                 anyDoCheck++;
                 Task.Delay(100).Wait();
             }
+
+            return base.腳本運作();
         }
         public void 夢幻成移動()
         {

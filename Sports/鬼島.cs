@@ -46,7 +46,7 @@ namespace NOBApp.Sports
         Dictionary<int, int> cacheIGID = new();
         bool allDoneCheck = true;
         static int waitDone = 0;
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -174,7 +174,7 @@ namespace NOBApp.Sports
                             cacheIGID.Clear();
                             mBCHCount = 0;
                             allDoneCheck = false;
-                            return;
+                            return base.腳本運作();
                         }
 
                         if (MainNob.進入結算)
@@ -481,6 +481,8 @@ namespace NOBApp.Sports
                     MainNob.Log($"Code Error {e.ToString()}");
                 }
             }
+
+            return base.腳本運作();
         }
     }
 }

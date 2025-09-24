@@ -35,7 +35,7 @@ namespace NOBApp.Sports
             nowClassCount = MainNob?.CodeSetting.線路 ?? 0;
         }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -111,6 +111,8 @@ namespace NOBApp.Sports
                         break;
                 }
             }
+
+            return base.腳本運作();
         }
 
         void 尋找目標()

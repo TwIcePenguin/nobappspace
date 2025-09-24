@@ -16,7 +16,7 @@ namespace NOBApp.Sports
         static NOBDATA mUseNOB;
         public override void 初始化() { }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -70,6 +70,8 @@ namespace NOBApp.Sports
 
                 }
             }
+
+            return base.腳本運作();
         }
 
         void 離開戰鬥()

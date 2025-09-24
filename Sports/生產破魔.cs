@@ -19,14 +19,16 @@ namespace NOBApp.Sports
                 mPoint = MainNob.CodeSetting.MPoint;
             }
         }
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob == null)
-                return;
+                return base.腳本運作();
             if (mPoint == 0)
                 採購物品();
             else
                 製作();
+
+            return base.腳本運作();
         }
         void 製作()
         {

@@ -9,7 +9,7 @@ namespace NOBApp
 {
     public partial class MainWindow
     {
-        // ¤¹³\±q°t¸m¤å¥ó§ó·s³o¨Ç URL
+        // å…è¨±å¾é…ç½®æ–‡ä»¶æ›´æ–°é€™äº› URL
         private static string GitHubApiUrl = "https://api.github.com/repos/TwIcePenguin/nobappspace/releases/latest";
         private static string UpdateUrl = "https://github.com/TwIcePenguin/nobappspace/releases/download/{tag}/{filename}.zip";
         private static readonly string UpdateFilePath = "update.zip";
@@ -23,21 +23,21 @@ namespace NOBApp
                     client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
                     client.Timeout = TimeSpan.FromSeconds(10);
 
-                    Debug.WriteLine($"¥¿¦bÀË¬d GitHub §ó·s: {GitHubApiUrl}");
+                    Debug.WriteLine($"æ­£åœ¨æª¢æŸ¥ GitHub æ›´æ–°: {GitHubApiUrl}");
                     string json = await client.GetStringAsync(GitHubApiUrl);
                     var release = JsonSerializer.Deserialize<GitHubRelease>(json);
-                    Debug.WriteLine($"Àò¨ú¨ìª©¥»: {release?.tag_name}");
+                    Debug.WriteLine($"ç²å–åˆ°ç‰ˆæœ¬: {release?.tag_name}");
                     return release;
                 }
             }
             catch (HttpRequestException ex)
             {
-                Debug.WriteLine($"GitHub API ½Ğ¨D¥¢±Ñ: {ex.Message}");
+                Debug.WriteLine($"GitHub API è«‹æ±‚å¤±æ•—: {ex.Message}");
                 return new GitHubRelease { tag_name = VersionInfo.Version };
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ÀË¬d§ó·s®Éµo¥Í¥¼¹w´Áªº¿ù»~: {ex.Message}");
+                Debug.WriteLine($"æª¢æŸ¥æ›´æ–°æ™‚ç™¼ç”Ÿæœªé æœŸçš„éŒ¯èª¤: {ex.Message}");
                 return new GitHubRelease { tag_name = VersionInfo.Version };
             }
         }
@@ -56,8 +56,8 @@ namespace NOBApp
             }
             catch
             {
-                Debug.WriteLine($"­Y®æ¦¡¿ù»~¡A«O¦u¤£¤É¯Å");
-                // ­Y®æ¦¡¿ù»~¡A«O¦u¤£¤É¯Å
+                Debug.WriteLine($"è‹¥æ ¼å¼éŒ¯èª¤ï¼Œä¿å®ˆä¸å‡ç´š");
+                // è‹¥æ ¼å¼éŒ¯èª¤ï¼Œä¿å®ˆä¸å‡ç´š
                 return false;
             }
         }
@@ -68,37 +68,37 @@ namespace NOBApp
             {
                 try
                 {
-                    // ÀË¬d§ó·s¤å¥ó¬O§_¤w¦s¦b
+                    // æª¢æŸ¥æ›´æ–°æ–‡ä»¶æ˜¯å¦å·²å­˜åœ¨
                     string updateFilePath = Path.Combine(Environment.CurrentDirectory, "update.zip");
                     if (File.Exists(updateFilePath))
                     {
-                        Debug.WriteLine($"§ó·s¤å¥ó¤w¦s¦b: {updateFilePath}¡A¸õ¹L¤U¸ü");
-                        return; // ¦pªG¤å¥ó¤w¦s¦b¡A¸õ¹L¤U¸ü¨BÆJ
+                        Debug.WriteLine($"æ›´æ–°æ–‡ä»¶å·²å­˜åœ¨: {updateFilePath}ï¼Œè·³éä¸‹è¼‰");
+                        return; // å¦‚æœæ–‡ä»¶å·²å­˜åœ¨ï¼Œè·³éä¸‹è¼‰æ­¥é©Ÿ
                     }
 
                     string url = UpdateUrl.Replace("{tag}", tag).Replace("{filename}", tag);
-                    Debug.WriteLine($"¶}©l¤U¸ü§ó·s: {url}");
+                    Debug.WriteLine($"é–‹å§‹ä¸‹è¼‰æ›´æ–°: {url}");
 
-                    // °O¿ı¨ì¤é»x
+                    // è¨˜éŒ„åˆ°æ—¥èªŒ
                     string logPath = Path.Combine(Environment.CurrentDirectory, "update_log.txt");
-                    File.AppendAllText(logPath, $"[{DateTime.Now}] ¶}©l¤U¸ü§ó·s: {url}\n");
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] é–‹å§‹ä¸‹è¼‰æ›´æ–°: {url}\n");
 
                     using (HttpClient client = new HttpClient())
                     {
                         client.Timeout = TimeSpan.FromMinutes(5);
                         byte[] updateData = await client.GetByteArrayAsync(url);
 
-                        File.AppendAllText(logPath, $"[{DateTime.Now}] ¤U¸ü§¹¦¨¡AÀÉ®×¤j¤p: {updateData.Length} ¦r¸`\n");
+                        File.AppendAllText(logPath, $"[{DateTime.Now}] ä¸‹è¼‰å®Œæˆï¼Œæª”æ¡ˆå¤§å°: {updateData.Length} å­—ç¯€\n");
                         await File.WriteAllBytesAsync(updateFilePath, updateData);
 
-                        File.AppendAllText(logPath, $"[{DateTime.Now}] ¤w«O¦s§ó·sÀÉ¨ì: {updateFilePath}\n");
+                        File.AppendAllText(logPath, $"[{DateTime.Now}] å·²ä¿å­˜æ›´æ–°æª”åˆ°: {updateFilePath}\n");
                     }
                 }
                 catch (Exception ex)
                 {
                     string logPath = Path.Combine(Environment.CurrentDirectory, "update_log.txt");
-                    File.AppendAllText(logPath, $"[{DateTime.Now}] ¤U¸ü§ó·s¥¢±Ñ: {ex.Message}\n{ex.StackTrace}\n");
-                    Debug.WriteLine($"¤U¸ü§ó·s¥¢±Ñ: {ex.Message}");
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] ä¸‹è¼‰æ›´æ–°å¤±æ•—: {ex.Message}\n{ex.StackTrace}\n");
+                    Debug.WriteLine($"ä¸‹è¼‰æ›´æ–°å¤±æ•—: {ex.Message}");
                     throw;
                 }
             }

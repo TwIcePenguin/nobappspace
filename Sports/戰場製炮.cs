@@ -27,7 +27,7 @@ namespace NOBApp.Sports
             }
         }
 
-        public override void 腳本運作()
+        public override Task 腳本運作()
         {
             if (MainNob != null)
             {
@@ -110,7 +110,7 @@ namespace NOBApp.Sports
                         //MainNob.StartRunCode = false;
                         mPoint = 0;
                         MainNob.目前動作 = "前往目";
-                        return;
+                        return base.腳本運作();
                     }
 
                     if (MainNob.出現直式選單)
@@ -124,7 +124,7 @@ namespace NOBApp.Sports
                             skipCID.Add(MainNob.CodeSetting.目標B);
                             mPoint = 2;
                         }
-                        return;
+                        return base.腳本運作();
                     }
                 }
 
@@ -181,6 +181,8 @@ namespace NOBApp.Sports
                     mCachePoint = mPoint;
                 }
             }
+
+            return base.腳本運作();
         }
 
         void 尋找下一門砲()
