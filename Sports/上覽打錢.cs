@@ -47,6 +47,11 @@ namespace NOBApp.Sports
         {
             if (MainNob != null && MainNob.StartRunCode)
             {
+                if (Tools.IsVIP == false)
+                {
+                    Task.Delay(1000).Wait();
+                }
+
                 狀態刷新判斷2();
                 switch (Point)
                 {

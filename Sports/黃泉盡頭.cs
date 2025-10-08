@@ -1,17 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using static NOBApp.MainWindow;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace NOBApp.Sports
 {
@@ -57,6 +48,8 @@ namespace NOBApp.Sports
                 NobTeam[i].StartRunCode = MainNob!.StartRunCode;
             }
 
+            MainNob!.KeyPress(VKeys.KEY_S);
+            MainNob!.KeyPress(VKeys.KEY_W);
             外面地圖ID = MainNob!.MAPID;
             MainNob.Log($"外面地圖ID {外面地圖ID}");
         }
@@ -100,15 +93,27 @@ namespace NOBApp.Sports
                     {
                         case 檢查點.入場:
                             {
-                                if (Math.Abs(MainNob.MAPID - 外面地圖ID) > 11)
+                                int tryIn = 0;
+                                while (MainNob.StartRunCode)
                                 {
-                                    MainNob.Log($"入場的Point 在裡面尚未出來 {MainNob.MAPID}");
-                                    Point = 檢查點.出場;
-                                    return;
+                                    MainNob.鎖定NPC(MainNob!.CodeSetting.目標A);
+                                    await Task.Delay(100);
+                                    if (MainNob.GetTargetIDINT() == MainNob!.CodeSetting.目標A)
+                                    {
+                                        外面地圖ID = MainNob.MAPID;
+                                        break;
+                                    }
+
+                                    tryIn++;
+                                    if (tryIn > 5)
+                                    {
+                                        MainNob.Log($"入場的Point 在裡面尚未出來 {MainNob.MAPID}");
+                                        Point = 檢查點.出場;
+                                        return;
+                                    }
                                 }
 
                                 tasks = new List<Task>();
-
                                 cache地圖 = MainNob.MAPID;
                                 MainNob.Log($"入場 Start {cache地圖}");
                                 if (MainNob.MAPID == 外面地圖ID) { Point = 檢查點.入場; }
@@ -131,19 +136,19 @@ namespace NOBApp.Sports
                             }
                             break;
                         case 檢查點.找目標:
-                            if (Math.Abs(MainNob.MAPID - 外面地圖ID) < 11)
+                            if (Math.Abs(MainNob.MAPID - 外面地圖ID) < 10)
                             {
                                 MainNob.Log($"找目標的Point 尚未進場 回去重新進場 {MainNob.MAPID}");
                                 Point = 檢查點.入場;
                                 return;
                             }
                             _isNPCCheckDone = false;
-                           await Task.WhenAll(Task.Run(() => 進行任務(MainNob, _cts.Token), _cts.Token));
+                            await Task.WhenAll(Task.Run(() => 進行任務(MainNob, _cts.Token), _cts.Token));
                             MainNob.Log($"出場 -> {Point}");
                             break;
                         case 檢查點.出場:
 
-                            if (Math.Abs(MainNob.MAPID - 外面地圖ID) < 11)
+                            if (Math.Abs(MainNob.MAPID - 外面地圖ID) < 10)
                             {
                                 MainNob.Log($"找目標的Point 尚未進場 回去重新進場 {MainNob.MAPID}");
                                 Point = 檢查點.入場;
@@ -265,7 +270,7 @@ namespace NOBApp.Sports
                             MainNob.MoveToNPC(水滴使者ID);
                         }
                     }
-                    else 
+                    else
                     {
                         await Task.WhenAll(Task.Run(() => 取得特定NPC(useNOB, checkIDC3, cancellationToken), cancellationToken));
                     }
@@ -311,8 +316,8 @@ namespace NOBApp.Sports
                     Task.Delay(1000).Wait();
                     MainNob!.KeyPress(VKeys.KEY_ESCAPE, 10);
 
-                    MainNob.Log($"找完水滴使者 開始處理怪物");
-
+                    MainNob.Log($" {MainNob.MAPID} 找完水滴使者 開始處理怪物");
+                    bool 戰鬥中PC命令 = false;
                     while (MainNob.StartRunCode)
                     {
                         int getID = MainNob.GetTargetIDINT();
@@ -325,7 +330,11 @@ namespace NOBApp.Sports
                                 nob.Log("進入結算");
                                 tasks.Add(Task.Run(nob.離開戰鬥C, _cts.Token));
                                 await Task.Delay(500, _cts.Token);
+                                nob.IsUseAutoSkill = false;
+                                nob.放技能完成 = nob.已經放過一次 = false;
+                                戰鬥中PC命令 = false;
                             }
+
                             await Task.WhenAll(tasks);
 
                             while (MainNob.StartRunCode)
@@ -354,14 +363,23 @@ namespace NOBApp.Sports
 
                         if (MainNob.戰鬥中)
                         {
+                            await Task.Delay(200);
                             if (ccemyCheck < 10)
                             {
                                 ccemyCheck++;
                                 emyCCheck = MainNob.場上超過10人();
                             }
+                            if (ccemyCheck >= 3 && emyCCheck)
+                            {
+                                戰鬥中PC命令 = true;
+                                foreach (var nob in NobTeam)
+                                {
+                                    nob.處理戰鬥流程(true);
+                                }
+                            }
+
                             MainNob.戰鬥中判定 = 0;
                             battleIn = 1;
-                            await Task.Delay(500);
                             continue;
                         }
 
@@ -423,6 +441,18 @@ namespace NOBApp.Sports
 
                             if (getID != 剛打完的怪物ID && getID == battleID)
                             {
+                                if (卡點Check % 5 == 0)
+                                {
+                                    foreach (var nob in NobTeam)
+                                    {
+                                        if (nob != null)
+                                        {
+                                            nob.KeyPress(VKeys.KEY_F8, 2);
+                                            await Task.Delay(50);
+                                        }
+                                    }
+                                }
+
                                 await Task.Delay(100);
                                 MainNob!.MoveToNPC(battleID);
                                 await Task.Delay(800);
@@ -448,6 +478,14 @@ namespace NOBApp.Sports
                                     getID = MainNob.GetTargetIDINT();
                                     if (getID != 剛打完的怪物ID && getID != 水滴使者ID && getID != -1)
                                     {
+                                        foreach (var nob in NobTeam)
+                                        {
+                                            if (nob != null)
+                                            {
+                                                nob.KeyPress(VKeys.KEY_F8, 2);
+                                                await Task.Delay(50);
+                                            }
+                                        }
                                         MainNob.Log($"有目標對象 {battleID}");
                                         battleID = getID;
                                         allBattleDoneCheck = 0;
@@ -521,7 +559,7 @@ namespace NOBApp.Sports
                         {
                             int getID = MainNob.GetTargetIDINT();
                             await Task.Delay(100);
-                            MainNob.Log($"{getID} - {該樓完成} - {xyCheck} - 確認往下一層 {allBattleDoneCheck}");
+                            MainNob.Log($"{getID} - {MainNob.MAPID} - {該樓完成} - {xyCheck} - 確認往下一層 {allBattleDoneCheck}");
 
                             if ((_isNPCCheckDone || 該樓完成) && xyCheck != 0)
                             {
@@ -622,7 +660,7 @@ namespace NOBApp.Sports
                             {
                                 if (MainNob.出現左右選單)
                                 {
-                                    MainNob.Log($"出現確認往下一層 -- ");
+                                    MainNob.Log($"出現確認往下一層");
                                     xyCheck = MainNob.PosX;
                                     MainNob.KeyPress(VKeys.KEY_J);
                                     MainNob.KeyPress(VKeys.KEY_ENTER);
@@ -840,7 +878,6 @@ namespace NOBApp.Sports
                 }
             }
         }
-
         private async Task 離開副本(NOBDATA useNOB, CancellationToken cancellationToken)
         {
             if (useNOB != null)
@@ -853,9 +890,9 @@ namespace NOBApp.Sports
                 int cacheID = 水滴使者ID;
                 while (MainNob!.StartRunCode)
                 {
-                    if (Math.Abs(useNOB.MAPID - 外面地圖ID) < 11)
+                    if (Math.Abs(useNOB.MAPID - 外面地圖ID) < 10)
                     {
-                        useNOB.Log($"找目標的Point 尚未進場 回去重新進場 {useNOB.MAPID}");
+                        useNOB.Log($"找目標的Point 尚未進場 回去重新進場{外面地圖ID} {useNOB.MAPID}");
                         return;
                     }
 
@@ -924,6 +961,7 @@ namespace NOBApp.Sports
         async Task 取得特定NPC(NOBDATA useNOB, int colorNum, CancellationToken cancellationToken)
         {
             int tryGet = 0;
+            int tryGetOutLine = 0;
             while (MainNob!.StartRunCode)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -937,8 +975,13 @@ namespace NOBApp.Sports
                         //NPCID 沒變換 可以直接用
                         return;
                     }
+                    else
+                    {
+                        水滴使者ID = -1;
+                        useNOB!.KeyPress(VKeys.KEY_J);
+                        await Task.Delay(100);
+                    }
                 }
-
 
                 var c2 = ColorTools.GetColorNum(useNOB.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
                 await Task.Delay(100);
@@ -957,9 +1000,24 @@ namespace NOBApp.Sports
 
                 if (tryGet > 3)
                 {
-                    useNOB!.KeyPressT(VKeys.KEY_Q, 300);
+                    useNOB!.KeyPressT(VKeys.KEY_E, 300);
                     tryGet = 0;
+                    tryGetOutLine++;
                 }
+
+                if (tryGetOutLine > 2)
+                {
+                    tryGetOutLine = 0;
+                    MainNob!.鎖定NPC(MainNob!.CodeSetting.目標A);
+                    await Task.Delay(100);
+                    if (MainNob.GetTargetIDINT() == MainNob!.CodeSetting.目標A)
+                    {
+                        外面地圖ID = MainNob.MAPID;
+                        Point = 檢查點.入場;
+                        return;
+                    }
+                }
+
             }
         }
     }

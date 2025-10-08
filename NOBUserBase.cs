@@ -16,6 +16,7 @@ namespace NOBApp
         public int Hwnd => (int)Proc.MainWindowHandle;
         public bool StartRunCode = false;
         public bool IsUseAutoSkill = false;
+        public bool 腳本暫停出招 = false;
         public NOBUserBase(Process proc)
         {
             Proc = proc;

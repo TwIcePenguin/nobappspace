@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using NOBApp.Sports;
 using static NOBApp.NobMainCodePage;
 
@@ -315,6 +316,8 @@ namespace NOBApp
         public bool isUseEnter = false;
         int errorCheckCount = 0;
         string cacheStatus = "";
+        public bool 已經放過一次 = false;
+        public bool 放技能完成 = false;
         bool isBanAccount
         {
             get
@@ -352,13 +355,7 @@ namespace NOBApp
             {
                 if (Tools.isBANACC || isBanAccount)
                 {
-                    var dt = Random.Shared.Next(2000, 80000);
-                    Task.Delay(dt).Wait();
-                }
-
-                if (Tools.IsVIP == false)
-                {
-                    var dt = Random.Shared.Next(1000, 3000);
+                    var dt = Random.Shared.Next(1000, 5000);
                     Task.Delay(dt).Wait();
                 }
 
@@ -371,8 +368,6 @@ namespace NOBApp
                     RunCode.SetMainUser(this);
                     RunCode.初始化();
                 }
-
-
 
                 RunCode.腳本運作();
 
@@ -391,7 +386,7 @@ namespace NOBApp
                         StartRunCode = false;
                         string msg = $"{RunCode?.GetType().Name ?? "無腳本"} 狀態長時間沒有變化 需要請企鵝確認";
                         DiscordNotifier.SendNotificationAsync(PlayerName, msg);
-                        MessageBox.Show($"{PlayerName} -> {msg}");//TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");//TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
                     }
                 }
             }
@@ -407,8 +402,8 @@ namespace NOBApp
             啟動自動輔助中 = true;
 
             bool 希望完成 = false;
-            bool 已經放過一次 = false;
-            bool 放技能完成 = false;
+            已經放過一次 = false;
+            放技能完成 = false;
             while (IsUseAutoSkill)
             {
                 if (MainWindow.dmSoft == null)
@@ -425,159 +420,8 @@ namespace NOBApp
 
                 if (戰鬥中)
                 {
-                    int checkDo = 0;
-                    Log($"進入戰鬥中 {AutoSkillSet.一次放 || AutoSkillSet.重複放}");
-                    #region 戰鬥中
-                    //目前選數量 
                     希望完成 = false;
-                    var index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
-                    if (index > 0 && (MYTeamData == null || MYTeamData.Count == 0))
-                    {
-                        BtDataUpdate();
-                    }
-
-                    if (AutoSkillSet.一次放 || AutoSkillSet.重複放)
-                    {
-                        do
-                        {
-                            index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
-                            string supDataCheck = MainWindow.dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, 1);
-                            if (supDataCheck.Substring(supDataCheck.Length - 1).Contains("4"))
-                            {
-                                string newD = supDataCheck[0] + "0";
-                                MainWindow.dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
-                            }
-
-                            if (index > 0)
-                            {
-                                if (已經放過一次)
-                                    break;
-
-                                if (AutoSkillSet.延遲 > 0)
-                                {
-                                    Task.Delay(AutoSkillSet.延遲).Wait();
-                                }
-                                if (AutoSkillSet.特殊運作)
-                                {
-                                    int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
-                                    Log("setindex : " + setindex);
-
-                                    Task.Delay(AutoSkillSet.程式速度).Wait();
-                                    if (setindex == 0)
-                                    {
-                                        直向選擇(AutoSkillSet.技能段1, AutoSkillSet.程式速度);
-                                    }
-                                    if (setindex == 1 && AutoSkillSet.技能段2 >= 0)
-                                    {
-                                        直向選擇(AutoSkillSet.技能段2, AutoSkillSet.程式速度);
-                                    }
-
-                                    int setNum = -1;
-                                    if (setindex == 2)
-                                    {
-                                        if (AutoSkillSet.技能段3 >= 0)
-                                            直向選擇(AutoSkillSet.技能段3, AutoSkillSet.程式速度);
-
-                                        if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
-                                        {
-                                            setNum = check(MYTeamData, AutoSkillSet.施放A);
-                                            直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度);
-                                        }
-                                        else
-                                        {
-                                            KeyPress(VKeys.KEY_ENTER);
-                                            KeyPress(VKeys.KEY_K);
-                                        }
-                                    }
-
-                                    if (setindex == 3)
-                                    {
-                                        if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
-                                        {
-                                            setNum = check(MYTeamData, AutoSkillSet.施放A);
-                                            直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度);
-                                        }
-
-                                        if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
-                                        {
-                                            setNum = check(MYTeamData, AutoSkillSet.施放B);
-                                            直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度);
-                                        }
-                                        else
-                                        {
-                                            KeyPress(VKeys.KEY_ENTER);
-                                            KeyPress(VKeys.KEY_K);
-                                        }
-                                    }
-
-                                    if (setindex == 4)
-                                    {
-                                        if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
-                                        {
-                                            setNum = check(MYTeamData, AutoSkillSet.施放B);
-                                            直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度);
-                                        }
-
-                                        if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
-                                        {
-                                            setNum = check(MYTeamData, AutoSkillSet.施放C);
-                                            直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度);
-                                        }
-                                        else
-                                        {
-                                            KeyPress(VKeys.KEY_ENTER);
-                                            KeyPress(VKeys.KEY_K);
-                                        }
-                                    }
-
-                                    if (setindex == 5)
-                                    {
-                                        if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
-                                        {
-                                            setNum = check(MYTeamData, AutoSkillSet.施放C);
-                                            直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度);
-                                        }
-                                        else
-                                        {
-                                            KeyPress(VKeys.KEY_ENTER);
-                                            KeyPress(VKeys.KEY_K);
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    BT_Cmd();
-                                    Task.Delay(100).Wait();
-                                    if (AutoSkillSet.需選擇 || (index > 1 && (checkDo == 0 || checkDo > 5)))
-                                    {
-                                        Task.Delay(50).Wait();
-                                        if (index > 1)
-                                        {
-                                            KeyPress(VKeys.KEY_ENTER, 2);
-                                            if (checkDo > 7)
-                                                checkDo = 0;
-                                        }
-                                    }
-                                    checkDo++;
-                                }
-
-                                放技能完成 = true;
-                            }
-
-                            if (index <= 0)
-                            {
-                                checkDo = 0;
-                                if (放技能完成 && AutoSkillSet.一次放)
-                                    已經放過一次 = true;
-                                break;
-                            }
-                            Task.Delay(AutoSkillSet.程式速度).Wait();
-                        }
-                        while (IsUseAutoSkill && index > 0);
-                    }
-
-                    #endregion 戰鬥中
+                    處理戰鬥流程();
                 }
                 #region 對話框出現 + 戰鬥結束
                 if (進入結算)
@@ -614,11 +458,173 @@ namespace NOBApp
                     #endregion
                 }
 
-
                 Task.Delay(AutoSkillSet.程式速度 <= 0 ? 100 : AutoSkillSet.程式速度).Wait();
             }
             //Log($"啟動自動輔助中 關閉->{IsUseAutoSkill}");
             啟動自動輔助中 = false;
+        }
+
+        bool _IsRuning = false;
+        public void 處理戰鬥流程(bool isSkipCheck = false)
+        {
+            int checkDo = 0;
+            //Log($"進入戰鬥中{_IsRuning} {IsUseAutoSkill} {AutoSkillSet.一次放 || AutoSkillSet.重複放}");
+            #region 戰鬥中
+            //目前選數量 
+            var index = MainWindow.dmSoft!.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
+            if (index > 0 && (MYTeamData == null || MYTeamData.Count == 0))
+            {
+                BtDataUpdate();
+            }
+
+            if (AutoSkillSet.一次放 || AutoSkillSet.重複放)
+            {
+                if (_IsRuning)
+                    return;
+
+                //Log($"有指令 準備進入指令 - 1");
+                _IsRuning = true;
+                do
+                {
+                    index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
+                    string supDataCheck = MainWindow.dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, 1);
+                    if (supDataCheck.Substring(supDataCheck.Length - 1).Contains("4"))
+                    {
+                        string newD = supDataCheck[0] + "0";
+                        MainWindow.dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
+                    }
+                    //Log($"有指令 準備進入指令 - 2 -> Index {index} 放過依次 : {已經放過一次} SP:{AutoSkillSet.特殊運作} {AutoSkillSet.技能段1} {AutoSkillSet.技能段2}");
+                    if (index > 0)
+                    {
+                        if (已經放過一次)
+                            break;
+
+                        if (AutoSkillSet.延遲 > 0)
+                        {
+                            Task.Delay(AutoSkillSet.延遲).Wait();
+                        }
+                        if (AutoSkillSet.特殊運作)
+                        {
+                            int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
+                            Log("setindex : " + setindex);
+
+                            Task.Delay(AutoSkillSet.程式速度).Wait();
+                            if (setindex == 0)
+                            {
+                                直向選擇(AutoSkillSet.技能段1, AutoSkillSet.程式速度, isSkipCheck);
+                            }
+                            if (setindex == 1 && AutoSkillSet.技能段2 >= 0)
+                            {
+                                直向選擇(AutoSkillSet.技能段2, AutoSkillSet.程式速度, isSkipCheck);
+                            }
+
+                            int setNum = -1;
+                            if (setindex == 2)
+                            {
+                                if (AutoSkillSet.技能段3 >= 0)
+                                    直向選擇(AutoSkillSet.技能段3, AutoSkillSet.程式速度, isSkipCheck);
+
+                                if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
+                                {
+                                    setNum = check(MYTeamData, AutoSkillSet.施放A);
+                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                }
+                                else
+                                {
+                                    KeyPress(VKeys.KEY_ENTER);
+                                    KeyPress(VKeys.KEY_K);
+                                }
+                            }
+
+                            if (setindex == 3)
+                            {
+                                if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
+                                {
+                                    setNum = check(MYTeamData, AutoSkillSet.施放A);
+                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                }
+
+                                if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
+                                {
+                                    setNum = check(MYTeamData, AutoSkillSet.施放B);
+                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                }
+                                else
+                                {
+                                    KeyPress(VKeys.KEY_ENTER);
+                                    KeyPress(VKeys.KEY_K);
+                                }
+                            }
+
+                            if (setindex == 4)
+                            {
+                                if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
+                                {
+                                    setNum = check(MYTeamData, AutoSkillSet.施放B);
+                                    直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                }
+
+                                if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
+                                {
+                                    setNum = check(MYTeamData, AutoSkillSet.施放C);
+                                    直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                }
+                                else
+                                {
+                                    KeyPress(VKeys.KEY_ENTER);
+                                    KeyPress(VKeys.KEY_K);
+                                }
+                            }
+
+                            if (setindex == 5)
+                            {
+                                if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
+                                {
+                                    setNum = check(MYTeamData, AutoSkillSet.施放C);
+                                    直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                }
+                                else
+                                {
+                                    KeyPress(VKeys.KEY_ENTER);
+                                    KeyPress(VKeys.KEY_K);
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            BT_Cmd();
+                            Task.Delay(100).Wait();
+                            if (AutoSkillSet.需選擇 || (index > 1 && (checkDo == 0 || checkDo > 5)))
+                            {
+                                Task.Delay(50).Wait();
+                                if (index > 1)
+                                {
+                                    KeyPress(VKeys.KEY_ENTER, 2);
+                                    if (checkDo > 7)
+                                        checkDo = 0;
+                                }
+                            }
+                            checkDo++;
+                        }
+
+                        放技能完成 = true;
+                    }
+
+                    if (index <= 0)
+                    {
+                        checkDo = 0;
+                        if (放技能完成 && AutoSkillSet.一次放)
+                            已經放過一次 = true;
+                        break;
+                    }
+                    Task.Delay(AutoSkillSet.程式速度).Wait();
+                }
+                while ((isSkipCheck || IsUseAutoSkill) && index > 0);
+                _IsRuning = false;
+            }
+
+            #endregion 戰鬥中
         }
 
         // 處理戰鬥結束動作
