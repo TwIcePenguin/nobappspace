@@ -722,7 +722,7 @@ namespace NOBApp
                     UpdateNPCDataUI = true; Btn_TargetA.Content = "村長-補符"; 其他選項B.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible;
                     其他選項A.ToolTip = "幾場後 找村長補符";
                     其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
-                { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
+                { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetC.Content = "倉庫"; Btn_TargetC.Visibility = Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
                 //{ "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
 
                 { "地下町天地", () => { useMenu = new 地下町天地(); 武技設定頁面.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = Btn_TargetC.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility = Visibility.Visible; } },

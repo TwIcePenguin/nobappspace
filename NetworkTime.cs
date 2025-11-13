@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net;
@@ -23,57 +23,57 @@ namespace NOBApp
             {
                 try
                 {
-                    // NTP ¸ê®Æ¥]¤j¤p¬° 48 ­Ó¦r¸`
+                    // NTP è³‡æ–™åŒ…å¤§å°ç‚º 48 å€‹å­—ç¯€
                     var ntpData = new byte[48];
 
-                    // ³]¸m NTP ¸ê®Æ¥]ªº°_©l¦ì¤¸²Õ
+                    // è¨­ç½® NTP è³‡æ–™åŒ…çš„èµ·å§‹ä½å…ƒçµ„
                     ntpData[0] = 0x1B;
 
                     try
                     {
-                        // «Ø¥ß Socket ³s±µ
+                        // å»ºç«‹ Socket é€£æ¥
                         var addresses = Dns.GetHostEntry(server).AddressList;
                         var ipEndPoint = new IPEndPoint(addresses[0], 123);
                         using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                        // ³]¸m Socket ¶W®É®É¶¡
+                        // è¨­ç½® Socket è¶…æ™‚æ™‚é–“
                         socket.ReceiveTimeout = 3000;
 
-                        // µo°e NTP ½Ğ¨D
+                        // ç™¼é€ NTP è«‹æ±‚
                         socket.Connect(ipEndPoint);
                         socket.Send(ntpData);
 
-                        // ±µ¦¬ NTP ¦^À³
+                        // æ¥æ”¶ NTP å›æ‡‰
                         socket.Receive(ntpData);
                         socket.Close();
 
-                        // ¸ÑªR®É¶¡
+                        // è§£ææ™‚é–“
                         const byte serverReplyTime = 40;
                         ulong intPart = BitConverter.ToUInt32(ntpData, serverReplyTime);
                         ulong fractPart = BitConverter.ToUInt32(ntpData, serverReplyTime + 4);
 
-                        // Âà´«¦r¸`¶¶§Ç¡]¥Ñ¤jºİ¨ì¤pºİ¡^
+                        // è½‰æ›å­—ç¯€é †åºï¼ˆç”±å¤§ç«¯åˆ°å°ç«¯ï¼‰
                         intPart = SwapEndianness(intPart);
                         fractPart = SwapEndianness(fractPart);
 
-                        // ­pºâ²@¬í¼Æ
+                        // è¨ˆç®—æ¯«ç§’æ•¸
                         var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
 
-                        // NTP ®É¶¡±q 1900 ¦~ 1 ¤ë 1 ¤é¶}©l
+                        // NTP æ™‚é–“å¾ 1900 å¹´ 1 æœˆ 1 æ—¥é–‹å§‹
                         var networkDateTime = new DateTime(1900, 1, 1).AddMilliseconds((long)milliseconds);
 
-                        // ªğ¦^¥»¦a®É¶¡
+                        // è¿”å›æœ¬åœ°æ™‚é–“
                         return networkDateTime.ToLocalTime();
                     }
                     catch
                     {
-                        // ­Yµo¥Í¿ù»~¡Aªğ¦^¥»¦a¨t²Î®É¶¡
+                        // è‹¥ç™¼ç”ŸéŒ¯èª¤ï¼Œè¿”å›æœ¬åœ°ç³»çµ±æ™‚é–“
                         return DateTime.Now;
                     }
                 }
                 catch (Exception ex)
                 {
-                      Debug.WriteLine($"Error getting time from {server}: {ex.Message}");
+                    Debug.WriteLine($"Error getting time from {server}: {ex.Message}");
                 }
             }
 

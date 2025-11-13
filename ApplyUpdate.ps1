@@ -1,15 +1,15 @@
-# ApplyUpdate.ps1
+ï»¿# ApplyUpdate.ps1
 param(
     [string]$AppPath
 )
 
-# ²M°£²×ºİ¨Ã³]¸mÃC¦â
+# æ¸…é™¤çµ‚ç«¯ä¸¦è¨­ç½®é¡è‰²
 Clear-Host
 $host.UI.RawUI.BackgroundColor = "Black"
 $host.UI.RawUI.ForegroundColor = "White"
 Clear-Host
 
-# ©w¸q±m¦â¿é¥X¨ç¼Æ
+# å®šç¾©å½©è‰²è¼¸å‡ºå‡½æ•¸
 function Write-ColorText {
     param (
         [string]$Text,
@@ -19,7 +19,7 @@ function Write-ColorText {
     Write-Host $Text -ForegroundColor $Color
 }
 
-# ©w¸q¤é»x¨ç¼Æ
+# å®šç¾©æ—¥èªŒå‡½æ•¸
 function Log-Message {
     param (
         [string]$Message,
@@ -29,148 +29,148 @@ function Log-Message {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logMessage = "$timestamp - $Message"
     
-    # ¿é¥X¨ì²×ºİ
+    # è¼¸å‡ºåˆ°çµ‚ç«¯
     Write-ColorText $logMessage $Color
     
-    # ¼g¤J¤é»xÀÉ
+    # å¯«å…¥æ—¥èªŒæª”
     $logPath = Join-Path $PSScriptRoot "update_log.txt"
     $logMessage | Out-File -Append -FilePath $logPath
 }
 
-# Åã¥Ü¼ĞÃD
+# é¡¯ç¤ºæ¨™é¡Œ
 Write-ColorText "`n=======================================================" "Cyan"
-Write-ColorText "               ¥øÃZ¤§³¥±æ - §ó·sµ{§Ç                 " "Cyan"
+Write-ColorText "               ä¼éµä¹‹é‡æœ› - æ›´æ–°ç¨‹åº                 " "Cyan"
 Write-ColorText "=======================================================" "Cyan"
-Write-ColorText "`n¥¿¦b°õ¦æ§ó·s¡A½Ğ¤ÅÃö³¬¦¹µøµ¡...`n" "Yellow"
+Write-ColorText "`næ­£åœ¨åŸ·è¡Œæ›´æ–°ï¼Œè«‹å‹¿é—œé–‰æ­¤è¦–çª—...`n" "Yellow"
 
-# ¶}©l°O¿ı
-Log-Message "§ó·s¸}¥»¶}©l°õ¦æ"
-Log-Message "À³¥Îµ{¦¡¸ô®|: $AppPath"
-Log-Message "·í«e¥Ø¿ı: $PSScriptRoot"
+# é–‹å§‹è¨˜éŒ„
+Log-Message "æ›´æ–°è…³æœ¬é–‹å§‹åŸ·è¡Œ"
+Log-Message "æ‡‰ç”¨ç¨‹å¼è·¯å¾‘: $AppPath"
+Log-Message "ç•¶å‰ç›®éŒ„: $PSScriptRoot"
 
-# ÀË¬d§ó·s¤å¥ó
+# æª¢æŸ¥æ›´æ–°æ–‡ä»¶
 $updateFilePath = Join-Path $PSScriptRoot "update.zip"
 if (-not (Test-Path $updateFilePath)) {
-    Log-Message "§ä¤£¨ì§ó·sÀÉ®× $updateFilePath" "Red"
-    Write-ColorText "`n§ó·s¥¢±Ñ: §ä¤£¨ì§ó·sÀÉ®×" "Red"
-    Write-ColorText "`n«ö¥ô·NÁäÃö³¬¦¹µøµ¡..." "Yellow"
+    Log-Message "æ‰¾ä¸åˆ°æ›´æ–°æª”æ¡ˆ $updateFilePath" "Red"
+    Write-ColorText "`næ›´æ–°å¤±æ•—: æ‰¾ä¸åˆ°æ›´æ–°æª”æ¡ˆ" "Red"
+    Write-ColorText "`næŒ‰ä»»æ„éµé—œé–‰æ­¤è¦–çª—..." "Yellow"
     $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit 1
 }
 
-# Åã¥ÜÀÉ®×¤j¤p
+# é¡¯ç¤ºæª”æ¡ˆå¤§å°
 $fileSize = (Get-Item $updateFilePath).Length / 1MB
-Log-Message "§ä¨ì§ó·sÀÉ®×¡A¤j¤p: $([Math]::Round($fileSize, 2)) MB"
+Log-Message "æ‰¾åˆ°æ›´æ–°æª”æ¡ˆï¼Œå¤§å°: $([Math]::Round($fileSize, 2)) MB"
 
-# µ¥«İ¤@¤U¥H½T«O­ìÀ³¥Îµ{¦¡°h¥X
-Write-ColorText "`n¥¿¦bµ¥«İ­ìÀ³¥Îµ{¦¡°h¥X..." "Yellow"
+# ç­‰å¾…ä¸€ä¸‹ä»¥ç¢ºä¿åŸæ‡‰ç”¨ç¨‹å¼é€€å‡º
+Write-ColorText "`næ­£åœ¨ç­‰å¾…åŸæ‡‰ç”¨ç¨‹å¼é€€å‡º..." "Yellow"
 Start-Sleep -Seconds 2
 
-# ¸ÑÀ£ÁY§ó·s¤å¥ó
+# è§£å£“ç¸®æ›´æ–°æ–‡ä»¶
 try {
-    Write-ColorText "`n¶}©l¸ÑÀ£§ó·s¤å¥ó..." "Yellow"
+    Write-ColorText "`né–‹å§‹è§£å£“æ›´æ–°æ–‡ä»¶..." "Yellow"
     
-    # ¨Ï¥Î .NET ¤º«Ø¸ÑÀ£ÁY¥\¯à
+    # ä½¿ç”¨ .NET å…§å»ºè§£å£“ç¸®åŠŸèƒ½
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     
-    # ¥ıÀò¨ú zip ÀÉ¤º®e¸ê°T
+    # å…ˆç²å– zip æª”å…§å®¹è³‡è¨Š
     $zip = [System.IO.Compression.ZipFile]::OpenRead($updateFilePath)
     $totalFiles = $zip.Entries.Count
-    Log-Message "§ó·s¥]§t $totalFiles ­Ó¤å¥ó"
+    Log-Message "æ›´æ–°åŒ…å« $totalFiles å€‹æ–‡ä»¶"
     
-    # ¦C¥X­n§ó·sªºÀÉ®×
-    Write-ColorText "`n§ó·s¥]§tªº¥D­nÀÉ®×:" "Cyan"
+    # åˆ—å‡ºè¦æ›´æ–°çš„æª”æ¡ˆ
+    Write-ColorText "`næ›´æ–°åŒ…å«çš„ä¸»è¦æª”æ¡ˆ:" "Cyan"
     $zip.Entries | Where-Object { $_.Length -gt 1000 } | Select-Object -First 5 | ForEach-Object {
         Write-ColorText "  - $($_.FullName) ($('{0:N2}' -f ($_.Length / 1KB)) KB)" "Gray"
     }
     if ($zip.Entries.Count -gt 5) {
-        Write-ColorText "  - ... ©M¨ä¥L $($zip.Entries.Count - 5) ­ÓÀÉ®×" "Gray"
+        Write-ColorText "  - ... å’Œå…¶ä»– $($zip.Entries.Count - 5) å€‹æª”æ¡ˆ" "Gray"
     }
     $zip.Dispose()
     
-    # ¸ÑÀ£ÁY
-    Write-ColorText "`n¥¿¦b¸ÑÀ£ÁYÀÉ®×¡A½Ğµy­Ô..." "Yellow"
+    # è§£å£“ç¸®
+    Write-ColorText "`næ­£åœ¨è§£å£“ç¸®æª”æ¡ˆï¼Œè«‹ç¨å€™..." "Yellow"
     [System.IO.Compression.ZipFile]::ExtractToDirectory($updateFilePath, $PSScriptRoot, $true)
     
-    Write-ColorText "¸ÑÀ£ÁY§¹¦¨¡I" "Green"
-    Log-Message "§ó·s¤å¥ó¸ÑÀ£¦¨¥\"
+    Write-ColorText "è§£å£“ç¸®å®Œæˆï¼" "Green"
+    Log-Message "æ›´æ–°æ–‡ä»¶è§£å£“æˆåŠŸ"
 } 
 catch {
-    Log-Message "¸ÑÀ£§ó·s¤å¥ó¥¢±Ñ: $_" "Red"
-    Write-ColorText "`n§ó·s¥¢±Ñ: µLªk¸ÑÀ£ÁYÀÉ®×" "Red"
-    Write-ColorText "¿ù»~¸Ô±¡: $_" "Red"
-    Write-ColorText "`n«ö¥ô·NÁäÃö³¬¦¹µøµ¡..." "Yellow"
+    Log-Message "è§£å£“æ›´æ–°æ–‡ä»¶å¤±æ•—: $_" "Red"
+    Write-ColorText "`næ›´æ–°å¤±æ•—: ç„¡æ³•è§£å£“ç¸®æª”æ¡ˆ" "Red"
+    Write-ColorText "éŒ¯èª¤è©³æƒ…: $_" "Red"
+    Write-ColorText "`næŒ‰ä»»æ„éµé—œé–‰æ­¤è¦–çª—..." "Yellow"
     $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit 1
 }
 
-# §R°£§ó·s¤å¥ó
+# åˆªé™¤æ›´æ–°æ–‡ä»¶
 try {
-    Write-ColorText "`n¥¿¦b§R°£§ó·sÀÉ®×..." "Yellow"
+    Write-ColorText "`næ­£åœ¨åˆªé™¤æ›´æ–°æª”æ¡ˆ..." "Yellow"
     Remove-Item $updateFilePath -Force -ErrorAction Stop
-    Write-ColorText "§ó·sÀÉ®×¤w§R°£" "Green"
-    Log-Message "§ó·sÀÉ®×¤w§R°£"
+    Write-ColorText "æ›´æ–°æª”æ¡ˆå·²åˆªé™¤" "Green"
+    Log-Message "æ›´æ–°æª”æ¡ˆå·²åˆªé™¤"
 }
 catch {
-    Write-ColorText "Äµ§i: µLªk§R°£§ó·sÀÉ®×: $_" "Yellow"
-    Log-Message "Äµ§i: §R°£§ó·s¤å¥ó¥¢±Ñ: $_" "Yellow"
-    # §Y¨ÏµLªk§R°£§ó·s¤å¥ó¡A¤]Ä~Äò¶i¦æ
+    Write-ColorText "è­¦å‘Š: ç„¡æ³•åˆªé™¤æ›´æ–°æª”æ¡ˆ: $_" "Yellow"
+    Log-Message "è­¦å‘Š: åˆªé™¤æ›´æ–°æ–‡ä»¶å¤±æ•—: $_" "Yellow"
+    # å³ä½¿ç„¡æ³•åˆªé™¤æ›´æ–°æ–‡ä»¶ï¼Œä¹Ÿç¹¼çºŒé€²è¡Œ
 }
 
-# ½T©wÀ³¥Îµ{¦¡¸ô®|
+# ç¢ºå®šæ‡‰ç”¨ç¨‹å¼è·¯å¾‘
 if (-not $AppPath -or -not (Test-Path $AppPath)) {
-    Write-ColorText "`nÀ³¥Îµ{¦¡¸ô®|µL®Ä¡A¹Á¸Õ§ä¨ì´À¥N¸ô®|..." "Yellow"
-    Log-Message "À³¥Îµ{¦¡¸ô®|µL®Ä¡A¹Á¸Õ§ä¨ì´À¥N¸ô®|" "Yellow"
+    Write-ColorText "`næ‡‰ç”¨ç¨‹å¼è·¯å¾‘ç„¡æ•ˆï¼Œå˜—è©¦æ‰¾åˆ°æ›¿ä»£è·¯å¾‘..." "Yellow"
+    Log-Message "æ‡‰ç”¨ç¨‹å¼è·¯å¾‘ç„¡æ•ˆï¼Œå˜—è©¦æ‰¾åˆ°æ›¿ä»£è·¯å¾‘" "Yellow"
     
     $AppPath = Join-Path $PSScriptRoot "NOBApp.exe"
     
     if (-not (Test-Path $AppPath)) {
-        Write-ColorText "§ä¤£¨ì¥DÀ³¥Îµ{¦¡°õ¦æÀÉ" "Yellow"
-        Log-Message "§ä¤£¨ì¥DÀ³¥Îµ{¦¡°õ¦æÀÉ" "Yellow"
+        Write-ColorText "æ‰¾ä¸åˆ°ä¸»æ‡‰ç”¨ç¨‹å¼åŸ·è¡Œæª”" "Yellow"
+        Log-Message "æ‰¾ä¸åˆ°ä¸»æ‡‰ç”¨ç¨‹å¼åŸ·è¡Œæª”" "Yellow"
         
-        # ¹Á¸Õ¬d§ä¥ô¦ó .exe ¤å¥ó
+        # å˜—è©¦æŸ¥æ‰¾ä»»ä½• .exe æ–‡ä»¶
         $exeFiles = Get-ChildItem -Path $PSScriptRoot -Filter "*.exe" -File
         if ($exeFiles.Count -gt 0) {
             $AppPath = $exeFiles[0].FullName
-            Write-ColorText "§ä¨ì¥i¯àªº¥i°õ¦æ¤å¥ó: $AppPath" "Green"
-            Log-Message "§ä¨ì¥i¯àªº¥i°õ¦æ¤å¥ó: $AppPath"
+            Write-ColorText "æ‰¾åˆ°å¯èƒ½çš„å¯åŸ·è¡Œæ–‡ä»¶: $AppPath" "Green"
+            Log-Message "æ‰¾åˆ°å¯èƒ½çš„å¯åŸ·è¡Œæ–‡ä»¶: $AppPath"
         }
         else {
-            Write-ColorText "`n§ó·s¥¢±Ñ: §ä¤£¨ìÀ³¥Îµ{¦¡°õ¦æÀÉ" "Red"
-            Log-Message "§ä¤£¨ì¥ô¦ó¥i°õ¦æ¤å¥ó¡A§ó·s¥¢±Ñ" "Red"
-            Write-ColorText "`n«ö¥ô·NÁäÃö³¬¦¹µøµ¡..." "Yellow"
+            Write-ColorText "`næ›´æ–°å¤±æ•—: æ‰¾ä¸åˆ°æ‡‰ç”¨ç¨‹å¼åŸ·è¡Œæª”" "Red"
+            Log-Message "æ‰¾ä¸åˆ°ä»»ä½•å¯åŸ·è¡Œæ–‡ä»¶ï¼Œæ›´æ–°å¤±æ•—" "Red"
+            Write-ColorText "`næŒ‰ä»»æ„éµé—œé–‰æ­¤è¦–çª—..." "Yellow"
             $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             exit 1
         }
     }
 }
 
-# ¼g¤J§ó·s¦¨¥\ªº¼Ğ°O
+# å¯«å…¥æ›´æ–°æˆåŠŸçš„æ¨™è¨˜
 $successMarker = Join-Path $PSScriptRoot "update_success.txt"
-"§ó·s¦¨¥\©ó $(Get-Date)" | Out-File -FilePath $successMarker
-Log-Message "¤w¼g¤J§ó·s¦¨¥\¼Ğ°O"
+"æ›´æ–°æˆåŠŸæ–¼ $(Get-Date)" | Out-File -FilePath $successMarker
+Log-Message "å·²å¯«å…¥æ›´æ–°æˆåŠŸæ¨™è¨˜"
 
-# ­«·s±Ò°Êµ{¦¡
+# é‡æ–°å•Ÿå‹•ç¨‹å¼
 try {
-    Write-ColorText "`n¥¿¦b­«·s±Ò°ÊÀ³¥Îµ{¦¡..." "Yellow"
-    Log-Message "·Ç³Æ­«·s±Ò°ÊÀ³¥Î: $AppPath"
+    Write-ColorText "`næ­£åœ¨é‡æ–°å•Ÿå‹•æ‡‰ç”¨ç¨‹å¼..." "Yellow"
+    Log-Message "æº–å‚™é‡æ–°å•Ÿå‹•æ‡‰ç”¨: $AppPath"
     Start-Process $AppPath
-    Log-Message "À³¥Îµ{¦¡¤w­«·s±Ò°Ê"
-    Write-ColorText "À³¥Îµ{¦¡¤w­«·s±Ò°Ê" "Green"
+    Log-Message "æ‡‰ç”¨ç¨‹å¼å·²é‡æ–°å•Ÿå‹•"
+    Write-ColorText "æ‡‰ç”¨ç¨‹å¼å·²é‡æ–°å•Ÿå‹•" "Green"
 }
 catch {
-    Write-ColorText "`nµLªk­«·s±Ò°ÊÀ³¥Îµ{¦¡: $_" "Red"
-    Log-Message "À³¥Îµ{¦¡­«·s±Ò°Ê¥¢±Ñ: $_" "Red"
-    Write-ColorText "`n«ö¥ô·NÁäÃö³¬¦¹µøµ¡..." "Yellow"
+    Write-ColorText "`nç„¡æ³•é‡æ–°å•Ÿå‹•æ‡‰ç”¨ç¨‹å¼: $_" "Red"
+    Log-Message "æ‡‰ç”¨ç¨‹å¼é‡æ–°å•Ÿå‹•å¤±æ•—: $_" "Red"
+    Write-ColorText "`næŒ‰ä»»æ„éµé—œé–‰æ­¤è¦–çª—..." "Yellow"
     $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit 1
 }
 
-# §¹¦¨§ó·s
+# å®Œæˆæ›´æ–°
 Write-ColorText "`n=======================================================" "Cyan"
-Write-ColorText "                  §ó·s¦¨¥\§¹¦¨!                       " "Green"
+Write-ColorText "                  æ›´æ–°æˆåŠŸå®Œæˆ!                       " "Green"
 Write-ColorText "=======================================================" "Cyan"
-Log-Message "§ó·s¹Lµ{§¹¦¨"
+Log-Message "æ›´æ–°éç¨‹å®Œæˆ"
 
-Write-ColorText "`n¥i¥H¦w¥şÃö³¬¦¹µøµ¡¡A©Î«ö¥ô·NÁäÃö³¬..." "Yellow"
+Write-ColorText "`nå¯ä»¥å®‰å…¨é—œé–‰æ­¤è¦–çª—ï¼Œæˆ–æŒ‰ä»»æ„éµé—œé–‰..." "Yellow"
 $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

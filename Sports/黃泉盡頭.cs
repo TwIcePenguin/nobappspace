@@ -19,6 +19,7 @@ namespace NOBApp.Sports
         int checkIDC3 = 41;     //水滴
         private volatile bool _isNPCCheckDone = false;
         private volatile bool _isRunning = false;
+        private int 通關次數 = 0;
 
         private CancellationTokenSource _cts = new CancellationTokenSource();
 
@@ -127,6 +128,7 @@ namespace NOBApp.Sports
                                 //
                                 if (MainNob.MAPID != cache地圖)
                                 {
+                                    通關次數 = 0;
                                     Point = 檢查點.找目標;
                                     return;
                                 }
@@ -282,7 +284,6 @@ namespace NOBApp.Sports
             bool 該樓完成 = false;
             int battleNum = 0;
             int allBattleDoneCheck = 0;
-            int xyCheck = 0;
             while (MainNob!.StartRunCode)
             {
                 int talkCheck = 0;
@@ -553,18 +554,21 @@ namespace NOBApp.Sports
                 {
                     {
                         MainNob.Log($"往下一層樓");
-                        xyCheck = 0;
                         talkCheck = 0;
+                        int _CachePOSX = -1, _CacheMAPID = -1;
+                        bool _對話完成等待轉換 = false;
                         while (MainNob.StartRunCode)
                         {
                             int getID = MainNob.GetTargetIDINT();
                             await Task.Delay(100);
-                            MainNob.Log($"{getID} - {MainNob.MAPID} - {該樓完成} - {xyCheck} - 確認往下一層 {allBattleDoneCheck}");
+                            MainNob.Log($"Done {通關次數} {getID} - {_對話完成等待轉換} - CX:{_CachePOSX} NX:{MainNob.PosX} - {MainNob.MAPID} - {該樓完成} - 確認往下一層 {allBattleDoneCheck}");
 
-                            if ((_isNPCCheckDone || 該樓完成) && xyCheck != 0)
+                            if (_對話完成等待轉換)
                             {
-                                await Task.Delay(200);
-                                if (getID == -1 || getID != 水滴使者ID || MathF.Abs(xyCheck - MainNob.PosX) > 10)
+                                await Task.Delay(300);
+                                if (_CacheMAPID != MainNob.MAPID ||
+                                    _CachePOSX != MainNob.PosX ||
+                                    getID == -1 || getID != 水滴使者ID)
                                 {
                                     _isNPCCheckDone = false;
                                     該樓完成 = false;
@@ -579,6 +583,8 @@ namespace NOBApp.Sports
                                 else
                                 {
                                     MainNob.KeyPress(VKeys.KEY_ENTER, 2);
+                                    if (通關次數 > 6)
+                                        allBattleDoneCheck++;
                                     allBattleDoneCheck++;
                                     if (該樓完成 == false && allBattleDoneCheck % 6 == 5)
                                     {
@@ -634,11 +640,13 @@ namespace NOBApp.Sports
                                 //判斷水滴使者ID
                                 while (MainNob.StartRunCode && _isNPCCheckDone == false)
                                 {
+                                    MainNob.Log($"水滴使者ID {水滴使者ID} ");
                                     if (_isNPCCheckDone)
                                         break;
                                     if (_isNPCCheckDone == false)
                                         await Task.WhenAll(Task.Run(() => 取得特定NPC(MainNob, checkIDC3, cancellationToken), cancellationToken));
                                     await Task.Delay(300, cancellationToken);
+                                    MainNob.Log($"Update -> 水滴使者ID {水滴使者ID} ");
                                 }
 
                                 await Task.Delay(300);
@@ -648,6 +656,7 @@ namespace NOBApp.Sports
                                 talkCheck++;
                                 if (talkCheck > 25)
                                 {
+                                    MainNob.Log($"重新退往 -> 水滴使者ID {水滴使者ID} ");
                                     talkCheck = 0;
                                     MainNob!.後退(500);
                                     MainNob!.MoveToNPC(水滴使者ID);
@@ -658,24 +667,31 @@ namespace NOBApp.Sports
 
                             if (MainNob.對話與結束戰鬥)
                             {
+                                _CachePOSX = MainNob.PosX;
+                                _CacheMAPID = MainNob.MAPID;
                                 if (MainNob.出現左右選單)
                                 {
+                                    _對話完成等待轉換 = true;
+                                    通關次數++;
                                     MainNob.Log($"出現確認往下一層");
-                                    xyCheck = MainNob.PosX;
                                     MainNob.KeyPress(VKeys.KEY_J);
                                     MainNob.KeyPress(VKeys.KEY_ENTER);
-                                    await Task.Delay(500);
+                                    await Task.Delay(1500);
                                     continue;
                                 }
                                 else
                                 {
+                                    if (通關次數 > 6)
+                                        allBattleDoneCheck++;
                                     allBattleDoneCheck++;
+
                                     MainNob.KeyPress(VKeys.KEY_ENTER);
                                     MainNob.Log($"allBattleDoneCheck {allBattleDoneCheck}");
+                                    await Task.Delay(300);
                                 }
                             }
 
-                            if (allBattleDoneCheck > 10)
+                            if (通關次數 > 7 || allBattleDoneCheck > 10)
                             {
                                 MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
                                 Point = 檢查點.出場;
@@ -723,9 +739,9 @@ namespace NOBApp.Sports
                             {
                                 mErrorCheck = 0;
                                 useNOB.直向選擇PP(1);
-                                await Task.Delay(300);
+                                await Task.Delay(500);
                                 useNOB.KeyPressPP(VKeys.KEY_ENTER, 5, 100);
-                                useNOB.KeyPressPP(VKeys.KEY_ESCAPE, 25, 200);
+                                useNOB.KeyPressPP(VKeys.KEY_ESCAPE, 40);
                                 useNOB.副本回報完成 = true;
                                 useNOB.Log("任務回報完成");
                                 return;
@@ -749,10 +765,10 @@ namespace NOBApp.Sports
                             }
                             else
                             {
-                                useNOB.KeyPress(VKeys.KEY_ESCAPE, 10, 200);
+                                useNOB.KeyPress(VKeys.KEY_ESCAPE, 20);
                             }
 
-                            useNOB.KeyPress(VKeys.KEY_ESCAPE, 5);
+                            useNOB.KeyPress(VKeys.KEY_ESCAPE, 15);
                             await Task.Delay(200);
                         }
                     }
@@ -761,7 +777,7 @@ namespace NOBApp.Sports
                         if (useNOB.出現左右選單)
                         {
                             useNOB.Log($"異常狀態下出現 視窗");
-                            useNOB.KeyPress(VKeys.KEY_ESCAPE, 5);
+                            useNOB.KeyPress(VKeys.KEY_ESCAPE, 10);
                             useNOB.KeyPress(VKeys.KEY_ENTER);
                             Task.Delay(300).Wait();
                         }
@@ -817,15 +833,25 @@ namespace NOBApp.Sports
                                 useNOB.KeyPress(VKeys.KEY_ENTER, 10);
                                 //等待轉換地圖入場
                                 int outCheck = 0;
+                                int okCheck = 0;
                                 while (MainNob!.StartRunCode)
                                 {
+                                    useNOB.鎖定NPC(水滴使者ID);
+                                    await Task.Delay(200);
                                     useNOB.KeyPress(VKeys.KEY_S);
                                     useNOB.KeyPress(VKeys.KEY_W);
-                                    if (MainNob.MAPID != cache地圖)
+
+                                    if (MainNob.GetTargetIDINT() != 水滴使者ID)
+                                    {
+                                        okCheck++;
+                                    }
+
+                                    if (okCheck > 2)
                                     {
                                         MainNob.Log("入場完成 準備開始");
                                         MainNob!.副本進入完成 = true;
                                         Point = 檢查點.找目標;
+                                        通關次數 = 0;
                                         return;
                                     }
                                     await Task.Delay(400);

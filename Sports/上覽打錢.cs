@@ -13,7 +13,7 @@ namespace NOBApp.Sports
         public int mState = 0;
         public int 大黑天ID = 0;
         public int 上覽小販 = 0;
-        public int 御所ID = 0;
+        public int 倉庫ID = 0;
         new int Point = 0;
         /// <summary>
         /// 計算戰鬥場次 10場販賣一次
@@ -29,6 +29,8 @@ namespace NOBApp.Sports
         private int mErrorCheck = 0;
         private int mTErrorCheck = 0;
         private int mENDCheck = 0;
+        private int m存錢 = 0;
+        private bool 不存錢 = false;
         int maxBattleCheck = 3;
         int nowBattleNum = 0;
         public override void 初始化()
@@ -39,7 +41,7 @@ namespace NOBApp.Sports
             {
                 大黑天ID = MainNob.CodeSetting.目標A;
                 上覽小販 = MainNob.CodeSetting.目標B;
-                御所ID = MainNob.CodeSetting.目標C;
+                倉庫ID = MainNob.CodeSetting.目標C;
                 MainNob.選擇目標類型(1);
             }
         }
@@ -420,45 +422,96 @@ namespace NOBApp.Sports
 
         void 販賣武器()
         {
+            bool 賣完存錢 = false;
+            int outCheck = 0;
             do
             {
                 if (MainNob != null)
                 {
-                    MainNob.MoveToNPC(上覽小販);
-                    Task.Delay(100).Wait();
-                    if (MainNob.出現直式選單)
+                    if (賣完存錢)
                     {
-                        if (MainNob.取得最下面選項(8).Contains("商品"))
-                        {
-                            MainNob.KeyPress(VKeys.KEY_ENTER, 100, 100);
-                            Task.Delay(200).Wait();
-                            MainNob.KeyPress(VKeys.KEY_ESCAPE, 6, 100);
-                            Task.Delay(200).Wait();
+                        MainNob.MoveToNPC(倉庫ID);
+                        Task.Delay(100).Wait();
 
-                            mTErrorCheck = 0;
-                            Point = 0;
-                            BattleNum = 0;
-                            滿倉判別 = 0;
-                            break;
+                        if (MainNob.GetTargetIDINT() != 倉庫ID)
+                        {
+                            outCheck++;
+                            if (outCheck > 10)
+                            {
+                                不存錢 = true;
+                                MainNob.Log("沒有倉庫ID對象 離開");
+                                break;
+                            }
                         }
                         else
                         {
-                            MainNob.KeyPress(VKeys.KEY_ESCAPE);
+                            if (MainNob.對話與結束戰鬥)
+                            {
+                                MainNob.KeyPress(VKeys.KEY_ENTER, 20);
+                                Point = 0;
+                                mTErrorCheck = 0;
+                                BattleNum = 0;
+                                滿倉判別 = 0;
+                                MainNob.Log("賣完存錢 回到入場點");
+                                break;
+
+                            }
+                            mTErrorCheck = mTErrorCheck + 1;
+                            if (mTErrorCheck > 50)
+                            {
+                                mTErrorCheck = 0;
+                                MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
+                                MainNob.KeyPress(VKeys.KEY_ENTER);
+                            }
                         }
                     }
                     else
                     {
-                        Task.Delay(500).Wait();
-                        if (MainNob.對話與結束戰鬥)
-                            MainNob.KeyPress(VKeys.KEY_ESCAPE);
-                    }
+                        MainNob.MoveToNPC(上覽小販);
+                        Task.Delay(100).Wait();
+                        if (MainNob.出現直式選單)
+                        {
+                            if (MainNob.取得最下面選項(8).Contains("商品"))
+                            {
+                                MainNob.KeyPress(VKeys.KEY_ENTER, 100, 100);
+                                Task.Delay(200).Wait();
+                                MainNob.KeyPress(VKeys.KEY_ESCAPE, 6, 100);
+                                Task.Delay(200).Wait();
 
-                    mTErrorCheck = mTErrorCheck + 1;
-                    if (mTErrorCheck > 50)
-                    {
-                        mTErrorCheck = 0;
-                        MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
-                        MainNob.KeyPress(VKeys.KEY_ENTER);
+                                if (不存錢 == false)
+                                    m存錢++;
+                                Point = 0;
+                                mTErrorCheck = 0;
+                                BattleNum = 0;
+                                滿倉判別 = 0;
+
+                                if (m存錢 > 25)
+                                {
+                                    賣完存錢 = true;
+                                    m存錢 = 0;
+                                }
+                                else
+                                    break;
+                            }
+                            else
+                            {
+                                MainNob.KeyPress(VKeys.KEY_ESCAPE);
+                            }
+                        }
+                        else
+                        {
+                            Task.Delay(500).Wait();
+                            if (MainNob.對話與結束戰鬥)
+                                MainNob.KeyPress(VKeys.KEY_ESCAPE);
+                        }
+
+                        mTErrorCheck = mTErrorCheck + 1;
+                        if (mTErrorCheck > 50)
+                        {
+                            mTErrorCheck = 0;
+                            MainNob.KeyPress(VKeys.KEY_ESCAPE, 5);
+                            MainNob.KeyPress(VKeys.KEY_ENTER);
+                        }
                     }
                 }
                 else
