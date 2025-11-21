@@ -533,24 +533,31 @@ namespace NOBApp
                     }
 
                     Debug.WriteLine($"Web Reg {MainWindow.AllNobWindowsList.Count}");
+                    
+                    if (MainNob != null)
+                    {
+                        視窗狀態.Clear();
+                        視窗狀態.AppendText("連接驗證伺服器中...\n");
+                        視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] 開始驗證流程\n");
+                    }
+                    
                     Task.Run(() => WebRegistration.OnWebReg());
 
                     if (MainNob != null)
                     {
-                        視窗狀態.Clear();
-                        視窗狀態.AppendText("驗證中.. 請稍後\n");
-
                         if (!MainNob.驗證完成)
                         {
                             if (認證2CB.IsChecked == true)
                             {
                                 if (string.IsNullOrEmpty(認證TBox.Text))
                                 {
+                                    視窗狀態.AppendText("正在連接 Google Sheet...\n");
                                     GoogleSheet.GoogleSheetInit();
                                     GoogleSheet.CheckDonate(MainNob);
                                 }
                                 else
                                 {
+                                    視窗狀態.AppendText("正在解析認證碼...\n");
                                     Authentication.讀取認證訊息Json(MainNob, 認證TBox.Text);
                                 }
                             }
@@ -561,14 +568,30 @@ namespace NOBApp
                                 Debug.WriteLine($"MainNob 驗證 {MainNob.驗證完成} Count {checkCount}");
                                 if (MainNob.驗證完成)
                                 {
-                                    視窗狀態.Text = "驗證完成!";
+                                    視窗狀態.Text = $"✓ 驗證完成! [{DateTime.Now:HH:mm:ss}]";
+                                    
+                                    // 顯示到期日期
+                                    if (MainNob.到期日 != DateTime.MinValue)
+                                    {
+                                        TimeSpan remainingTime = MainNob.到期日 - DateTime.Now;
+                                        if (remainingTime.TotalDays > 0)
+                                        {
+                                            視窗狀態.AppendText($"\n到期日期: {MainNob.到期日:yyyy-MM-dd}\n剩餘時間: {remainingTime.Days} 天\n");
+                                        }
+                                        else
+                                        {
+                                            視窗狀態.AppendText($"\n⚠ 認證已過期！\n");
+                                        }
+                                    }
+                                    
                                     checkCount = 0;
                                     break;
                                 }
                                 else
                                 {
                                     checkCount++;
-                                    視窗狀態.Text = $"驗證中! -- {checkCount}";
+                                    int dotCount = (checkCount % 3) + 1;
+                                    視窗狀態.Text = $"驗證中{new string('.', dotCount)} ({checkCount}s)";
                                 }
                                 if (checkCount >= 60)
                                 {
@@ -600,7 +623,13 @@ namespace NOBApp
 
                         Tools.SetTimeUp(MainNob);
                         視窗狀態.AppendText($"驗證完成.. 更新時間 -> {MainNob.到期日}\n");
-                        到期計時.Content = $"到期日:{MainNob.到期日}";
+                        到期計時.Content = $"到期時間: {MainNob.到期日:yyyy-MM-dd} (有效)";
+                        
+                        // 更新剩餘天數
+                        UpdateRemainingDays();
+                        
+                        // 顯示重新驗證信息
+                        ShowReAuthTimeInfo(MainNob);
 
                         IGMouse.IsEnabled = true;
                         //暫時將到期關閉
@@ -688,8 +717,7 @@ namespace NOBApp
             menuMapping = new Dictionary<string, Action>
             {
                 { "黃泉盡頭", () => { useMenu = new 黃泉盡頭();Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; }  },
-                { "黃泉盡頭Gemini", () => { useMenu = new 黃泉盡頭Gemini();Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; }  },
-
+               
                 { "刷熊本城", () => { useMenu = new 刷熊本城(); Btn_TargetA.Content = "入場NPC"; Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "四聖青龍", () => { useMenu = new 四聖青龍(); Btn_TargetA.Content = "老頭"; Btn_TargetA.Visibility = Visibility.Visible; } },
                 { "討伐2025_酒井", () => { useMenu = new 討伐2025_酒井(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
@@ -759,6 +787,9 @@ namespace NOBApp
 
             try
             {
+                // 定期更新剩餘天數顯示
+                UpdateRemainingDays();
+                
                 // 狀態視窗更新
                 UpdateStatusWindow();
 
@@ -1716,6 +1747,179 @@ namespace NOBApp
             catch (Exception e)
             {
                 Debug.WriteLine($@"{MainNob.PlayerName}_LoadSK.sk write Error -> {e.ToString()}");
+            }
+        }
+
+        /// <summary>
+        /// 顯示重新驗證時間信息
+        /// </summary>
+        private void ShowReAuthTimeInfo(NOBDATA user)
+        {
+            if (user == null) return;
+            
+            try
+            {
+                string cdkFilePath = $@"{user.Account}_CDK.nob";
+                if (System.IO.File.Exists(cdkFilePath))
+                {
+                    using (System.IO.StreamReader reader = new(cdkFilePath))
+                    {
+                        string jsonString = reader.ReadToEnd();
+                        string dJson = Encoder.AesDecrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
+                        PNobUserData nobUseData = System.Text.Json.JsonSerializer.Deserialize<PNobUserData>(dJson);
+                        
+                        if (nobUseData != null && !string.IsNullOrEmpty(nobUseData.NextReAuthTime))
+                        {
+                            if (DateTime.TryParse(nobUseData.NextReAuthTime, out DateTime nextReAuthDate))
+                            {
+                                TimeSpan timeUntilReAuth = nextReAuthDate - DateTime.Now;
+                                if (timeUntilReAuth.TotalHours > 0)
+                                {
+                                    視窗狀態.AppendText($"\n[重新驗證提示]\n");
+                                    視窗狀態.AppendText($"上次驗證: {nobUseData.LastAuthTime}\n");
+                                    視窗狀態.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
+                                    視窗狀態.AppendText($"剩餘時間: {timeUntilReAuth.Days} 天 {timeUntilReAuth.Hours} 小時\n");
+                                }
+                                else
+                                {
+                                    視窗狀態.AppendText($"\n⚠ 已需要重新驗證！\n");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"讀取驗證信息錯誤: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 檢查當前帳號的有效期
+        /// </summary>
+        private void CheckValidityButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MainNob == null)
+            {
+                MessageBox.Show("請先選擇並驗證一個角色", "提示");
+                視窗狀態.Clear();
+                視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] ⚠ 請先選擇角色\n");
+                return;
+            }
+
+            視窗狀態.Clear();
+            視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] 查詢賬號有效期中...\n");
+
+            try
+            {
+                // 檢查驗證文件是否存在
+                string cdkFilePath = $@"{MainNob.Account}_CDK.nob";
+                if (!System.IO.File.Exists(cdkFilePath))
+                {
+                    視窗狀態.AppendText($"❌ 找不到驗證文件\n");
+                    視窗狀態.AppendText($"賬號: {MainNob.Account}\n");
+                    視窗狀態.AppendText($"請先進行驗證！\n");
+                    MessageBox.Show($"賬號 {MainNob.Account} 沒有驗證記錄，請先驗證", "未驗證");
+                    return;
+                }
+
+                // 讀取驗證文件
+                using (System.IO.StreamReader reader = new(cdkFilePath))
+                {
+                    string jsonString = reader.ReadToEnd();
+                    string dJson = Encoder.AesDecrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
+                    PNobUserData nobUseData = System.Text.Json.JsonSerializer.Deserialize<PNobUserData>(dJson);
+
+                    if (nobUseData != null && DateTime.TryParse(nobUseData.StartTimer, out DateTime expireDate))
+                    {
+                        TimeSpan remaining = expireDate - DateTime.Now;
+                        
+                        視窗狀態.AppendText($"\n📋 賬號驗證信息\n");
+                        視窗狀態.AppendText($"━━━━━━━━━━━━━━━━━━\n");
+                        視窗狀態.AppendText($"帳號: {MainNob.Account}\n");
+                        視窗狀態.AppendText($"角色: {MainNob.PlayerName}\n");
+                        視窗狀態.AppendText($"\n⏰ 有效期信息\n");
+                        視窗狀態.AppendText($"到期時間: {expireDate:yyyy-MM-dd HH:mm:ss}\n");
+
+                        if (remaining.TotalSeconds > 0)
+                        {
+                            視窗狀態.AppendText($"✅ 狀態: 有效\n");
+                            視窗狀態.AppendText($"剩餘時間: {remaining.Days} 天 {remaining.Hours} 小時 {remaining.Minutes} 分鐘\n");
+                            
+                            // 更新頂部標籤
+                            到期計時.Content = $"到期時間: {expireDate:yyyy-MM-dd} (有效)";
+                            到期計時.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+                            
+                            if (remaining.TotalDays <= 7)
+                            {
+                                視窗狀態.AppendText($"⚠️ 提醒: 即將過期，請提前續費\n");
+                            }
+                        }
+                        else
+                        {
+                            視窗狀態.AppendText($"❌ 狀態: 已過期\n");
+                            視窗狀態.AppendText($"過期時間: {Math.Abs(remaining.Days)} 天前\n");
+                            視窗狀態.AppendText($"請聯繫管理員續費\n");
+                            
+                            // 更新頂部標籤
+                            到期計時.Content = $"到期時間: {expireDate:yyyy-MM-dd} (已過期)";
+                            到期計時.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
+                        }
+
+                        // 顯示上次驗證信息
+                        if (!string.IsNullOrEmpty(nobUseData.LastAuthTime))
+                        {
+                            視窗狀態.AppendText($"\n📅 驗證記錄\n");
+                            視窗狀態.AppendText($"上次驗證: {nobUseData.LastAuthTime}\n");
+                        }
+
+                        if (!string.IsNullOrEmpty(nobUseData.NextReAuthTime))
+                        {
+                            視窗狀態.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
+                        }
+
+                        視窗狀態.AppendText($"━━━━━━━━━━━━━━━━━━\n");
+                        視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] ✓ 查詢完成\n");
+                    }
+                    else
+                    {
+                        視窗狀態.AppendText($"❌ 驗證文件格式錯誤\n");
+                        視窗狀態.AppendText($"無法解析到期時間\n");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                視窗狀態.AppendText($"❌ 出現錯誤: {ex.Message}\n");
+                Debug.WriteLine($"檢查有效期錯誤: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 更新剩餘天數顯示
+        /// </summary>
+        private void UpdateRemainingDays()
+        {
+            if (MainNob == null || MainNob.到期日 == DateTime.MinValue)
+            {
+                剩餘天數.Content = "剩餘天數: 未驗證";
+                return;
+            }
+
+            TimeSpan remaining = MainNob.到期日 - DateTime.Now;
+            
+            if (remaining.TotalSeconds > 0)
+            {
+                剩餘天數.Content = $"剩餘天數: {remaining.Days} 天";
+                剩餘天數.Foreground = remaining.Days <= 7 
+                    ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red)
+                    : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 221, 0));
+            }
+            else
+            {
+                剩餘天數.Content = "剩餘天數: 已過期";
+                剩餘天數.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
             }
         }
 

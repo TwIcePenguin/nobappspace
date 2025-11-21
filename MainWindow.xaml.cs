@@ -147,7 +147,7 @@ namespace NOBApp
             企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
 
 #if DEBUG
-            企鵝專用測試A.Visibility = Visibility.Visible;
+			企鵝專用測試B.Visibility = 企鵝專用測試A.Visibility = Visibility.Visible;
 #endif
         }
 
@@ -409,6 +409,15 @@ namespace NOBApp
 
         private void 企鵝專用測試_Click(object sender, RoutedEventArgs e)
         {
+            // 如果點擊 Penguin B，打開輸入對話視窗
+            if (sender is Button btn && btn.Name == "企鵝專用測試B")
+            {
+                var dlg = new PenguinTestDialog();
+                dlg.Owner = this;
+                dlg.ShowDialog();
+                return;
+            }
+
             if (NBTabControl.SelectedItem is TabItem tabItem && ((TabItem)NBTabControl.SelectedItem).Content != null)
             {
                 NobMainCodePage page = ((TabItem)NBTabControl.SelectedItem).Content as NobMainCodePage;
@@ -417,22 +426,22 @@ namespace NOBApp
                     var speed = page.MainNob.速度;
                     狀態訊息(speed.ToString());
                     //效能測試
-                    //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
-                    //橘 565ABD
-                    var c1 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
+                    //PerformanceTest.TestGetColorCopNum(MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900,70), new System.Drawing.Point(100,70), "F6F67A");
+                    //橘565ABD
+                    var c1 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900,70), new System.Drawing.Point(100,70), "F6F67A");
                     //藍 F6F67A
-                    var c2 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "565ABD");
-                    //紅 6363EE 
-                    var c3 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "6363EE");
-                    var c4 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(200, 190), new System.Drawing.Point(45, 55), "FFFFFF");
-                    var c5 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "5959D8");
+                    var c2 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900,70), new System.Drawing.Point(100,70), "565ABD");
+                    //紅6363EE 
+                    var c3 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900,70), new System.Drawing.Point(100,70), "6363EE");
+                    var c4 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(200,190), new System.Drawing.Point(45,55), "FFFFFF");
+                    var c5 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900,70), new System.Drawing.Point(100,70), "5959D8");
 
-                    var c6 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(50, 130), "47ADE8");
-                    var c7 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440, 260), new System.Drawing.Point(160, 130), "D5F1F1");
+                    var c6 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(900,70), new System.Drawing.Point(50,130), "47ADE8");
+                    var c7 = ColorTools.GetColorNum(page.MainNob.Proc.MainWindowHandle, new System.Drawing.Point(440,260), new System.Drawing.Point(160,130), "D5F1F1");
 
                     Debug.WriteLine($"Color : {c1} - {c2} - {c3} - {c4} - {c5} - {c6} - {c7}");
-                    //page.MainNob.ML_Click(125, 260);
-                    //page.MainNob.ML_Click(225, 225);
+                    //page.MainNob.ML_Click(125,260);
+                    //page.MainNob.ML_Click(225,225);
                 }
             }
         }

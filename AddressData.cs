@@ -40,7 +40,7 @@ namespace NOBApp
         public static string 戰鬥人數判斷 = 戰鬥可輸入判斷.AddressAdd(116);
         public static string 戰鬥可輸入判斷II = "5BAF2C0";
         public static string 戰鬥輔助 = "5BA67F0";  //0-正常化面 1-輔助畫面
-        public static string 戰鬥輸入 = "5BAF1EC";
+        public static string 戰鬥輸入 = "5BAF20C";
 
         //廢止
         public static string 戰鬥可輸隊員 = "5B8FD80"; //+4 7

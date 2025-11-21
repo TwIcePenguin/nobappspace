@@ -9,13 +9,15 @@
 
     <Grid Background="#FFD8D9FF">
         <Label x:Name="到期計時" Content="到期時間:9999年12月31日" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="248" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="認證TBox" HorizontalAlignment="Left" Height="20" Margin="240,3,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="145"/>
+        <Label x:Name="剩餘天數" Content="剩餘天數: --" HorizontalAlignment="Right" Height="24" VerticalAlignment="Top" Width="150" Margin="0,0,10,0"/>
+        <TextBox x:Name="認證TBox" HorizontalAlignment="Left" Height="20" Margin="302,3,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="83"/>
         <CheckBox x:Name="認證2CB" HorizontalAlignment="Left" Height="20" Margin="220,5,0,0" VerticalAlignment="Top" Width="20"/>
         <TextBox x:Name="全體選擇" Height="22" TextWrapping="Wrap" Width="33" Text="1" FontSize="14" MaxLength="1" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Left" Canvas.Left="199" Canvas.Top="78" VerticalAlignment="Top" Margin="385,50,0,0"/>
 
         <!--第1排-->
         <ComboBox x:Name="CB_HID" SelectionChanged="CB_HID_SelectionChanged" Width="180" HorizontalAlignment="Left" Canvas.Left="39" Canvas.Top="26" VerticalAlignment="Top" Margin="35,25,0,0" />
-        <Button x:Name="LockBtn" Content="驗證" Click="LockButton_Click" Height="21" Width="35" HorizontalAlignment="Left" Canvas.Left="220" Canvas.Top="26" VerticalAlignment="Top" Margin="220,25,0,0"/>
+        <Button x:Name="LockBtn" Content="驗證" Click="LockButton_Click" Height="21" Width="35" HorizontalAlignment="Left" Canvas.Left="220" Canvas.Top="26" VerticalAlignment="Top" Margin="218,25,0,0"/>
+        <Button x:Name="CheckValidBtn" Content="查詢有效期" Click="CheckValidityButton_Click" Height="21" Width="66" HorizontalAlignment="Left" Canvas.Left="260" Canvas.Top="26" VerticalAlignment="Top" Margin="236,3,0,0"/>
         <Button x:Name="Btn_Refresh" Content="刷新" Click="OnRefreshNOBID" Height="21" Width="28" HorizontalAlignment="Left" Canvas.Left="6" Canvas.Top="26" VerticalAlignment="Top" Margin="5,25,0,0"/>
         <Button x:Name="Btn_上" Content="▲" Height="24" Width="29" Canvas.Left="139" Canvas.Top="52" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="325,25,0,0"/>
         <Button x:Name="Btn_ALL_ENTER" Content="ENTER" Height="24" Width="43" Canvas.Left="67" Canvas.Top="76" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="281,25,0,0"/>
@@ -197,15 +199,15 @@
                                 <CheckBox x:Name="二段_5" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
                                 <CheckBox x:Name="搖屁股_5" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
                                 <CheckBox x:Name="背景ENTER_5" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
-                                <TextBox x:Name="延遲施放_5" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_5" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_5" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_5" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_5" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_5" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_5" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_5" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_5" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
+                                <TextBox x:Name="延遲施放_5" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalContentAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
+                                <TextBox x:Name="間隔時間放_5" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="間隔施放"/>
+                                <TextBox x:Name="技能段1_5" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="第1次選擇"/>
+                                <TextBox x:Name="技能段2_5" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="第2次選擇"/>
+                                <TextBox x:Name="技能段3_5" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="第3次選擇"/>
+                                <TextBox x:Name="施放A_5" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="施放目標1"/>
+                                <TextBox x:Name="施放B_5" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="施放目標2"/>
+                                <TextBox x:Name="施放C_5" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="施放目標3"/>
+                                <TextBox x:Name="程式速度_5" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
                                 <TextBox x:Name="直接下指令_5" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
                             </Canvas>
@@ -226,7 +228,7 @@
                                 <TextBox x:Name="施放A_6" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
                                 <TextBox x:Name="施放B_6" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
                                 <TextBox x:Name="施放C_6" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_6" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
+                                <TextBox x:Name="程式速度_6" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
                                 <TextBox x:Name="直接下指令_6" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
                             </Canvas>

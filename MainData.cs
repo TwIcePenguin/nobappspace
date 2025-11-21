@@ -38,9 +38,18 @@ namespace NOBApp
         public string? StartTimer { get; set; }
         public string? ISEND { get; set; }
         public string? CheckC { get; set; }
+        /// <summary>
+        /// 記錄最後一次驗證的時間
+        /// </summary>
+        public string? LastAuthTime { get; set; }
+        /// <summary>
+        /// 下次需要重新驗證的時間
+        /// </summary>
+        public string? NextReAuthTime { get; set; }
+        
         public override string ToString()
         {
-            return $"{Acc} {StartTimer} {ISEND} {CheckC}";
+            return $"{Acc} {StartTimer} {ISEND} {CheckC} LastAuth:{LastAuthTime} NextReAuth:{NextReAuthTime}";
         }
     }
 
