@@ -194,7 +194,7 @@ namespace NOBApp
                 {
                     Acc = acc,
                     Pww = pwd,
-                    UserName = userName ?? "冰寧小咪",
+                    UserName = userName ?? string.Empty,
                     SerialNumber = Tools.GetSerialNumber(),
                     LoginTimer = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 };
@@ -301,9 +301,9 @@ namespace NOBApp
                 List<FPDATA> dataList = new();
                 FPDATA fdata = new()
                 {
-                    Acc = "blanka1231",
-                    Pww = "blanka1231",
-                    UserName = "天上寺勘與師",
+                    Acc = "wayne1123",
+                    Pww = "sd123",
+                    UserName = "佐城御醫",
                     SerialNumber = Tools.GetSerialNumber(),
                     LoginTimer = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 };
@@ -325,12 +325,12 @@ namespace NOBApp
                                 Debug.WriteLine($"Web In {data.Acc}");
                                 var fdata = JsonSerializer.Serialize(data);
                                 var fdataStr = Encoder.AesEncrypt(fdata, "CHECKNOBPENGUIN", "CHECKNOB");
-
-                                var jdata = JsonSerializer.Serialize(new UData() { KeyStr = fdataStr });
+								Debug.WriteLine($"AesEncrypt In {fdataStr}");
+								var jdata = JsonSerializer.Serialize(new UData() { KeyStr = fdataStr });
 
                                 var content = new StringContent(jdata, Encoding.UTF8, "application/json");
 
-                                string url = @"https://nobccdk20250311164541.azurewebsites.net/api/GetNOBCDK?code=hSpVurL7QaSgsUeIIV6afXJ6RECVzYdOPr05QYgtORr9AzFuPyyKpA==";
+                                string url = @"https://localhost:7145/api/check";
 
                                 HttpResponseMessage response = await client.PostAsync(url, content);
 

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace NOBApp
 {
@@ -95,6 +96,58 @@ namespace NOBApp
 
             // 在其他初始化之前加載 GitHub 配置
             this.Loaded += (s, e) => CheckForUpdatesAsync();
+
+            // 設定初始主題（預設為深色）
+            ApplyTheme(dark: true);
+        }
+
+        private bool _isDarkTheme = true;
+
+        private void ApplyTheme(bool dark)
+        {
+            _isDarkTheme = dark;
+
+            void SetBrush(string key, Color color)
+            {
+                if (Resources[key] is SolidColorBrush existing)
+                {
+                    existing.Color = color;
+                }
+                else
+                {
+                    Resources[key] = new SolidColorBrush(color);
+                }
+            }
+
+            if (dark)
+            {
+                SetBrush("ControlBackgroundBrush", (Color)ColorConverter.ConvertFromString("#FF1E2B3A"));
+                SetBrush("ControlForegroundBrush", (Color)ColorConverter.ConvertFromString("#FFF0F4F8"));
+                SetBrush("HeaderBackgroundBrush", (Color)ColorConverter.ConvertFromString("#FF182635"));
+                SetBrush("StatusBackgroundBrush", (Color)ColorConverter.ConvertFromString("#FF14202C"));
+                SetBrush("AccentBrush", (Color)ColorConverter.ConvertFromString("#FF3A7BD5"));
+                SetBrush("AccentBrushDark", (Color)ColorConverter.ConvertFromString("#FF2E5FA3"));
+            }
+            else
+            {
+                SetBrush("ControlBackgroundBrush", Colors.White);
+                SetBrush("ControlForegroundBrush", Colors.Black);
+                SetBrush("HeaderBackgroundBrush", (Color)ColorConverter.ConvertFromString("#FFF3F4F6"));
+                SetBrush("StatusBackgroundBrush", (Color)ColorConverter.ConvertFromString("#FFEFEFEF"));
+                SetBrush("AccentBrush", (Color)ColorConverter.ConvertFromString("#FF0A66C2"));
+                SetBrush("AccentBrushDark", (Color)ColorConverter.ConvertFromString("#FF084F8A"));
+            }
+
+            // 更新按鈕文字顯示，提示切換方向
+            if (Btn_ThemeToggle != null)
+            {
+                Btn_ThemeToggle.Content = _isDarkTheme ? "切換為白底" : "切換為黑底";
+            }
+        }
+
+        private void Btn_ThemeToggle_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyTheme(!_isDarkTheme);
         }
 
         private void InitializeTabItems()
@@ -412,6 +465,8 @@ namespace NOBApp
             // 如果點擊 Penguin B，打開輸入對話視窗
             if (sender is Button btn && btn.Name == "企鵝專用測試B")
             {
+                WebRegistration.TestOnWebReg();
+                return;
                 var dlg = new PenguinTestDialog();
                 dlg.Owner = this;
                 dlg.ShowDialog();
