@@ -8,16 +8,17 @@
 		<StartupObject>NOBApp.App</StartupObject>
 		<UseWindowsForms>True</UseWindowsForms>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<Platforms>x86</Platforms>
+		<PlatformTarget>x86</PlatformTarget>
 		<PackageIcon>SteamPGIN.png</PackageIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<BaseOutputPath>C:\BOT</BaseOutputPath>
 		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+		<!-- 移除自訂 BaseOutputPath以避免啟動路徑/權限問題 -->
+		<OutputPath>bin\$(Configuration)\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Sports\黃泉盡頭Gemini.cs" />
+	 <Compile Remove="Sports\黃泉盡頭Gemini.cs" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -132,16 +133,12 @@
 		<Message Importance="High" Text="版號 : $(VersionNumber)" />
 		<Message Importance="High" Text="輸出資料夾 (PublishDir): $(OutputDir)" />
 
-		<!-- 刪除舊的壓縮檔案 -->
 		<ItemGroup>
 			<OldZipFiles Include="$(PublishDir)v*.zip" />
 		</ItemGroup>
 		<Delete Files="@(OldZipFiles)" />
 
-		<!-- 確保所有檔案已釋放 -->
-		<Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\CheckFileLock.ps1&quot; -FilePath &quot;$(OutputDir)NOBApp.exe&quot; -MaxRetries 5 -DelaySeconds 2" />
-
-		<!-- 使用 7-Zip 壓縮發佈目錄 -->
+		<Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\CheckFileLock.ps1&quot; -FilePath &quot;$(OutputDir)NOBApp.exe&quot; -MaxRetries5 -DelaySeconds2" />
 		<Exec Command="$(SevenZipPath) a -tzip &quot;$(ZipFilePath)&quot; &quot;$(OutputDir)*&quot;" />
 	</Target>
 	<Target Name="UpdateVersionOnDebugBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">

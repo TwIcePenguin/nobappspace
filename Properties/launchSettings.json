@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NOBApp": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\BOT"
+    }
+  }
+}

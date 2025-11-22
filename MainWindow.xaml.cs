@@ -265,6 +265,13 @@ namespace NOBApp
 			TB_GamePadName.Text = TB_GamePadName.Text.Contains("XInput") ? "None" : "XInput-1";
 		}
 
+        private void Btn_ThemeToggle_Click(object sender, RoutedEventArgs e)
+        {
+            // 主題切換功能的樁實現
+    // 這裡可以實現黑白主題的切換邏輯
+            狀態訊息("主題切換功能開發中...", true);
+      }
+
         #endregion private founctions
     }
 }

@@ -4,209 +4,42 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NOBApp"
+        xmlns:core="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="企鵝之野望" Height="520" Width="820" Icon="/448545149_994763355983896_6737183326767466195_n.jpg">
-    <Window.Resources>
-        <!-- 主題色系資源 -->
-        <SolidColorBrush x:Key="AccentBrush" Color="#3A7BD5" />
-        <SolidColorBrush x:Key="AccentBrushDark" Color="#2E5FA3" />
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#121A26" />
-        <SolidColorBrush x:Key="PanelOverlayBrush" Color="#22000000" />
-        <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#182635" />
-        <SolidColorBrush x:Key="StatusBackgroundBrush" Color="#14202C" />
+        Title="企鵝之野望" Height="450" Icon="/448545149_994763355983896_6737183326767466195_n.jpg" Width="700">
 
-        <!-- 控制項主背景/文字，會由程式動態切換黑白主題 -->
-        <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#1E2B3A" />
-        <SolidColorBrush x:Key="ControlForegroundBrush" Color="#F0F4F8" />
+    <Grid x:Name="Root" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <Grid>
+            <Button Content="遊戲多開" Height="25" Width="60" Click="MuitOpen_Click" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Canvas.Left="357" Canvas.Top="26" VerticalAlignment="Top" Margin="5,5,0,0"/>
+            <Button x:Name="手把" Content="手把" Height="20" Width="30" Click="Button_Click_手把" HorizontalAlignment="Left" Canvas.Left="358" Canvas.Top="6" VerticalAlignment="Top" Visibility="Visible" Margin="116,7,0,0"/>
+            <TextBox x:Name="TB_GamePadName" Height="20" TextWrapping="Wrap" Width="55" Cursor="" HorizontalAlignment="Left" Canvas.Left="296" Canvas.Top="7" VerticalAlignment="Top" Visibility="Visible" Margin="151,7,0,0"/>
+            <ComboBox x:Name="CMB_Resolution" Height="20" Width="90" IsEditable="True" SelectedIndex="0" HorizontalAlignment="Left" Canvas.Left="260" Canvas.Top="26" VerticalAlignment="Top" Margin="116,32,0,0"/>
+            <TextBox x:Name="OpenGameWindows" Height="25" Text="2" Width="25" ToolTip="多開數量" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Canvas.Left="387" Canvas.Top="26" VerticalAlignment="Top" Margin="70,5,0,0" MaxLines="3"/>
+            <Button x:Name="Btn_Update" Content="手動檢查更新" Height="20" Width="135" Click="Btn_Update_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,32,0,0" Background="#FF62FF73" FontWeight="Bold"/>
+            <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Height="25" Width="56" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,5,0,0"/>
+            <Button x:Name="Btn_SetLoad" Content="設定取得" Height="25" Width="39" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="306,5,0,0" FontSize="8"/>
+            <Button x:Name="Btn_SetApply" Content="設定套用" Height="25" Width="40" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="266,5,0,0" FontSize="8"/>
+            <Button x:Name="企鵝專用測試A" Content="企鵝A" Height="24" Width="36" Canvas.Left="265" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="5,30,0,0"/>
+            <Button x:Name="企鵝專用測試B" Content="企鵝B" Height="24" Width="36" Canvas.Left="306" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="40,30,0,0"/>
+            <Button x:Name="企鵝專用測試C" Content="企鵝C" Height="24" Width="36" Canvas.Left="347" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="75,30,0,0"/>
+            <TextBox x:Name="MainWindowsStatusMsgBox" Height="49" Margin="350,5,5,0" TextWrapping="WrapWithOverflow" Text="" VerticalAlignment="Top" MaxLines="2147483643" MaxLength="6" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" Visibility="Visible" IsReadOnly="True" HorizontalContentAlignment="Stretch" Padding="0,0,5,0" VerticalContentAlignment="Stretch"/>
+        </Grid>
+        <TabControl x:Name="NBTabControl" Margin="0,60,0,0"/>
 
-        <!-- 字體資源 -->
-        <FontFamily x:Key="AppFont">Segoe UI</FontFamily>
+        <Grid x:Name="背景圖" ScrollViewer.VerticalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0.7" Panel.ZIndex="-65535" IsHitTestVisible="False" IsEnabled="False" Grid.Column="1" Width="572" Height="722" AutomationProperties.HelpText="手把-空白代表不啟動" Grid.ColumnSpan="3">
+            <Grid.Background>
+                <ImageBrush Stretch="Uniform" ImageSource="/images.jpg" Opacity="0.1" TileMode="None">
+                    <ImageBrush.RelativeTransform>
+                        <TransformGroup>
+                            <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                            <SkewTransform CenterX="0.5" CenterY="0.5"/>
+                            <RotateTransform CenterX="0.5" CenterY="0.5"/>
+                            <TranslateTransform Y="0.2"/>
+                        </TransformGroup>
+                    </ImageBrush.RelativeTransform>
+                </ImageBrush>
+            </Grid.Background>
 
-        <!-- 按鈕樣式 (現代化) -->
-        <Style TargetType="Button" x:Key="ModernButton">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="SnapsToDevicePixels" Value="True" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" CornerRadius="6" Background="{TemplateBinding Background}">
-                            <!-- Viewbox 確保文字會縮放以符合按鈕尺寸，StretchDirection=DownOnly 避免放大模糊 -->
-                            <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
-                            </Viewbox>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrushDark}" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#1D3F66" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="TextBox" x:Key="ModernTextBox">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="Padding" Value="8,5" />
-            <Setter Property="Foreground" Value="{StaticResource ControlForegroundBrush}" />
-            <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CaretBrush" Value="White" />
-            <Setter Property="FontSize" Value="13" />
-        </Style>
-
-        <Style TargetType="ComboBox" x:Key="ModernComboBox">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="Padding" Value="6,4" />
-            <Setter Property="Foreground" Value="{StaticResource ControlForegroundBrush}" />
-            <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="13" />
-            <!-- Ensure editable ComboBox uses the same TextBox style by providing a TextBox style in the ComboBox resources -->
-            <Style.Resources>
-                <Style TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}" />
-            </Style.Resources>
-        </Style>
-
-        <!-- TabControl 樣式 (移除預設邊框 / 背景) -->
-        <Style TargetType="TabControl" x:Key="ModernTabControl">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-        </Style>
-        <Style TargetType="TabItem" x:Key="ModernTabItem">
-            <Setter Property="Margin" Value="0,0,6,0" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Foreground" Value="#E5EBF0" />
-            <Setter Property="Background" Value="#203044" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrush}" />
-                                <Setter Property="FontWeight" Value="Bold" />
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrushDark}" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Window.Resources>
-
-    <!-- 背景層：圖片 + 漸層遮罩 -->
-    <Grid x:Name="Root">
-        <Grid.Background>
-            <VisualBrush Stretch="Fill">
-                <VisualBrush.Visual>
-                    <Grid>
-                        <Image Source="/images.jpg" Stretch="UniformToFill" Opacity="0.22" />
-                        <Rectangle>
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="#26313F" Offset="0" />
-                                    <GradientStop Color="#1A242F" Offset="0.55" />
-                                    <GradientStop Color="#18202A" Offset="1" />
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
-                    </Grid>
-                </VisualBrush.Visual>
-            </VisualBrush>
-        </Grid.Background>
-
-        <!-- 內容外框 -->
-        <Border Margin="16" CornerRadius="14" Background="#182534EE" BorderBrush="#304050" BorderThickness="1" Padding="0">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="14" ShadowDepth="0" Opacity="0.5" Color="#AA000000" />
-            </Border.Effect>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <!-- Header 两排佈局 -->
-                <Border Grid.Row="0" Background="{StaticResource HeaderBackgroundBrush}" Padding="8" CornerRadius="14,14,0,0">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <!-- 第一排：主要操作 -->
-                            <WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="遊戲多開" Width="100" Height="34" Click="MuitOpen_Click" Style="{StaticResource ModernButton}" />
-                                <TextBox x:Name="OpenGameWindows" Width="60" Height="34" Text="2" ToolTip="多開數量" Style="{StaticResource ModernTextBox}" HorizontalContentAlignment="Center" FontWeight="Bold" />
-                                <ComboBox x:Name="CMB_Resolution" Width="140" Height="34" IsEditable="True" SelectedIndex="0" Style="{StaticResource ModernComboBox}" />
-                                <Button x:Name="Btn_Update" Content="手動檢查更新" Width="150" Height="34" Click="Btn_Update_Click" Style="{StaticResource ModernButton}" Background="#358F65" />
-                                <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Width="100" Height="34" Style="{StaticResource ModernButton}" />
-                                <Button x:Name="Btn_ThemeToggle" Content="黑/白" Width="80" Height="34" Click="Btn_ThemeToggle_Click" Style="{StaticResource ModernButton}" />
-                            </WrapPanel>
-
-                            <!-- 第二排：設定與測試工具 -->
-                            <WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button x:Name="Btn_SetLoad" Content="設定取得" Width="90" Height="34" Style="{StaticResource ModernButton}" FontSize="12" />
-                                <Button x:Name="Btn_SetApply" Content="設定套用" Width="90" Height="34" Style="{StaticResource ModernButton}" FontSize="12" />
-                                <Button x:Name="手把" Content="手把" Width="70" Height="34" Click="Button_Click_手把" Style="{StaticResource ModernButton}" />
-                                <TextBox x:Name="TB_GamePadName" Width="160" Height="34" Style="{StaticResource ModernTextBox}" ToolTip="手把名稱 (空白=停用)" />
-                                <Button x:Name="企鵝專用測試A" Content="企鵝A" Width="75" Height="32" Style="{StaticResource ModernButton}" />
-                                <Button x:Name="企鵝專用測試B" Content="企鵝B" Width="75" Height="32" Style="{StaticResource ModernButton}" />
-                                <Button x:Name="企鵝專用測試C" Content="企鵝C" Width="75" Height="32" Style="{StaticResource ModernButton}" />
-                            </WrapPanel>
-                        </Grid>
-                    </ScrollViewer>
-                </Border>
-
-                <!-- 狀態列 -->
-                <Border Grid.Row="1" Margin="10,6,10,4" Background="{StaticResource StatusBackgroundBrush}" CornerRadius="8" Padding="6">
-                    <TextBox x:Name="MainWindowsStatusMsgBox" Style="{StaticResource ModernTextBox}" BorderThickness="0" Background="Transparent" IsReadOnly="True" Height="60" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
-                </Border>
-
-                <!-- 主內容 -->
-                <Grid Grid.Row="2" Margin="8,0,8,12">
-                    <TabControl x:Name="NBTabControl" Style="{StaticResource ModernTabControl}">
-                        <!-- 保留動態加入的 TabItems; 可預設一個示例 -->
-                        <TabItem Header="主頁" Style="{StaticResource ModernTabItem}">
-                            <Grid Margin="8">
-                                <TextBlock Text="歡迎使用 企鵝之野望" Foreground="#DDE7F0" FontSize="20" FontWeight="Bold" />
-                            </Grid>
-                        </TabItem>
-                    </TabControl>
-                </Grid>
-            </Grid>
-        </Border>
+        </Grid>
     </Grid>
 </Window>
