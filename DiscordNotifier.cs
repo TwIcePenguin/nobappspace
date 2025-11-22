@@ -76,6 +76,76 @@ namespace NOBApp
         }
 
         /// <summary>
+        /// 發送帶有檔案的 Discord 通知
+        /// </summary>
+        /// <param name="title">訊息標題</param>
+        /// <param name="message">訊息內容</param>
+        /// <param name="filePath">檔案路徑</param>
+        /// <returns>發送成功返回 true</returns>
+        public static async Task<bool> SendFileAsync(string title, string message, string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(WebhookUrl) || WebhookUrl.Contains("YOUR_WEBHOOK_URL_HERE"))
+                {
+                    Debug.WriteLine("Discord Webhook URL 尚未設定");
+                    return false;
+                }
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    Debug.WriteLine($"檔案不存在: {filePath}");
+                    return false;
+                }
+
+                using (var form = new MultipartFormDataContent())
+                {
+                    // 加入檔案
+                    var fileContent = new ByteArrayContent(System.IO.File.ReadAllBytes(filePath));
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                    form.Add(fileContent, "file", System.IO.Path.GetFileName(filePath));
+
+                    // 加入 JSON payload (用於顯示訊息)
+                    // 注意: 當發送檔案時，payload_json 欄位必須包含 embed 資訊
+                    var payload = new
+                    {
+                        embeds = new[]
+                        {
+                            new
+                            {
+                                title = title,
+                                description = message,
+                                color = 3447003,
+                                footer = new
+                                {
+                                    text = $"⏰ {DateTime.Now:yyyy-MM-dd HH:mm:ss}"
+                                }
+                            }
+                        }
+                    };
+                    
+                    var jsonContent = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+                    form.Add(jsonContent, "payload_json");
+
+                    var response = await HttpClient.PostAsync(WebhookUrl, form);
+                    
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        string responseContent = await response.Content.ReadAsStringAsync();
+                        Debug.WriteLine($"Discord 檔案發送失敗: {responseContent}");
+                    }
+
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"發送 Discord 檔案時發生錯誤: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 設定 Discord Webhook URL
         /// </summary>
         /// <param name="webhookUrl">Discord Webhook URL</param>

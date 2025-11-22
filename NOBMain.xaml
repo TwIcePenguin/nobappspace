@@ -5,14 +5,13 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:NOBApp"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800">
+      d:DesignHeight="450" Width="680">
 
     <Grid Background="#FFD8D9FF">
-        <Label x:Name="到期計時" Content="到期時間:9999年12月31日" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="248" Grid.ColumnSpan="2"/>
-        <Label x:Name="剩餘天數" Content="剩餘天數: --" HorizontalAlignment="Right" Height="24" VerticalAlignment="Top" Width="150" Margin="0,0,10,0"/>
+        <Label x:Name="到期計時" Content="到期時間:9999年12月31日 剩餘天數: --" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="398" Grid.ColumnSpan="2"/>
         <TextBox x:Name="認證TBox" HorizontalAlignment="Left" Height="20" Margin="302,3,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="83"/>
         <CheckBox x:Name="認證2CB" HorizontalAlignment="Left" Height="20" Margin="220,5,0,0" VerticalAlignment="Top" Width="20"/>
-        <TextBox x:Name="全體選擇" Height="22" TextWrapping="Wrap" Width="33" Text="1" FontSize="14" MaxLength="1" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Left" Canvas.Left="199" Canvas.Top="78" VerticalAlignment="Top" Margin="385,50,0,0"/>
+        <TextBox x:Name="全體選擇" Height="22" TextWrapping="Wrap" Width="33" Text="1" FontSize="14" MaxLength="1" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Left" Canvas.Left="199" Canvas.Top="78" VerticalAlignment="Top" Margin="385,50,0,0" d:IsHidden="True"/>
 
         <!--第1排-->
         <ComboBox x:Name="CB_HID" SelectionChanged="CB_HID_SelectionChanged" Width="180" HorizontalAlignment="Left" Canvas.Left="39" Canvas.Top="26" VerticalAlignment="Top" Margin="35,25,0,0" />
@@ -44,234 +43,239 @@
 
             </StackPanel>
         </Canvas>
-        <TextBox x:Name="視窗狀態" HorizontalAlignment="Left" Height="69" Margin="420,5,0,0" TextWrapping="WrapWithOverflow" Text="" VerticalAlignment="Top" Width="200" MaxLines="2147483643" MaxLength="6" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" Visibility="Visible" IsReadOnly="True"/>
+        <TextBox x:Name="視窗狀態" HorizontalAlignment="Left" Height="69" Margin="389,5,0,0" TextWrapping="WrapWithOverflow" Text="" VerticalAlignment="Top" Width="200" MaxLines="2147483643" MaxLength="6" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" Visibility="Visible" IsReadOnly="True"/>
 
-        <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本進階設定區" Margin="5,110,5,0" VerticalAlignment="Top" Height="250">
-            <Grid x:Name="ControlGrid" UseLayoutRounding="False" HorizontalAlignment="Left" VerticalAlignment="Top" Height="218" Width="552" IsEnabled="False" Margin="0,5,0,0">
-                <StackPanel x:Name="通用欄" HorizontalAlignment="Left">
-                    <DockPanel>
-                        <Label Content="延遲時間"/>
-                        <TextBox x:Name="延遲係數" TextWrapping="Wrap" Text="0" Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                    </DockPanel>
-                </StackPanel>
-                <Canvas x:Name="武技設定頁面" d:IsHidden="True">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBox x:Name="TB_選擇關卡" Height="20" TextWrapping="Wrap" Text="2" Width="30" MaxLines="1" MaxLength="2" ToolTip="1-上杉2-武田3-北條" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="10" Canvas.Top="30" VerticalAlignment="Top"/>
-                        <TextBox x:Name="TB_選擇難度" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="0-弱1-普2-強3-如鬼" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="70" Canvas.Top="30" VerticalAlignment="Top"/>
-                        <TextBox x:Name="TB_SetCNum" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="往下打幾場" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="40" Canvas.Top="30" VerticalAlignment="Top"/>
-                        <TextBox x:Name="TB_Set家臣" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="家臣數量" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="100" Canvas.Top="30" VerticalAlignment="Top"/>
-                        <CheckBox x:Name="CB_大會地" Content="大會地" Height="16" Width="63" Canvas.Left="135" Canvas.Top="32" HorizontalAlignment="Left" VerticalAlignment="Center" />
+        <!-- 回報與聯絡區 -->
+        <StackPanel Margin="594,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="81">
+            <Button x:Name="Btn_ReportIssue" Content="回報問題" Height="22" Margin="0,0,0,5" Background="#FFFFAAAA"/>
+            <TextBox x:Name="TB_ContactID" Height="22" TextWrapping="Wrap" Text="" ToolTip="請輸入您的 LINE 或 WeChat ID" Margin="0,0,0,5" Tag="輸入ID..."/>
+            <Button x:Name="Btn_ContactPurchase" Content="聯絡購買/加時" Height="22" Background="#FFAAAAFF"/>
+        </StackPanel>
+
+        <StackPanel Margin="5,110,5,0" VerticalAlignment="Top">
+            <Expander x:Name="腳本展區"  Grid.ColumnSpan="4" Header="腳本進階設定區" Margin="0" VerticalAlignment="Top">
+                <Grid x:Name="ControlGrid" UseLayoutRounding="False" HorizontalAlignment="Left" VerticalAlignment="Top" Height="218" Width="552" IsEnabled="False" Margin="0,5,0,0">
+                    <StackPanel x:Name="通用欄" HorizontalAlignment="Left">
+                        <DockPanel>
+                            <Label Content="延遲時間"/>
+                            <TextBox x:Name="延遲係數" TextWrapping="Wrap" Text="0" Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                        </DockPanel>
                     </StackPanel>
-                </Canvas>
-                <CheckBox x:Name="CB_BKAutoEnter" Content="背景ENTER" Visibility="Hidden" Height="18" Width="84" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="43,3,0,0" Grid.Column="1"/>
-
-                <TextBox x:Name="FNPCID" HorizontalAlignment="Left" Height="20" Margin="57,25,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="118" Visibility="Hidden" Grid.ColumnSpan="2"/>
-                <TextBox x:Name="SMENU1" HorizontalAlignment="Left" Height="20" Margin="71,50,0,0" TextWrapping="Wrap" Text="6" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
-                <CheckBox x:Name="CB_AllIn" Content="全邀請" Margin="79,122,0,0" VerticalAlignment="Top" Visibility="Hidden" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="56" d:IsHidden="True"/>
-                <Canvas x:Name="TargetViewPage" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" d:IsHidden="True">
-                    <CheckBox x:Name="解無敵" Content="F5解無敵" Canvas.Left="55" Canvas.Top="140" HorizontalAlignment="Left" VerticalAlignment="Center" Width="74"/>
-                    <CheckBox x:Name="CB_開打" Content="開打" Canvas.Left="0" Canvas.Top="140" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                    <TextBox x:Name="TBX搜尋範圍" TextWrapping="Wrap" Text="1000" Width="69" Canvas.Left="0" Canvas.Top="65" HorizontalAlignment="Left" VerticalAlignment="Top" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍"/>
-                    <CheckBox x:Name="特搜" Content="特搜" Width="52" IsChecked="True" Visibility="Hidden" HorizontalAlignment="Left" Canvas.Left="4" Canvas.Top="32" VerticalAlignment="Top"/>
-                    <ListBox x:Name="List_鎖定名單" Height="107" Width="110" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="116" Canvas.Top="27" VerticalAlignment="Top" />
-                    <ListBox x:Name="List_目前名單" Height="106" Width="119" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Center" Canvas.Left="232" Canvas.Top="27" VerticalAlignment="Top" />
-                    <CheckBox x:Name="CB自動鎖定PC" Content="自動鎖" Height="15" Width="63" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="30" VerticalAlignment="Top" />
-                    <CheckBox x:Name="CB鎖定後自動黑槍" Content="F9黑" Height="15" Width="58" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="47" VerticalAlignment="Top"/>
-                    <Button x:Name="Btn添加名單" Content="切換" Height="30" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="55" VerticalAlignment="Top"/>
-                    <Button x:Name="Btn移除名單" Content="--" Height="29" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="85" VerticalAlignment="Top"/>
-                    <Button x:Name="Btn鎖定目標添加" Content="鎖添" Height="27" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="27" VerticalAlignment="Top"/>
-                    <ListBox x:Name="List_忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <CheckBox x:Name="E點怪" Content="ENT點怪" Canvas.Left="130" Canvas.Top="140" Width="73" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <TextBox x:Name="其他選項A" TextWrapping="Wrap" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
-                    <TextBox x:Name="其他選項B" TextWrapping="Wrap" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="限制點怪 就是指打最上面搜尋到的 0 等於全部搜尋" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
-                </Canvas>
-                <Canvas x:Name="有目標類Page">
-                    <WrapPanel Margin="0,25,0,0" ItemHeight="20" ItemWidth="60" UseLayoutRounding="False" Width="200" Height="60" Orientation="Vertical">
-                        <Button x:Name="Btn_TargetA" Content="目標A" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                        <Button x:Name="Btn_TargetB" Content="目標B" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="45" VerticalAlignment="Top"/>
-                        <Button x:Name="Btn_TargetC" Content="目標C" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="65" VerticalAlignment="Top"/>
-                        <Button x:Name="Btn_TargetD" Content="目標D" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="85" VerticalAlignment="Top"/>
-                        <Button x:Name="Btn_TargetE" Content="目標E" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="105" VerticalAlignment="Top"/>
-                        <Button x:Name="Btn_TargetF" Content="目標F" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="125" VerticalAlignment="Top"/>
-                        <TextBox x:Name="後退時間" Height="20" TextWrapping="Wrap" Text="8000" Width="60" HorizontalAlignment="Left" Canvas.Left="62" Canvas.Top="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                        <CheckBox x:Name="CB_定位點" Content="定位點" Height="15" Width="63" HorizontalAlignment="Left" Canvas.Left="122" Canvas.Top="28" VerticalAlignment="Center" />
-                    </WrapPanel>
-
-                </Canvas>
-                <TextBox x:Name="SMENU2" HorizontalAlignment="Left" Height="20" Margin="101,50,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
-            </Grid>
-        </Expander>
-        <Expander x:Name="戰鬥輔助面" Grid.ColumnSpan="4" Header="戰鬥輔助" Margin="5,150,5,0" VerticalAlignment="Top" Height="530">
-            <Grid Background="#FFE5E5E5">
-                <Canvas x:Name="技能頁面" VerticalAlignment="Stretch">
-                    <ScrollViewer Canvas.Top="100" Width="552">
-                        <StackPanel  x:Name="隊員額外功能頁面" Width="552" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" CanVerticallyScroll="True">
-                            <Canvas x:Name="隊員頁面_1" Height="40">
-                                <DataGrid x:Name="SkillDataGird_1" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_1" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_1" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="開場一_1" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_1" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="2" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_1" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="2" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="搖屁股_1" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_1" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="86" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
-                                <TextBox x:Name="延遲施放_1" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_1" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_1" Tag="技能段1" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_1" Tag="技能段2" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_1" Tag="技能段3" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_1" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_1" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_1" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_1" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_1" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-                            </Canvas>
-                            <Canvas x:Name="隊員頁面_2" Height="40">
-                                <DataGrid x:Name="SkillDataGird_2" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_2" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_2" Content="同步" Height="20" Width="80" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="4" VerticalAlignment="Top"/>
-                                <CheckBox x:Name="開場一_2" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_2" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_2" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="搖屁股_2" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_2" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="86" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
-
-                                <TextBox x:Name="延遲施放_2" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_2" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_2" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_2" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_2" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_2" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_2" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_2" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_2" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_2" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-
-                            </Canvas>
-                            <Canvas x:Name="隊員頁面_3" Height="40">
-                                <DataGrid x:Name="SkillDataGird_3" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_3" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_3" Content="同步" Height="20" Width="80" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="4" VerticalAlignment="Top"/>
-                                <CheckBox x:Name="開場一_3" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_3" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_3" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="搖屁股_3" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_3" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
-                                <TextBox x:Name="延遲施放_3" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_3" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_3" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_3" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_3" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_3" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_3" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_3" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_3" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_3" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-
-                            </Canvas>
-                            <Canvas x:Name="隊員頁面_4" Height="40">
-                                <DataGrid x:Name="SkillDataGird_4" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_4" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_4" Content="同步" Height="20" Width="80" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="4" VerticalAlignment="Top"/>
-                                <CheckBox x:Name="開場一_4" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_4" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_4" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_4" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="86" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
-
-                                <TextBox x:Name="延遲施放_4" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_4" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_4" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_4" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_4" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_4" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_4" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_4" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_4" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_4" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-
-                            </Canvas>
-                            <Canvas x:Name="隊員頁面_5" Height="40">
-                                <DataGrid x:Name="SkillDataGird_5" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_5" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_5" Content="同步" Height="20" Width="80" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="4" VerticalAlignment="Top"/>
-                                <CheckBox x:Name="開場一_5" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_5" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_5" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="搖屁股_5" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_5" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
-                                <TextBox x:Name="延遲施放_5" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalContentAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_5" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_5" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_5" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_5" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_5" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_5" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_5" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_5" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_5" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-
-                            </Canvas>
-                            <Canvas x:Name="隊員頁面_6" Height="40">
-                                <DataGrid x:Name="SkillDataGird_6" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_6" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_6" Content="同步" Height="20" Width="80" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="4" VerticalAlignment="Top"/>
-                                <CheckBox x:Name="開場一_6" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_6" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_6" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="搖屁股_6" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_6" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
-                                <TextBox x:Name="延遲施放_6" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_6" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_6" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_6" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_6" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_6" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_6" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_6" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_6" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalContentAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_6" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-
-                            </Canvas>
-                            <Canvas x:Name="隊員頁面_7" Height="40">
-                                <DataGrid x:Name="SkillDataGird_7" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
-                                <ComboBox Visibility="Visible" x:Name="SelectFID_7" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
-                                <CheckBox x:Name="同步_7" Content="同步" Height="20" Width="80" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="4" VerticalAlignment="Top"/>
-                                <CheckBox x:Name="開場一_7" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="重複_7" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="二段_7" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
-                                <CheckBox x:Name="搖屁股_7" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
-                                <CheckBox x:Name="背景ENTER_7" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
-
-                                <TextBox x:Name="延遲施放_7" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放"/>
-                                <TextBox x:Name="間隔時間放_7" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放"/>
-                                <TextBox x:Name="技能段1_7" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇"/>
-                                <TextBox x:Name="技能段2_7" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇"/>
-                                <TextBox x:Name="技能段3_7" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇"/>
-                                <TextBox x:Name="施放A_7" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1"/>
-                                <TextBox x:Name="施放B_7" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2"/>
-                                <TextBox x:Name="施放C_7" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3"/>
-                                <TextBox x:Name="程式速度_7" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢"/>
-                                <TextBox x:Name="直接下指令_7" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" />
-
-                            </Canvas>
+                    <Canvas x:Name="武技設定頁面" d:IsHidden="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="TB_選擇關卡" Height="20" TextWrapping="Wrap" Text="2" Width="30" MaxLines="1" MaxLength="2" ToolTip="1-上杉2-武田3-北條" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="10" Canvas.Top="30" VerticalAlignment="Top"/>
+                            <TextBox x:Name="TB_選擇難度" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="0-弱1-普2-強3-如鬼" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="70" Canvas.Top="30" VerticalAlignment="Top"/>
+                            <TextBox x:Name="TB_SetCNum" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="往下打幾場" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="40" Canvas.Top="30" VerticalAlignment="Top"/>
+                            <TextBox x:Name="TB_Set家臣" Height="20" TextWrapping="Wrap" Text="0" Width="30" MaxLines="1" MaxLength="2" ToolTip="家臣數量" Visibility="Visible" HorizontalAlignment="Left" Canvas.Left="100" Canvas.Top="30" VerticalAlignment="Top"/>
+                            <CheckBox x:Name="CB_大會地" Content="大會地" Height="16" Width="63" Canvas.Left="135" Canvas.Top="32" HorizontalAlignment="Left" VerticalAlignment="Center" />
                         </StackPanel>
-                    </ScrollViewer>
-                    <Button x:Name="儲存套路" Content="儲存" Canvas.Top="77" HorizontalAlignment="Center" VerticalAlignment="Top" Width="47" Height="22"/>
-                    <TextBox
-         Width="123" Visibility="Visible" Text="" TextWrapping="Wrap" x:Name="SKIDS" Height="89" HorizontalAlignment="Left" Canvas.Left="432" Canvas.Top="10" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="AutoFR_CB" Content="追蹤" Height="18" Width="57" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="38" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="自動結束一" Content="自結A" Height="18" Width="70" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="38" VerticalAlignment="Top" Canvas.Left="54"/>
-                    <DataGrid x:Name="SkillDataGird" CanUserAddRows="True" CanUserDeleteRows="True" Height="80" Width="551" Visibility="Hidden" HorizontalAlignment="Left" Canvas.Left="-1" Canvas.Top="31" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="自動結束二" Content="自結B" Height="18" Width="54" Visibility="Visible" Canvas.Top="38" Canvas.Left="115" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                    <RadioButton x:Name="A套路" Content="A套" Canvas.Top="58" HorizontalAlignment="Center" VerticalAlignment="Top" Width="40" IsChecked="True"/>
-                    <RadioButton x:Name="B套路" Content="B套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="50"/>
-                    <RadioButton x:Name="C套路" Content="C套" Canvas.Top="58" Width="43" Canvas.Left="100" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="希望取得" Content="希望取得" Height="18" Width="74" Visibility="Visible" Canvas.Top="38" Canvas.Left="169" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="UseSkill_CB" Content="啟動額外功能" Height="20" Width="109" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="0" VerticalAlignment="Top" Margin="0,10,0,0" />
-                </Canvas>
-            </Grid>
-        </Expander>
+                    </Canvas>
+                    <CheckBox x:Name="CB_BKAutoEnter" Content="背景ENTER" Visibility="Hidden" Height="18" Width="84" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="43,3,0,0" Grid.Column="1"/>
 
+                    <TextBox x:Name="FNPCID" HorizontalAlignment="Left" Height="20" Margin="57,25,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="118" Visibility="Hidden" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="SMENU1" HorizontalAlignment="Left" Height="20" Margin="71,50,0,0" TextWrapping="Wrap" Text="6" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
+                    <CheckBox x:Name="CB_AllIn" Content="全邀請" Margin="79,122,0,0" VerticalAlignment="Top" Visibility="Hidden" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="56" d:IsHidden="True"/>
+                    <Canvas x:Name="TargetViewPage" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" d:IsHidden="True">
+                        <CheckBox x:Name="解無敵" Content="F5解無敵" Canvas.Left="55" Canvas.Top="140" HorizontalAlignment="Left" VerticalAlignment="Center" Width="74"/>
+                        <CheckBox x:Name="CB_開打" Content="開打" Canvas.Left="0" Canvas.Top="140" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                        <TextBox x:Name="TBX搜尋範圍" TextWrapping="Wrap" Text="1000" Width="69" Canvas.Left="0" Canvas.Top="65" HorizontalAlignment="Left" VerticalAlignment="Top" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍"/>
+                        <CheckBox x:Name="特搜" Content="特搜" Width="52" IsChecked="True" Visibility="Hidden" HorizontalAlignment="Left" Canvas.Left="4" Canvas.Top="32" VerticalAlignment="Top"/>
+                        <ListBox x:Name="List_鎖定名單" Height="107" Width="110" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Left" Canvas.Left="116" Canvas.Top="27" VerticalAlignment="Top" />
+                        <ListBox x:Name="List_目前名單" Height="106" Width="119" d:ItemsSource="{d:SampleData ItemCount=99}" HorizontalAlignment="Center" Canvas.Left="232" Canvas.Top="27" VerticalAlignment="Top" />
+                        <CheckBox x:Name="CB自動鎖定PC" Content="自動鎖" Height="15" Width="63" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="30" VerticalAlignment="Top" />
+                        <CheckBox x:Name="CB鎖定後自動黑槍" Content="F9黑" Height="15" Width="58" HorizontalAlignment="Left" Canvas.Left="-2" Canvas.Top="47" VerticalAlignment="Top"/>
+                        <Button x:Name="Btn添加名單" Content="切換" Height="30" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="55" VerticalAlignment="Top"/>
+                        <Button x:Name="Btn移除名單" Content="--" Height="29" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="85" VerticalAlignment="Top"/>
+                        <Button x:Name="Btn鎖定目標添加" Content="鎖添" Height="27" Width="40" HorizontalAlignment="Center" Canvas.Left="71" Canvas.Top="27" VerticalAlignment="Top"/>
+                        <ListBox x:Name="List_忽略名單" Height="105" Width="102" d:ItemsSource="{d:SampleData ItemCount=99}" Canvas.Left="366" Canvas.Top="27" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="E點怪" Content="ENT點怪" Canvas.Left="130" Canvas.Top="140" Width="73" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <TextBox x:Name="其他選項A" TextWrapping="Wrap" Width="69" Canvas.Left="0" Canvas.Top="85" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="搜尋範圍" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="限制點怪_TextChanged"/>
+                        <TextBox x:Name="其他選項B" TextWrapping="Wrap" Width="69" Canvas.Top="105" Height="19" FontSize="14" FontWeight="Bold" TextAlignment="Center" ToolTip="限制點怪 就是指打最上面搜尋到的 0 等於全部搜尋" TextChanged="限制點怪_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0"/>
+                    </Canvas>
+                    <Canvas x:Name="有目標類Page">
+                        <WrapPanel Margin="0,25,0,0" ItemHeight="20" ItemWidth="60" UseLayoutRounding="False" Width="200" Height="60" Orientation="Vertical">
+                            <Button x:Name="Btn_TargetA" Content="目標A" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                            <Button x:Name="Btn_TargetB" Content="目標B" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="45" VerticalAlignment="Top"/>
+                            <Button x:Name="Btn_TargetC" Content="目標C" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="65" VerticalAlignment="Top"/>
+                            <Button x:Name="Btn_TargetD" Content="目標D" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="85" VerticalAlignment="Top"/>
+                            <Button x:Name="Btn_TargetE" Content="目標E" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="105" VerticalAlignment="Top"/>
+                            <Button x:Name="Btn_TargetF" Content="目標F" Visibility="Visible" Width="57" HorizontalAlignment="Center" Canvas.Top="125" VerticalAlignment="Top"/>
+                            <TextBox x:Name="後退時間" Height="20" TextWrapping="Wrap" Text="8000" Width="60" HorizontalAlignment="Left" Canvas.Left="62" Canvas.Top="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            <CheckBox x:Name="CB_定位點" Content="定位點" Height="15" Width="63" HorizontalAlignment="Left" Canvas.Left="122" Canvas.Top="28" VerticalAlignment="Center" />
+                        </WrapPanel>
 
+                    </Canvas>
+                    <TextBox x:Name="SMENU2" HorizontalAlignment="Left" Height="20" Margin="101,50,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="30" MaxLines="1" FontStyle="Normal" FontStretch="Medium" FontWeight="Bold" MaxLength="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible" d:IsHidden="True"/>
+                </Grid>
+            </Expander>
+            <Expander x:Name="戰鬥輔助面" Grid.ColumnSpan="4" Header="戰鬥輔助" Margin="0,5,0,0" VerticalAlignment="Top">
+                <Grid Background="#FFE5E5E5" Height="530">
+                    <Canvas x:Name="技能頁面" VerticalAlignment="Stretch">
+                        <ScrollViewer Canvas.Top="100" Width="666" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel  x:Name="隊員額外功能頁面" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" CanVerticallyScroll="True" ScrollViewer.CanContentScroll="True">
+                                <Canvas x:Name="隊員頁面_1" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_1" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_1" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_1" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_1" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_1" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_1" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="2" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_1" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="2" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="搖屁股_1" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_1" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="86" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_1" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_1" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_1" Tag="技能段1" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_1" Tag="技能段2" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_1" Tag="技能段3" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_1" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_1" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_1" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_1" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_1" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                                <Canvas x:Name="隊員頁面_2" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_2" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_2" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_2" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_2" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_2" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_2" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_2" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="搖屁股_2" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_2" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="86" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_2" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_2" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_2" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_2" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_2" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_2" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_2" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_2" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_2" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_2" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                                <Canvas x:Name="隊員頁面_3" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_3" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_3" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_3" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_3" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_3" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_3" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_3" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="搖屁股_3" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_3" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_3" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_3" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_3" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_3" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_3" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_3" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_3" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_3" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_3" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_3" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                                <Canvas x:Name="隊員頁面_4" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_4" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_4" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_4" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_4" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_4" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_4" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_4" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_4" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="86" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_4" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_4" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_4" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_4" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_4" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_4" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_4" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_4" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_4" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_4" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                                <Canvas x:Name="隊員頁面_5" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_5" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_5" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_5" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_5" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_5" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_5" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_5" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="搖屁股_5" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_5" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_5" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_5" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_5" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_5" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_5" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_5" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_5" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_5" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_5" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_5" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                                <Canvas x:Name="隊員頁面_6" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_6" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_6" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_6" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_6" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_6" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_6" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_6" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="搖屁股_6" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_6" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalContentAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_6" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_6" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_6" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_6" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_6" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_6" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_6" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_6" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_6" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_6" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                                <Canvas x:Name="隊員頁面_7" Height="40">
+                                    <DataGrid x:Name="SkillDataGird_7" CanUserAddRows="True" CanUserDeleteRows="True" Height="77" Width="552" Visibility="Hidden" HorizontalAlignment="Center" Canvas.Top="25" VerticalAlignment="Top"/>
+                                    <ComboBox Visibility="Visible" x:Name="SelectFID_7" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center"/>
+                                    <CheckBox x:Name="同步_7" Content="同步" Height="20" Width="48" Visibility="Visible" HorizontalAlignment="Left" Canvas.Top="4" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="回合_7" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="0" Canvas.Top="20" ToolTip="回合數" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <CheckBox x:Name="開場一_7" Content="一次" Height="16" Canvas.Left="243" Canvas.Top="4" Width="66" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="重複_7" Content="重複" Height="16" Canvas.Left="293" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="二段_7" Content="二段" Height="16" Canvas.Left="350" Canvas.Top="3" Width="66" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <CheckBox x:Name="搖屁股_7" Content="搖屁股" Height="16" Canvas.Left="402" Canvas.Top="2" Width="66" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Hidden"/>
+                                    <CheckBox x:Name="背景ENTER_7" Content="背景ENTER" Height="16" Canvas.Left="402" Canvas.Top="3" Width="69" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible"/>
+                                    <TextBox x:Name="延遲施放_7" TextWrapping="Wrap" Text="0" Width="44" HorizontalAlignment="Left" VerticalAlignment="Center" Canvas.Left="88" Canvas.Top="20" ToolTip="第一次延遲施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="間隔時間放_7" TextWrapping="Wrap" Text="0" Width="46" Canvas.Left="132" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="間隔施放" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段1_7" TextWrapping="Wrap" Width="46" Canvas.Left="182" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第1次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段2_7" TextWrapping="Wrap" Width="46" Canvas.Left="232" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第2次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="技能段3_7" TextWrapping="Wrap" Width="46" Canvas.Left="282" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="第3次選擇" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放A_7" TextWrapping="Wrap" Width="46" Canvas.Left="332" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標1" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放B_7" TextWrapping="Wrap" Width="46" Canvas.Left="382" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標2" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="施放C_7" TextWrapping="Wrap" Width="46" Canvas.Left="432" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="施放目標3" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="程式速度_7" TextWrapping="Wrap" Text="100" Width="44" Canvas.Left="39" Canvas.Top="20" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="程式運作速度 越大越慢" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                    <TextBox x:Name="直接下指令_7" TextWrapping="Wrap" Width="23" Canvas.Left="182" ToolTip="直接下指令" HorizontalAlignment="Left" VerticalAlignment="Center" MaxLength="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Canvas>
+                            </StackPanel>
+                        </ScrollViewer>
+                        <Button x:Name="儲存套路" Content="儲存" Canvas.Top="77" HorizontalAlignment="Center" VerticalAlignment="Top" Width="47" Height="22"/>
+                        <TextBox
+         Width="225" Visibility="Visible" Text="" TextWrapping="Wrap" x:Name="SKIDS" Height="62" HorizontalAlignment="Left" Canvas.Left="432" Canvas.Top="10" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="AutoFR_CB" Content="追蹤" Height="18" Width="57" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="38" VerticalAlignment="Top"/>
+                        <CheckBox x:Name="自動結束一" Content="自結A" Height="18" Width="70" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="38" VerticalAlignment="Top" Canvas.Left="54"/>
+                        <DataGrid x:Name="SkillDataGird" CanUserAddRows="True" CanUserDeleteRows="True" Height="80" Width="551" Visibility="Hidden" HorizontalAlignment="Left" Canvas.Left="-1" Canvas.Top="31" VerticalAlignment="Top"/>
+                        <CheckBox x:Name="自動結束二" Content="自結B" Height="18" Width="54" Visibility="Visible" Canvas.Top="38" Canvas.Left="115" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                        <RadioButton x:Name="A套路" Content="A套" Canvas.Top="58" HorizontalAlignment="Center" VerticalAlignment="Top" Width="40" IsChecked="True"/>
+                        <RadioButton x:Name="B套路" Content="B套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="50"/>
+                        <RadioButton x:Name="C套路" Content="C套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="100"/>
+                        <CheckBox x:Name="希望取得" Content="希望取得" Height="18" Width="74" Visibility="Visible" Canvas.Top="38" Canvas.Left="169" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                        <CheckBox x:Name="UseSkill_CB" Content="啟動額外功能" Height="20" Width="109" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="0" VerticalAlignment="Top" Margin="0,10,0,0" />
+                    </Canvas>
+                </Grid>
+            </Expander>
+        </StackPanel>
     </Grid>
 </UserControl>

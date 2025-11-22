@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace NOBApp
@@ -13,23 +14,54 @@ namespace NOBApp
         /// </summary>
         private static string CalculateNextReAuthTime(int daysInterval = 7)
         {
-            return DateTime.Now.AddDays(daysInterval).ToString("yyyy-MM-dd HH:mm:ss");
+            return NetworkTime.GetNetworkTimeAsync().AddDays(daysInterval).ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        private static async System.Threading.Tasks.Task<string> CalculateNextReAuthTimeAsync(int daysInterval = 7)
+        {
+            var time = await NetworkTime.GetNowAsync();
+            return time.AddDays(daysInterval).ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        public static async System.Threading.Tasks.Task 儲存認證訊息Async(NOBDATA data, PNobUserData nobUseData)
+        {
+            // 記錄驗證時間
+            var now = await NetworkTime.GetNowAsync();
+            nobUseData.LastAuthTime = now.ToString("yyyy-MM-dd HH:mm:ss");
+            nobUseData.NextReAuthTime = await CalculateNextReAuthTimeAsync();
+            
+            string jsonString = JsonSerializer.Serialize(nobUseData);
+            try
+            {
+                string dJson = Encoder.AesEncrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
+                using (StreamWriter outputFile = new StreamWriter($@"{data!.Account}_CDK.nob"))
+                {
+                    await outputFile.WriteLineAsync(dJson);
+                }
+                data.NOBCDKEY = dJson;
+                Debug.WriteLine($"認證信息已保存 | 賬號: {data.Account} | 下次驗證: {nobUseData.NextReAuthTime}");
+            }
+            catch (Exception err)
+            {
+                Debug.WriteLine("Error : " + err.ToString());
+            }
         }
 
         public static void 儲存認證訊息(NOBDATA data, PNobUserData nobUseData)
         {
             // 記錄驗證時間
-            nobUseData.LastAuthTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            nobUseData.LastAuthTime = NetworkTime.GetNetworkTimeAsync().ToString("yyyy-MM-dd HH:mm:ss");
             nobUseData.NextReAuthTime = CalculateNextReAuthTime();
             
             string jsonString = JsonSerializer.Serialize(nobUseData);
             try
             {
+                string dJson = Encoder.AesEncrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
                 using (StreamWriter outputFile = new StreamWriter($@"{data!.Account}_CDK.nob"))
                 {
-                    string dJson = Encoder.AesEncrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
                     outputFile.WriteLine(dJson);
                 }
+                data.NOBCDKEY = dJson;
                 Debug.WriteLine($"認證信息已保存 | 賬號: {data.Account} | 下次驗證: {nobUseData.NextReAuthTime}");
             }
             catch (Exception err)
@@ -40,15 +72,44 @@ namespace NOBApp
 
         public static bool 讀取認證訊息Name(NOBDATA user)
         {
+            string jsonString = string.Empty;
             if (File.Exists($@"{user.Account}_CDK.nob"))
             {
-                using StreamReader reader = new($@"{user.Account}_CDK.nob");
-                if (reader == null)
+                using (StreamReader reader = new($@"{user.Account}_CDK.nob"))
                 {
-                    Debug.WriteLine("沒有該資料");
-                    return false;
+                    if (reader == null)
+                    {
+                        Debug.WriteLine("沒有該資料");
+                        return false;
+                    }
+                    jsonString = reader.ReadToEnd();
                 }
-                string jsonString = reader.ReadToEnd();
+
+                user.NOBCDKEY = jsonString;
+                if (user != null)
+                {
+                    讀取認證訊息Json(user, jsonString);
+                    return true;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static async Task<bool> 讀取認證訊息NameAsync(NOBDATA user)
+        {
+            string jsonString = string.Empty;
+            string filePath = $@"{user.Account}_CDK.nob";
+            if (File.Exists(filePath))
+            {
+                using (StreamReader reader = new(filePath))
+                {
+                    jsonString = await reader.ReadToEndAsync();
+                }
+
                 user.NOBCDKEY = jsonString;
                 if (user != null)
                 {
@@ -87,7 +148,7 @@ namespace NOBApp
                         if (!string.IsNullOrEmpty(nobUseData.NextReAuthTime) && 
                             DateTime.TryParse(nobUseData.NextReAuthTime, out DateTime nextReAuthDate))
                         {
-                            TimeSpan timeUntilReAuth = nextReAuthDate - DateTime.Now;
+                            TimeSpan timeUntilReAuth = nextReAuthDate - NetworkTime.GetNetworkTimeAsync();
                             if (timeUntilReAuth.TotalHours < 0)
                             {
                                 Debug.WriteLine($"警告: {user.Account} 已超過重新驗證時間，建議重新驗證");

@@ -1,5 +1,6 @@
 ﻿using NOBApp.GoogleData;
 using NOBApp.Sports;
+using NOBApp.Managers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using System.IO.Compression;
 
 namespace NOBApp
 {
@@ -22,7 +24,12 @@ namespace NOBApp
     /// </summary>
     public partial class NobMainCodePage : UserControl
     {
-        BaseClass? useMenu = null;
+        internal AuthenticationManager _authManager;
+        internal ScriptManager _scriptManager;
+        internal TargetManager _targetManager;
+        internal TeamManager _teamManager;
+
+        internal BaseClass? useMenu = null;
         /// <summary>
         /// 本次一起掛網的隊伍 包含隊長自己
         /// </summary>
@@ -34,7 +41,7 @@ namespace NOBApp
         /// </summary>
         public NOBDATA? MainNob;
         DispatcherTimer _timer = new DispatcherTimer();
-        static 隊伍技能紀錄 m隊伍技能紀錄 = new();
+        internal static 隊伍技能紀錄 m隊伍技能紀錄 = new();
         Dictionary<string, Action> menuMapping = new Dictionary<string, Action>();
 
         /// <summary>
@@ -51,12 +58,19 @@ namespace NOBApp
         // 用於標記是否需要自動恢復狀態
         public bool AutoRestoreState { get; set; } = false;
 
+        private System.Threading.CancellationTokenSource? _selectionCts;
+
         // 需要恢復的玩家名稱
         public string PlayerToRestore { get; set; } = "";
 
         public NobMainCodePage()
         {
             InitializeComponent();
+            _authManager = new AuthenticationManager(this);
+            _scriptManager = new ScriptManager(this);
+            _targetManager = new TargetManager(this);
+            _teamManager = new TeamManager(this);
+
             UIInit();
             UIEventAdd();
         }
@@ -132,7 +146,7 @@ namespace NOBApp
             }
         }
 
-        void UIStatus_Default()
+        public void UIStatus_Default()
         {
             Btn移除名單.Visibility = Btn鎖定目標添加.Visibility =
             List_鎖定名單.Visibility =
@@ -179,7 +193,12 @@ namespace NOBApp
             直接下指令_1.TextChanged += 直接下指令_TextChanged;
             同步_1.Click += 同步_Click;
 
-            戰鬥輔助面.LayoutUpdated += 戰鬥輔助面_LayoutUpdated;
+            戰鬥輔助面.LayoutUpdated -= 戰鬥輔助面_LayoutUpdated; // 移除舊 handler 避免疊加
+            // 新增使用 Expanded/Collapsed事件
+            腳本展區.Expanded += (s, e) => OnExpandersChanged();
+            腳本展區.Collapsed += (s, e) => OnExpandersChanged();
+            戰鬥輔助面.Expanded += (s, e) => OnExpandersChanged();
+            戰鬥輔助面.Collapsed += (s, e) => OnExpandersChanged();
 
             List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
             List_忽略名單.SelectionChanged += 排序_SelectionChanged;
@@ -212,6 +231,9 @@ namespace NOBApp
             Btn_TargetD.Click += OnTargetClick;
             Btn_TargetE.Click += OnTargetClick;
             Btn_TargetF.Click += OnTargetClick;
+
+            Btn_ReportIssue.Click += Btn_ReportIssue_Click;
+            Btn_ContactPurchase.Click += Btn_ContactPurchase_Click;
         }
 
         private void IGMouse_Checked(object sender, RoutedEventArgs e)
@@ -223,126 +245,44 @@ namespace NOBApp
         // 在「鎖定目標添加」按鈕的事件中添加：
         private void 鎖定目標添加_Click(object sender, RoutedEventArgs e)
         {
-            var id = MainNob!.GetTargetIDINT();
-            if (!id.Equals(4294967295) && id > 0)
-            {
-                if (!TargetsID.Contains(id))
-                {
-                    TargetsID.Add(id);
-                }
-
-                filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
-                List_目前名單.ItemsSource = filteredNPCs;
-                List_鎖定名單.ItemsSource = TargetsID;
-                List_鎖定名單.Items.Refresh();
-                List_目前名單.Items.Refresh();
-            }
+            _targetManager.AddLockTarget();
         }
+
 
         private void 切換名單_Click(object sender, RoutedEventArgs e)
         {
-            if (List_目前名單 == null || List_鎖定名單 == null || List_忽略名單 == null)
-                return;
-
-            if (List_目前名單 != null && List_目前名單.SelectedValue != null)
-            {
-                if (string.IsNullOrEmpty(List_目前名單.SelectedValue.ToString()) == false)
-                {
-                    if (int.TryParse(List_目前名單.SelectedValue.ToString(), out int id))
-                    {
-                        if (IgnoredIDs.Contains(id) == false)
-                            IgnoredIDs.Add(id);
-                        if (AllNPCIDs.Contains(id))
-                            AllNPCIDs.Remove(id);
-                    }
-                }
-            }
-
-            if (List_忽略名單 != null && List_忽略名單.SelectedValue != null)
-            {
-                if (string.IsNullOrEmpty(List_忽略名單.SelectedValue.ToString()) == false)
-                {
-                    if (int.TryParse(List_忽略名單.SelectedValue.ToString(), out int id))
-                    {
-                        if (IgnoredIDs.Contains(id))
-                            IgnoredIDs.Remove(id);
-                        if (AllNPCIDs.Contains(id) == false)
-                            AllNPCIDs.Add(id);
-                    }
-                }
-            }
-
-            //filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
-            // 更新列表顯示
-            List_鎖定名單!.ItemsSource = TargetsID;
-            List_目前名單!.ItemsSource = AllNPCIDs;
-            List_忽略名單!.ItemsSource = IgnoredIDs;
-            List_忽略名單.Items.Refresh();
-            List_目前名單.Items.Refresh();
-            List_鎖定名單.Items.Refresh();
+            _targetManager.ToggleList();
         }
 
-        private void 添加名單_Click(object sender, RoutedEventArgs e)
-        {
-            if (List_目前名單 == null || List_鎖定名單 == null || List_忽略名單 == null)
-                return;
 
-            if (List_目前名單 != null && List_目前名單.SelectedValue != null)
-            {
-                if (string.IsNullOrEmpty(List_目前名單.SelectedValue.ToString()) == false)
-                {
-                    if (int.TryParse(List_目前名單.SelectedValue.ToString(), out int id))
-                    {
-                        if (IgnoredIDs.Contains(id) == false)
-                            IgnoredIDs.Add(id);
-                        if (AllNPCIDs.Contains(id))
-                            AllNPCIDs.Remove(id);
-                    }
-                }
-            }
 
-            if (List_忽略名單 != null && List_忽略名單.SelectedValue != null)
-            {
-                if (string.IsNullOrEmpty(List_忽略名單.SelectedValue.ToString()) == false)
-                {
-                    if (int.TryParse(List_忽略名單.SelectedValue.ToString(), out int id))
-                    {
-                        if (IgnoredIDs.Contains(id))
-                            IgnoredIDs.Remove(id);
-                        if (AllNPCIDs.Contains(id) == false)
-                            AllNPCIDs.Add(id);
-                    }
-                }
-            }
-
-            //filteredNPCs = allNPCs.Where(npc => !IgnoredIDs.Contains(npc.ID) || !TargetsID.Contains(npc.ID)).ToList();
-            List_鎖定名單!.ItemsSource = TargetsID;
-            List_目前名單!.ItemsSource = AllNPCIDs;
-            List_忽略名單!.ItemsSource = IgnoredIDs;
-            List_忽略名單.Items.Refresh();
-            List_目前名單.Items.Refresh();
-            List_鎖定名單.Items.Refresh();
-        }
 
         #endregion
 
         #region UIEvent 
+        // 新的統一調整方法
+        private void OnExpandersChanged()
+        {
+            if (MainWindow.Instance == null) return;
+            //直接使用當前狀態，不再修改 Expander Margin，避免在 ScrollViewer內造成位移疊加
+            bool scriptExpanded = 腳本展區.IsExpanded;
+            bool battleExpanded = 戰鬥輔助面.IsExpanded;
+            if (pageB_isExpanded == scriptExpanded && pageA_isExpanded == battleExpanded)
+                return; // 狀態沒變不重新調整
+            pageB_isExpanded = scriptExpanded;
+            pageA_isExpanded = battleExpanded;
+
+            MainWindow.Instance.UIRefrshSize(scriptExpanded, battleExpanded);
+            // 還原原始 Margin，避免因之前的 LayoutUpdated 疊加造成位移
+            戰鬥輔助面.Margin = oThickness;
+        }
+
+        // 移除原本依賴 LayoutUpdated 的方法內容，避免被誤觸造成多次高度/邊距疊加
         private void 戰鬥輔助面_LayoutUpdated(object? sender, EventArgs e)
         {
-            int offsetY = 100;
-            if (pageB_isExpanded != 腳本展區.IsExpanded || pageA_isExpanded != 戰鬥輔助面.IsExpanded)
-            {
-                pageB_isExpanded = 腳本展區.IsExpanded;
-                pageA_isExpanded = 戰鬥輔助面.IsExpanded;
-
-                double tA = pageB_isExpanded ? 300 + offsetY : 0;
-                double tB = pageA_isExpanded ? 370 + offsetY : 0;
-                Thickness nThickness = oThickness;
-                nThickness.Top = oThickness.Top + tA;
-                MainWindow.Instance!.UIRefrshSize(pageB_isExpanded, pageA_isExpanded);
-                戰鬥輔助面.Margin = nThickness;
-            }
+            // 已改為使用 OnExpandersChanged + Expanded/Collapsed，不在此做任何事
         }
+
         private void FollowLeadLockTarget_Click(object sender, RoutedEventArgs e)
         {
             if (MainNob != null)
@@ -459,18 +399,9 @@ namespace NOBApp
         }
         public void 同步所有需要功能(VKeys key)
         {
-            if (隊員智能功能組 != null && 隊員智能功能組.Count > 0)
-            {
-                for (int i = 0; i < 隊員智能功能組.Count; i++)
-                {
-                    var nb = 隊員智能功能組[i];
-                    if (nb.同步)
-                    {
-                        nb.NOB.KeyPressPP(key);
-                    }
-                }
-            }
+            _teamManager.SyncAllFunctions(key);
         }
+
 
         private void UseSkill_CB_Click(object sender, RoutedEventArgs e)
         {
@@ -508,270 +439,12 @@ namespace NOBApp
         /// </summary>
         private async void LockButton_Click(object sender, RoutedEventArgs e)
         {
-            bool reset = LockBtn.Content.ToString()!.Contains("解除");
-            bool isPass = false;
-
-#if DEBUG && false
-            腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = true;
-            UpdateSelectMenu();
-            return;
-#endif
-
-            // 確認 是否有選擇 CB_HID
-            if (LockBtn != null && ControlGrid != null && CB_HID != null &&
-                CB_HID.SelectedValue != null && MainWindow.AllNobWindowsList != null)
-            {
-                string idstr = CB_HID.SelectedValue.ToString();
-                if (!reset && !string.IsNullOrEmpty(idstr))
-                {
-                    MainNob = MainWindow.AllNobWindowsList?.Find(r => r.PlayerName == idstr);
-
-                    if (MainWindow.AllNobWindowsList == null || MainWindow.AllNobWindowsList.Count == 0)
-                    {
-                        MessageBox.Show("請先刷新角色資料");
-                        return;
-                    }
-
-                    Debug.WriteLine($"Web Reg {MainWindow.AllNobWindowsList.Count}");
-                    
-                    if (MainNob != null)
-                    {
-                        視窗狀態.Clear();
-                        視窗狀態.AppendText("連接驗證伺服器中...\n");
-                        視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] 開始驗證流程\n");
-                    }
-                    
-                    Task.Run(() => WebRegistration.OnWebReg());
-
-                    if (MainNob != null)
-                    {
-                        if (!MainNob.驗證完成)
-                        {
-                            if (認證2CB.IsChecked == true)
-                            {
-                                if (string.IsNullOrEmpty(認證TBox.Text))
-                                {
-                                    視窗狀態.AppendText("正在連接 Google Sheet...\n");
-                                    GoogleSheet.GoogleSheetInit();
-                                    GoogleSheet.CheckDonate(MainNob);
-                                }
-                                else
-                                {
-                                    視窗狀態.AppendText("正在解析認證碼...\n");
-                                    Authentication.讀取認證訊息Json(MainNob, 認證TBox.Text);
-                                }
-                            }
-
-                            int checkCount = 0;
-                            while (true)
-                            {
-                                Debug.WriteLine($"MainNob 驗證 {MainNob.驗證完成} Count {checkCount}");
-                                if (MainNob.驗證完成)
-                                {
-                                    視窗狀態.Text = $"✓ 驗證完成! [{DateTime.Now:HH:mm:ss}]";
-                                    
-                                    // 顯示到期日期
-                                    if (MainNob.到期日 != DateTime.MinValue)
-                                    {
-                                        TimeSpan remainingTime = MainNob.到期日 - DateTime.Now;
-                                        if (remainingTime.TotalDays > 0)
-                                        {
-                                            視窗狀態.AppendText($"\n到期日期: {MainNob.到期日:yyyy-MM-dd}\n剩餘時間: {remainingTime.Days} 天\n");
-                                        }
-                                        else
-                                        {
-                                            視窗狀態.AppendText($"\n⚠ 認證已過期！\n");
-                                        }
-                                    }
-                                    
-                                    checkCount = 0;
-                                    break;
-                                }
-                                else
-                                {
-                                    checkCount++;
-                                    int dotCount = (checkCount % 3) + 1;
-                                    視窗狀態.Text = $"驗證中{new string('.', dotCount)} ({checkCount}s)";
-                                }
-                                if (checkCount >= 60)
-                                {
-                                    視窗狀態.Text = "等待超時 請重新點選驗證";
-                                    return;
-                                }
-                                await Task.Delay(400);
-                            }
-                        }
-                        視窗狀態.AppendText("取得相關資料 比對中..\n");
-                        try
-                        {
-                            bool SPPass = MainNob.特殊者 ? MainNob.驗證國家 : MainNob.贊助者;
-                            if (MainNob.特殊者 && !MainNob.驗證國家)
-                            {
-                                MessageBox.Show("免費使用者 需要加入遊戲頻道 請聯繫企鵝 取得加入的方式 或著請認識的朋友提供");
-                                return;
-                            }
-
-                            MainNob.驗證完成 = SPPass;
-                            isPass = SPPass;
-
-                            Debug.WriteLine($"MainNob 驗證 {isPass} {MainNob.特殊者} {MainNob.驗證國家}");
-                        }
-                        catch (Exception err)
-                        {
-                            視窗狀態.AppendText($"資料錯誤.. \n{err}\n");
-                        }
-
-                        Tools.SetTimeUp(MainNob);
-                        視窗狀態.AppendText($"驗證完成.. 更新時間 -> {MainNob.到期日}\n");
-                        到期計時.Content = $"到期時間: {MainNob.到期日:yyyy-MM-dd} (有效)";
-                        
-                        // 更新剩餘天數
-                        UpdateRemainingDays();
-                        
-                        // 顯示重新驗證信息
-                        ShowReAuthTimeInfo(MainNob);
-
-                        IGMouse.IsEnabled = true;
-                        //暫時將到期關閉
-                        if (MainNob.到期日 >= DateTime.Now)
-                        {
-                            Tools.isBANACC = false;
-                            Tools.IsVIP = true;
-                            VIPSP.IsEnabled = true;
-                        }
-
-                        if (isPass)
-                        {
-                            _timer.Stop();
-                            _timer.Start();
-                            視窗狀態.AppendText($"通過驗證..");
-                            腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = true;
-                            UpdateSelectMenu();
-                            LoadSetting();
-                            讀取隊員技能組();
-
-                            // 通知MainWindow保存標籤頁狀態
-                            MainWindow.Instance?.SaveTabState();
-                        }
-                        else
-                        {
-                            視窗狀態.AppendText($"該帳號 驗證失敗.. 請聯繫企鵝處理");
-                            MainNob.StartRunCode = false;
-                            _timer.Stop();
-                        }
-                    }
-                    else
-                    {
-                        StartCode.IsChecked = false;
-                        StartCode.UpdateLayout();
-                        MessageBox.Show("選擇異常 不存在的角色資料 或著該角色被關閉請刷新後 請重新嘗試驗證");
-                    }
-                }
-
-                // 通過驗證開啟功能 並鎖定使用者
-                {
-                    隊員額外功能頁面.IsEnabled = isPass;
-                    SkillDataGird.IsEnabled = isPass;
-                    UseSkill_CB.IsEnabled = isPass;
-                    ControlGrid.IsEnabled = isPass;
-                    CB_HID.IsEnabled = !isPass;
-                    if (isPass)
-                    {
-                        RootTabItem.Header = $"{MainNob!.PlayerName}";
-                    }
-
-                    LockBtn.Content = isPass ? "解除" : "驗證";
-                    LockBtn.UpdateLayout();
-                }
-            }
-            else
-            {
-                MessageBox.Show("請選擇角色 ，　如果清單沒有角色名稱，開啟遊戲登入選擇完角色後點［刷新］");
-
-                LockBtn.Content = "驗證";
-                CB_HID.IsEnabled = true;
-                CB_HID.UpdateLayout();
-                StartCode.IsChecked = false;
-                StartCode.UpdateLayout();
-            }
+            await _authManager.HandleLockClick();
         }
 
-        private void UpdateSelectMenu()
+        public void UpdateSelectMenu()
         {
-            SelectMenu.Items.Clear();
-            // 獲取 Sports 命名空間中的所有類別，並排除 BaseClass
-            var sportsClasses = Assembly.GetExecutingAssembly()
-                                        .GetTypes()
-                                        .Where(t => t.IsClass && t.Namespace == "NOBApp.Sports" &&
-                                                    t.Name != "ScriptExtensions" &&
-                                                    t.Name != "BaseClass" && !t.Name.Contains("<"))
-                                        .Select(t => t.Name)
-                                        .ToList();
-
-            // 將類別名稱加入 SelectMenu
-            foreach (var className in sportsClasses)
-            {
-                SelectMenu.Items.Add(className);
-            }
-
-            menuMapping = new Dictionary<string, Action>
-            {
-                { "黃泉盡頭", () => { useMenu = new 黃泉盡頭();Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; }  },
-               
-                { "刷熊本城", () => { useMenu = new 刷熊本城(); Btn_TargetA.Content = "入場NPC"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "四聖青龍", () => { useMenu = new 四聖青龍(); Btn_TargetA.Content = "老頭"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_酒井", () => { useMenu = new 討伐2025_酒井(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_今川氏真", () => { useMenu = new 討伐2025_今川氏真(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_謎之怪", () => { useMenu = new 討伐2025_謎之怪(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_後藤", () => { useMenu = new 討伐2025_後藤(); Btn_TargetA.Content = "安土NPC"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_朝比奈", () => { useMenu = new 討伐2025_朝比奈(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_百地", () => { useMenu = new 討伐2025_百地(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_井伊", () => { useMenu = new 討伐2025_井伊(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_松", () => { useMenu = new 討伐2025_松(); Btn_TargetA.Content = "水滴"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "討伐2025_白石", () => { useMenu = new 討伐2025_白石(); Btn_TargetA.Content = "安土奉行"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "幽靈船全刷", () => { useMenu = new 幽靈船全刷(); Btn_TargetA.Content = "九鬼"; SMENU2.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
-
-                { "夢幻城", () => { useMenu = new 夢幻城(); useMenu.多人同時執行 = true; } },
-                { "採集輔助", () => { useMenu = new 採集輔助(); } },
-                { "生產輔助", () => { useMenu = new 生產輔助(); CB_定位點.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "生產破魔", () => { useMenu = new 生產破魔(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Btn_TargetE.Visibility = Visibility.Visible; } },
-                { "生產剛破", () => { useMenu = new 生產剛破(); Btn_TargetA.Visibility = Btn_TargetB.Visibility = Btn_TargetC.Visibility = Btn_TargetD.Visibility = Visibility.Visible; } },
-
-                { "戰場製炮", () => {
-                    useMenu = new 戰場製炮();
-                    Btn_TargetA.Content = "目付";
-                    Btn_TargetB.Content = "砲基座";
-                    Btn_TargetC.Content = "生砲道具";
-                    useMenu.多人同時執行 = true;
-                    CB_定位點.Visibility = 後退時間.Visibility = Btn_TargetC.Visibility
-                    = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Visible; } },
-                { "冥宮", () => { useMenu = new 冥宮(); 通用欄.Visibility = Visibility.Visible;  } },
-                { "鬼島", () => { useMenu = new 鬼島();
-                    UpdateNPCDataUI = true; Btn_TargetA.Content = "村長-補符"; 其他選項B.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = Visibility.Hidden; Btn_TargetA.Visibility = Visibility.Visible;
-                    其他選項A.ToolTip = "幾場後 找村長補符";
-                    其他選項A.Text = "80"; 其他選項B.Text = "0"; } },
-                { "上覽打錢", () => { useMenu = new 上覽打錢(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetC.Content = "倉庫"; Btn_TargetC.Visibility = Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
-                //{ "AI上覽", () => { useMenu = new AI上覽(); Btn_TargetA.Content = "目標大黑天"; Btn_TargetB.Visibility = Btn_TargetA.Visibility = SMENU1.Visibility = SMENU2.Visibility = Visibility.Visible; } },
-
-                { "地下町天地", () => { useMenu = new 地下町天地(); 武技設定頁面.Visibility = CB_AllIn.Visibility = TB_選擇關卡.Visibility = Btn_TargetC.Visibility = TB_選擇難度.Visibility = TB_SetCNum.Visibility = Visibility.Visible; } },
-                { "超級打怪", () => { useMenu = new 超級打怪(); Btn_TargetA.Content = "鎖定目標"; Btn_TargetA.Visibility = Visibility.Visible; } },
-                //{ "黑槍特搜", () => { useMenu = new 黑槍特搜(); CB自動鎖定PC.Visibility = CB鎖定後自動黑槍.Visibility = List_鎖定名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; } },
-                { "隨機打怪", () => { useMenu = new 隨機打怪(); UpdateNPCDataUI = true; CB自動鎖定PC.Visibility = List_目前名單.Visibility = TargetViewPage.Visibility = Visibility.Visible; CB鎖定後自動黑槍.Visibility = Visibility.Hidden; } }
-            };
-
-            if (Tools.IsVIP == false)
-            {
-                SelectMenu.Items.Remove("黃泉盡頭");
-                SelectMenu.Items.Remove("黃泉盡頭");
-                SelectMenu.Items.Remove("生產破魔");
-                SelectMenu.Items.Remove("刷熊本城");
-                SelectMenu.Items.Remove("四聖青龍");
-            }
-
-#if DEBUG == false
-            SelectMenu.Items.Remove("生產剛破");
-#endif
-            SelectMenu.UpdateLayout();
+            _scriptManager.UpdateSelectMenu();
         }
 
         void OnRefreshNOBID(object sender, RoutedEventArgs e)
@@ -809,90 +482,7 @@ namespace NOBApp
             }
 
 
-            #region OLD_CODE
 
-#if false
- if (MainNob == null)
-            {
-                return;
-            }
-
-            if ((LockBtn != null && LockBtn.Content.ToString()!.Contains("驗證")))
-                return;
-
-            if (MainNob != null && useMenu != null && useMenu.NobTeam != null && 視窗狀態 != null)
-            {
-                視窗狀態.Clear();
-                string stateADescription = MainWindow.GetStateADescription(MainNob.StateA);
-                視窗狀態.AppendText($@"LDS:{stateADescription} S:{MainWindow.MainState} " + Environment.NewLine);
-                for (int i = 0; i < useMenu.NobTeam.Count; i++)
-                {
-                    NOBDATA nob = useMenu.NobTeam[i];
-                    if (nob != null)
-                    {
-                        視窗狀態.AppendText($@"{nob.PlayerName} : {nob.目前動作} " + Environment.NewLine);
-                    }
-                }
-            }
-            //更新搜尋目標
-            if (MainNob!.待機 && UpdateNPCDataUI && TargetViewPage.Visibility == Visibility.Visible)
-            {
-                try
-                {
-                    List_忽略名單.ItemsSource = null;
-                    List_鎖定名單.ItemsSource = null;
-                    List_目前名單.ItemsSource = null;
-
-                    List_忽略名單.ItemsSource = IgnoredIDs;
-                    List_鎖定名單.ItemsSource = TargetsID;
-                    List_目前名單.ItemsSource = AllNPCIDs;
-                    if (AllNPCIDs.Count > 0)
-                        List_目前名單.Items.Refresh();
-                    else
-                        List_目前名單.ItemsSource = null;
-
-                    if (TargetsID.Count > 0)
-                        List_鎖定名單.Items.Refresh();
-                    else
-                        List_鎖定名單.ItemsSource = null;
-
-                    if (IgnoredIDs.Count > 0)
-                        List_忽略名單.Items.Refresh();
-                    else
-                        List_忽略名單.ItemsSource = null;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"更新搜尋目標錯誤: {ex}");
-                }
-            }
-
-            if (CB_BKAutoEnter.IsChecked == true && MainNob != null)
-            {
-                MainNob.KeyPress(VKeys.KEY_ENTER);
-            }
-#endif
-
-            #endregion
-
-            //if (DateTime.Now > MainNob.到期日)
-            //{
-            //    MainNob.Log($"到期日 : {MainNob.到期日}");
-            //    腳本區.IsEnabled = 腳本展區.IsEnabled = 戰鬥輔助面.IsEnabled = false;
-            //    MainNob.驗證完成 = false;
-            //    MainNob.特殊者 = false;
-            //    MainNob.贊助者 = false;
-            //    MainNob.StartRunCode = false;
-            //    MainNob.IsUseAutoSkill = false;
-            //    useMenu = null;
-            //    MainNob = null;
-            //    StartCode.IsChecked = false;
-            //    StartCode.UpdateLayout();
-            //    LockBtn.Content = "驗證";
-            //    LockBtn.UpdateLayout();
-            //    _timer.Stop();
-            //    MessageBox.Show("免費試用到期 : 請聯繫企鵝增加使用時間感謝 或 贊助企鵝幫讓這個科技可以繼續延續下去! 贊助後再按一次 [需鎖定] 會自動更新日期 感謝各位夥伴的支持");
-            //}
 
         }
 
@@ -947,49 +537,10 @@ namespace NOBApp
         /// </summary>
         private void UpdateNPCTargetsIfNeeded()
         {
-            // 確定是否需要更新
-            bool shouldUpdateNPCList = MainNob!.待機 && UpdateNPCDataUI &&
-                                      TargetViewPage.Visibility == Visibility.Visible;
-
-            // 檢查更新時間間隔
-            bool intervalElapsed = (DateTime.Now - _lastNPCUpdateTime).TotalMilliseconds >= MIN_NPC_UPDATE_INTERVAL_MS;
-
-            // 僅在需要且間隔足夠時更新
-            if (shouldUpdateNPCList && (intervalElapsed || shouldUpdateNPCList != _lastNPCListUpdateStatus))
-            {
-                _lastNPCListUpdateStatus = shouldUpdateNPCList;
-                _lastNPCUpdateTime = DateTime.Now;
-
-                this.Dispatcher.InvokeAsync(() =>
-                {
-                    try
-                    {
-                        lock (typeof(NobMainCodePage)) // 鎖定類型以保護靜態成員
-                        {
-                            // 創建臨時集合
-                            var tempIgnoredIDs = new List<long>(NobMainCodePage.IgnoredIDs);
-                            var tempTargetsID = new List<long>(NobMainCodePage.TargetsID);
-                            var tempAllNPCIDs = new List<long>(NobMainCodePage.AllNPCIDs);
-
-                            // 更新UI (批量更新減少重繪)
-                            List_忽略名單.ItemsSource = tempIgnoredIDs.Count > 0 ? tempIgnoredIDs : null;
-                            List_鎖定名單.ItemsSource = tempTargetsID.Count > 0 ? tempTargetsID : null;
-                            List_目前名單.ItemsSource = tempAllNPCIDs.Count > 0 ? tempAllNPCIDs : null;
-
-                            // 只在需要時刷新
-                            if (tempAllNPCIDs.Count > 0) List_目前名單.Items.Refresh();
-                            if (tempTargetsID.Count > 0) List_鎖定名單.Items.Refresh();
-                            if (tempIgnoredIDs.Count > 0) List_忽略名單.Items.Refresh();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"更新NPC列表錯誤: {ex.Message}");
-                    }
-                }, System.Windows.Threading.DispatcherPriority.Background);
-            }
+            _targetManager.UpdateNPCTargetsIfNeeded();
         }
-        private void CB_HID_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+        private async void CB_HID_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (CB_HID.SelectedValue == null)
                 return;
@@ -999,93 +550,66 @@ namespace NOBApp
             if (string.IsNullOrEmpty(idstr))
                 return;
 
+            // 取消上一次的任務
+            _selectionCts?.Cancel();
+            _selectionCts = new System.Threading.CancellationTokenSource();
+            var token = _selectionCts.Token;
+
+            try
+            {
+                // 延遲 200ms，避免快速滾动時頻繁觸發
+                await Task.Delay(200, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+
+            if (token.IsCancellationRequested) return;
+
             var user = MainWindow.AllNobWindowsList.Find(r => r.PlayerName == idstr);
             if (user == null) return;
 
-            bool autoCheckin = Authentication.讀取認證訊息Name(user) && string.IsNullOrEmpty(user.NOBCDKEY) == false;
+            // 立即更新狀態並滾動到底部
+            視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] 正在讀取 {user.PlayerName} 的驗證記錄...\n");
+            視窗狀態.ScrollToEnd();
+            
+            bool autoCheckin = false;
+            try
+            {
+                autoCheckin = await Authentication.讀取認證訊息NameAsync(user) && string.IsNullOrEmpty(user.NOBCDKEY) == false;
+            }
+            catch
+            {
+                // 忽略錯誤
+            }
+
+            if (token.IsCancellationRequested) return;
 
             認證TBox.Text = autoCheckin ? user.NOBCDKEY : string.Empty;
             認證2CB.IsChecked = autoCheckin;
+            
+            if (autoCheckin)
+            {
+                視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] 已讀取本地驗證記錄\n");
+                視窗狀態.ScrollToEnd();
+            }
         }
 
         private void SelectMenu_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var str = SelectMenu?.SelectedItem?.ToString();
-            if (string.IsNullOrEmpty(str))
-            {
-                StartCode.IsEnabled = false;
-                StartCode.UpdateLayout();
-                return;
-            }
-            StartCode.IsChecked = false;
-            StartCode.IsEnabled = !string.IsNullOrEmpty(str);
-            useMenu = null;
-            UIStatus_Default();
-            UIUpdate.RefreshNOBID_Sec(comboBoxes, MainWindow.AllNobWindowsList);
-            if (menuMapping.ContainsKey(str))
-            {
-                menuMapping[str].Invoke();
-            }
-            else
-            {
-                StartCode.IsEnabled = false;
-            }
-
-            StartCode.UpdateLayout();
+            _scriptManager.HandleSelectionChanged(str);
         }
+
         /// <summary>
         /// 整合處理所有目標按鈕的點擊事件，將當前選定的目標ID儲存到對應的CodeSetting屬性中
         /// </summary>
         private void OnTargetClick(object sender, RoutedEventArgs e)
         {
-            if (MainNob == null)
-                return;
-
-            // 獲取目標ID
-            int tid = (int)MainNob.GetTargetIDINT();
-
-            // 獲取按鈕引用
-            Button clickedButton = sender as Button;
-            if (clickedButton == null)
-                return;
-
-            // 根據按鈕名稱確定目標位置
-            string buttonName = clickedButton.Name;
-
-            if (buttonName.Contains("TargetA"))
-            {
-                MainNob.CodeSetting.目標A = tid;
-                clickedButton.Content = "鎖定:" + tid;
-            }
-            else if (buttonName.Contains("TargetB"))
-            {
-                MainNob.CodeSetting.目標B = tid;
-                clickedButton.Content = "鎖定:" + tid;
-            }
-            else if (buttonName.Contains("TargetC"))
-            {
-                MainNob.CodeSetting.目標C = tid;
-                clickedButton.Content = "鎖定:" + tid;
-            }
-            else if (buttonName.Contains("TargetD"))
-            {
-                // 需要在 Setting 類中添加目標D屬性
-                MainNob.CodeSetting.目標D = tid;
-                clickedButton.Content = "鎖定:" + tid;
-            }
-            else if (buttonName.Contains("TargetE"))
-            {
-                // 需要在 Setting 類中添加目標E屬性
-                MainNob.CodeSetting.目標E = tid;
-                clickedButton.Content = "鎖定:" + tid;
-            }
-            else if (buttonName.Contains("TargetF"))
-            {
-                // 需要在 Setting 類中添加目標F屬性
-                MainNob.CodeSetting.目標F = tid;
-                clickedButton.Content = "鎖定:" + tid;
-            }
+            _targetManager.HandleTargetClick(sender);
         }
+
 
 
         private void 目前名單_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1160,24 +684,9 @@ namespace NOBApp
 
         public void 全員離開戰鬥()
         {
-            var r = MainWindow.GetResolutioSize();
-            foreach (var user in 隊員智能功能組)
-            {
-                if (user != null && user.NOB != null && user.同步)
-                {
-                    if (user.NOB != null)
-                    {
-                        int inPosX = (int)r.X / 2;
-                        int inPosY = (int)r.Y / 2 - 50;
-                        user.NOB.MR_Click(inPosX + 16, inPosY);
-                        Task.Delay(50).Wait();
-                        user.NOB.MR_Click(inPosX - 100, inPosY);
-                        Task.Delay(50).Wait();
-                        user.NOB.MR_Click(inPosX - 100, inPosY + 100);
-                    }
-                }
-            }
+            _teamManager.LeaveBattle();
         }
+
 
         private NOBDATA? NowSelect()
         {
@@ -1354,574 +863,192 @@ namespace NOBApp
             Btn_Refresh.IsEnabled = !mChecked;
         }
 
-        void 儲存隊員技能組()
+        private DateTime _lastReportTime = DateTime.MinValue;
+
+        private async void Btn_ReportIssue_Click(object sender, RoutedEventArgs e)
         {
-            更新自動使用技能隊員名單();
-
-            if (隊員智能功能組 != null && 隊員智能功能組.Count > 0)
+            // 1. 檢查 VIP 權限
+            if (!Tools.IsVIP)
             {
-                List<隊員資料紀錄檔> list = new();
-                foreach (var item in 隊員智能功能組)
-                {
-                    if (item == null || item.NOB == null)
-                        continue;
+                MessageBox.Show("此功能僅限 VIP 會員使用。", "權限不足", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-                    隊員資料紀錄檔 user = new();
-                    user.用名 = item.NOB.PlayerName;
-                    user.同步 = item.同步;
-                    user.一次放 = item.一次放;
-                    user.重複放 = item.重複放;
-                    user.延遲 = item.延遲;
-                    user.技能段1 = item.技能段1;
-                    user.技能段2 = item.技能段2;
-                    user.技能段3 = item.技能段3;
-                    user.施放A = item.施放A;
-                    user.施放B = item.施放B;
-                    user.施放C = item.施放C;
-                    user.間隔 = item.間隔;
-                    user.程式速度 = item.程式速度;
-                    list.Add(user);
-                }
+            // 2. 檢查冷卻時間 (1分鐘)
+            if ((DateTime.Now - _lastReportTime).TotalMinutes < 1)
+            {
+                MessageBox.Show($"請勿頻繁回報，請等待 {60 - (int)(DateTime.Now - _lastReportTime).TotalSeconds} 秒後再試。", "操作過快", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-                if (A套路.IsChecked == true)
+            _lastReportTime = DateTime.Now;
+            Btn_ReportIssue.IsEnabled = false;
+            Btn_ReportIssue.Content = "回報中...";
+
+            try
+            {
+                // 3. 收集資訊
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"NOBReport_{timestamp}");
+                Directory.CreateDirectory(tempDir);
+
+                // 3.1 視窗狀態 Log
+                string statusLog = 視窗狀態.Text;
+                await System.IO.File.WriteAllTextAsync(System.IO.Path.Combine(tempDir, "StatusLog.txt"), statusLog);
+
+                // 3.2 其他 Log 檔案
+                string[] logFiles = { "update_error.log", "dm_init.log", "startup_error.log" };
+                foreach (var file in logFiles)
                 {
-                    Debug.WriteLine("儲存完成A");
-                    m隊伍技能紀錄.方案A = list;
-                }
-                if (B套路.IsChecked == true)
-                {
-                    Debug.WriteLine("儲存完成B");
-                    m隊伍技能紀錄.方案B = list;
-                }
-                if (C套路.IsChecked == true)
-                {
-                    Debug.WriteLine("儲存完成C");
-                    m隊伍技能紀錄.方案C = list;
+                    string srcPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
+                    if (System.IO.File.Exists(srcPath))
+                    {
+                        System.IO.File.Copy(srcPath, System.IO.Path.Combine(tempDir, file), true);
+                    }
                 }
 
-                SaveSetting();
+                // 3.3 壓縮
+                string zipFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"Report_{timestamp}.zip");
+                ZipFile.CreateFromDirectory(tempDir, zipFilePath);
+
+                // 4. 發送至 Discord
+                string message = $"使用者: {MainNob?.PlayerName ?? "Unknown"}\n帳號: {MainNob?.Account ?? "Unknown"}\n版本: {VersionInfo.Version}\n時間: {DateTime.Now}";
+                bool success = await DiscordNotifier.SendFileAsync("🛠️ 使用者問題回報", message, zipFilePath);
+
+                if (success)
+                {
+                    MessageBox.Show("回報成功！我們會盡快查看您的問題。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("回報失敗，請稍後再試。", "失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                // 清理暫存檔
+                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
+                if (System.IO.File.Exists(zipFilePath)) System.IO.File.Delete(zipFilePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"回報過程發生錯誤: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                Btn_ReportIssue.IsEnabled = true;
+                Btn_ReportIssue.Content = "回報問題 (附Log)";
             }
         }
 
-        void 讀取隊員技能組()
+        private async void Btn_ContactPurchase_Click(object sender, RoutedEventArgs e)
         {
-            if (m隊伍技能紀錄 != null)
+            string contactId = TB_ContactID.Text.Trim();
+            if (string.IsNullOrEmpty(contactId))
             {
-                List<隊員資料紀錄檔> list = new();
-                if (A套路.IsChecked == true)
-                {
-                    list = m隊伍技能紀錄.方案A;
-                    Debug.WriteLine("讀取A");
-                }
-                if (B套路.IsChecked == true)
-                {
-                    list = m隊伍技能紀錄.方案B;
-                    Debug.WriteLine("讀取B");
-                }
-                if (C套路.IsChecked == true)
-                {
-                    list = m隊伍技能紀錄.方案C;
-                    Debug.WriteLine("讀取C");
-                }
-                int no = 1;
-                if (list != null)
-                {
-                    foreach (var item in list)
-                    {
-                        if (!string.IsNullOrEmpty(item.用名))
-                        {
-                            寫入技能設定(no, item);
-                            no = no + 1;
-                        }
-                    }
-                }
-                void 寫入技能設定(int num, 隊員資料紀錄檔 set)
-                {
-                    Debug.WriteLine($"讀取 {隊員額外功能頁面.Children.Count}");
-                    foreach (var c1 in 隊員額外功能頁面.Children)
-                    {
-                        if (c1 is Canvas)
-                        {
-                            Canvas c = (Canvas)c1;
-                            if (c.Name.Contains($"_{num}"))
-                            {
-                                foreach (var item in c.Children)
-                                {
-                                    if (item is CheckBox)
-                                    {
-                                        CheckBox cb = (CheckBox)item;
-                                        if (cb.Name.Contains("重複"))
-                                            cb.IsChecked = set.重複放;
-                                        if (cb.Name.Contains("開場"))
-                                            cb.IsChecked = set.一次放;
-                                        if (cb.Name.Contains("同步"))
-                                            cb.IsChecked = set.同步;
-                                    }
+                MessageBox.Show("請輸入您的 LINE 或 WeChat ID 以便我們聯繫您。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                TB_ContactID.Focus();
+                return;
+            }
 
-                                    if (item is TextBox)
-                                    {
-                                        TextBox tb = (TextBox)item;
-                                        if (tb.Name.Contains("延遲"))
-                                            tb.Text = set.延遲.ToString();
-                                        if (tb.Name.Contains("間隔"))
-                                            tb.Text = set.間隔.ToString();
-                                        if (tb.Name.Contains("技能段1"))
-                                            tb.Text = set.技能段1 == -1 ? "" : set.技能段1.ToString();
-                                        if (tb.Name.Contains("技能段2"))
-                                            tb.Text = set.技能段2 == -1 ? "" : set.技能段2.ToString();
-                                        if (tb.Name.Contains("技能段3"))
-                                            tb.Text = set.技能段3 == -1 ? "" : set.技能段3.ToString();
-                                        if (tb.Name.Contains("施放A"))
-                                            tb.Text = set.施放A;
-                                        if (tb.Name.Contains("施放B"))
-                                            tb.Text = set.施放B;
-                                        if (tb.Name.Contains("施放C"))
-                                            tb.Text = set.施放C;
-                                        if (tb.Name.Contains("程式速度"))
-                                            tb.Text = set.程式速度.ToString();
-                                    }
-                                }
-                            }
-                        }
-                    }
+            Btn_ContactPurchase.IsEnabled = false;
+            Btn_ContactPurchase.Content = "傳送中...";
+
+            try
+            {
+                string message = $"使用者想要購買或加時 VIP\n\n" +
+                                 $"聯絡 ID: {contactId}\n" +
+                                 $"目前帳號: {MainNob?.Account ?? "Unknown"}\n" +
+                                 $"目前角色: {MainNob?.PlayerName ?? "Unknown"}\n" +
+                                 $"目前到期日: {MainNob?.到期日.ToString("yyyy-MM-dd") ?? "Unknown"}";
+
+                bool success = await DiscordNotifier.SendNotificationAsync("💰 購買/加時請求", message);
+
+                if (success)
+                {
+                    MessageBox.Show("請求已發送！我們會盡快透過您提供的 ID 聯繫您。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    TB_ContactID.Text = ""; // 清空輸入框
                 }
-                Debug.WriteLine("讀取完成");
-                更新自動使用技能隊員名單();
+                else
+                {
+                    MessageBox.Show("發送失敗，請稍後再試。", "失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"發送過程發生錯誤: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                Btn_ContactPurchase.IsEnabled = true;
+                Btn_ContactPurchase.Content = "聯絡購買/加時";
             }
         }
 
-        private void 更新自動使用技能隊員名單()
+        private async void CheckValidityButton_Click(object sender, RoutedEventArgs e)
         {
-            List<string> names = new();
-            隊員智能功能組.Clear();
-            addList(同步_1, SelectFID_1, 開場一_1, 重複_1, 二段_1, 背景ENTER_1, 程式速度_1, 延遲施放_1, 間隔時間放_1, 技能段1_1, 技能段2_1, 技能段3_1, 施放A_1, 施放B_1, 施放C_1);
-            addList(同步_2, SelectFID_2, 開場一_2, 重複_2, 二段_2, 背景ENTER_2, 程式速度_2, 延遲施放_2, 間隔時間放_2, 技能段1_2, 技能段2_2, 技能段3_2, 施放A_2, 施放B_2, 施放C_2);
-            addList(同步_3, SelectFID_3, 開場一_3, 重複_3, 二段_3, 背景ENTER_3, 程式速度_3, 延遲施放_3, 間隔時間放_3, 技能段1_3, 技能段2_3, 技能段3_3, 施放A_3, 施放B_3, 施放C_3);
-            addList(同步_4, SelectFID_4, 開場一_4, 重複_4, 二段_4, 背景ENTER_4, 程式速度_4, 延遲施放_4, 間隔時間放_4, 技能段1_4, 技能段2_4, 技能段3_4, 施放A_4, 施放B_4, 施放C_4);
-            addList(同步_5, SelectFID_5, 開場一_5, 重複_5, 二段_5, 背景ENTER_5, 程式速度_5, 延遲施放_5, 間隔時間放_5, 技能段1_5, 技能段2_5, 技能段3_5, 施放A_5, 施放B_5, 施放C_5);
-            addList(同步_6, SelectFID_6, 開場一_6, 重複_6, 二段_6, 背景ENTER_6, 程式速度_6, 延遲施放_6, 間隔時間放_6, 技能段1_6, 技能段2_6, 技能段3_6, 施放A_6, 施放B_6, 施放C_6);
-            addList(同步_7, SelectFID_7, 開場一_7, 重複_7, 二段_7, 背景ENTER_7, 程式速度_7, 延遲施放_7, 間隔時間放_7, 技能段1_7, 技能段2_7, 技能段3_7, 施放A_7, 施放B_7, 施放C_7);
-
-            void addList(CheckBox 同步, ComboBox combox, CheckBox 開場, CheckBox 重複, CheckBox 需選, CheckBox 背景ENTER, TextBox 程式速度, TextBox 延遲施放
-                , TextBox 間隔施放, TextBox 技能_1, TextBox 技能_2, TextBox 技能_3, TextBox 對象A, TextBox 對象B, TextBox 對象C)
-            {
-                if (combox.SelectedItem != null && !string.IsNullOrEmpty(combox.SelectedItem.ToString()))
-                {
-                    var str = combox.SelectedItem.ToString();
-                    if (!string.IsNullOrEmpty(str))
-                    {
-                        var n = MainWindow.AllNobWindowsList.Find(r => r.PlayerName.Contains(str) || r.PlayerName == str);
-                        if (n != null && !names.Contains(str))
-                        {
-                            自動技能組 nb = new();
-                            nb.NOB = n;
-                            nb.背景Enter = 背景ENTER.IsChecked ?? false;
-                            nb.同步 = 同步.IsChecked ?? false;
-                            nb.一次放 = 開場.IsChecked ?? false;
-                            nb.重複放 = 重複.IsChecked ?? false;
-                            nb.需選擇 = 需選.IsChecked ?? false;
-                            nb.背景Enter = 背景ENTER.IsChecked ?? false;
-                            int t = 0;
-                            int.TryParse(延遲施放.Text, out t);
-                            nb.延遲 = t;
-                            int.TryParse(間隔施放.Text, out t);
-                            nb.間隔 = t;
-                            if (int.TryParse(程式速度.Text, out t))
-                                nb.程式速度 = t;
-                            else
-                                nb.程式速度 = 100;
-                            nb.特殊運作 = false;
-                            if (string.IsNullOrEmpty(技能_1.Text) == false)
-                            {
-                                if (int.TryParse(技能_1.Text, out t))
-                                {
-                                    nb.特殊運作 = true;
-                                    nb.技能段1 = t;
-
-                                    if (int.TryParse(技能_2.Text, out t))
-                                        nb.技能段2 = t;
-                                    else
-                                        nb.技能段2 = -1;
-
-                                    if (int.TryParse(技能_3.Text, out t))
-                                        nb.技能段3 = t;
-                                    else
-                                        nb.技能段3 = -1;
-
-                                    nb.施放A = 對象A.Text;
-                                    nb.施放B = 對象B.Text;
-                                    nb.施放C = 對象C.Text;
-                                }
-                            }
-                            else
-                            {
-                                nb.技能段1 = -1;
-                                nb.技能段2 = -1;
-                                nb.技能段3 = -1;
-                            }
-                            n.AutoSkillSet = nb;
-                            隊員智能功能組.Add(nb);
-                            names.Add(str);
-                        }
-                    }
-                }
-            }
+            await _authManager.CheckValidity(視窗狀態, 到期計時);
         }
 
         public void LoadSetting()
         {
-            if (MainNob == null)
+            // Implementation based on original logic
+            if (MainNob != null)
             {
-                Debug.WriteLine("useNOB == null");
-                return;
+                _scriptManager.LoadSetting(MainNob.PlayerName);
             }
-
-            if (File.Exists($@"{MainNob.PlayerName}_LoadSK.sk"))
-            {
-                using StreamReader reader = new($@"{MainNob.PlayerName}_LoadSK.sk");
-                if (reader == null)
-                {
-                    Debug.WriteLine("reader == null");
-                    return;
-                }
-
-                string setJson = reader.ReadToEnd();
-
-                Setting set = JsonSerializer.Deserialize<Setting>(setJson);
-                if (set != null)
-                {
-                    MainNob.CodeSetting = set;
-                    SettingLoadToUI();
-                }
-            }
-
-            #region 舊版的技能使用
-            //DirectoryInfo Dir = new DirectoryInfo(@".\");
-            //var fileEntries = Dir.GetFiles("*.sJson");
-            //foreach (var f in fileEntries)
-            //{
-            //    bool b = false;
-            //    foreach (var item in SkillComTitle.Items)
-            //    {
-            //        if (item is ComboBoxItem)
-            //            if (item != null && (item as ComboBoxItem).Content == f.Name.Replace(".sJson", ""))
-            //            {
-            //                b = true;
-            //                break;
-            //            }
-            //        if (item is string && item == f.Name.Replace(".sJson", ""))
-            //        {
-            //            b = true;
-            //            break;
-            //        }
-            //    }
-            //    if (b == false)
-            //        SkillComTitle.Items.Add(f.Name.Replace(".sJson", ""));
-            //}
-            //if (!string.IsNullOrEmpty(skDefName))
-            //{
-            //    if (skDefName != "預設")
-            //    {
-            //        var i = SkillComTitle.Items.Add(skDefName.Trim());
-            //        SkillComTitle.SelectedIndex = i;
-            //    }
-            //      MainNob.Log("----------skDefName------------");
-            //    using StreamReader reader2 = new($@"{skDefName.Trim()}.sJson");
-            //    // Read the stream as a string.
-            //    string jsonString = reader2.ReadToEnd();
-            //    var sk2 = JsonSerializer.Deserialize<List<SkillData>>(jsonString);
-            //    SkillDataGird.ItemsSource = sk2;
-            //      MainNob.Log("----------jsonString------------ : " + jsonString);
-            //}
-
-            //if (SkillDataGird.Items == null || SkillDataGird.Items.Count == 0)
-            //{
-            //      MainNob.Log("-----SkillDataGird Add--------");
-            //    List<SkillData> sklist = new() { };
-            //    SkillDataGird.ItemsSource = sklist;
-            //}
-            #endregion
         }
 
         public void SettingLoadToUI()
         {
-            if (MainNob == null)
+            // Implementation based on original logic
+            if (_scriptManager != null)
             {
-                Debug.WriteLine("useNOB == null");
-                return;
+                _scriptManager.SettingLoadToUI();
             }
+        }
 
-            Setting set = MainNob.CodeSetting;
-            SelectMenu.SelectedValue = set.上次使用的腳本;
-            其他選項A.Text = set.其他選項A.ToString();
-            其他選項B.Text = set.其他選項B.ToString();
-            TBX搜尋範圍.Text = set.搜尋範圍.ToString();
-            TB_選擇關卡.Text = set.選擇關卡.ToString();
-            TB_選擇難度.Text = set.選擇難度.ToString();
-            TB_SetCNum.Text = set.連續戰鬥.ToString();
-            //TB_Set家臣.Text = set.家臣數量.ToString();
-            CB_AllIn.IsChecked = set.AllInTeam;
+        public void RestartTimer()
+        {
+            _timer.Stop();
+            _timer.Start();
+        }
 
-            if (set.隊伍技能 != null)
-            {
-                m隊伍技能紀錄 = set.隊伍技能;
-            }
-
-            if (set.組隊玩家技能 != null)
-            {
-                for (int i = 0; i < set.組隊玩家技能.Count && i < comboBoxes.Length; i++)
-                {
-                    comboBoxes[i].Text = set.組隊玩家技能[i];
-                }
-            }
-
-            腳本Point.Text = set.MPoint.ToString();
-
-            if (set.目標A != 0)
-            {
-                Btn_TargetA.Content = set.目標A;
-            }
-            if (set.目標B != 0)
-            {
-                Btn_TargetB.Content = set.目標B;
-            }
-            if (set.目標C != 0)
-            {
-                Btn_TargetC.Content = set.目標C;
-            }
-            if (set.目標D != 0)
-            {
-                Btn_TargetD.Content = set.目標D;
-            }
-            if (set.目標E != 0)
-            {
-                Btn_TargetE.Content = set.目標E;
-            }
-            if (set.目標F != 0)
-            {
-                Btn_TargetF.Content = set.目標F;
-            }
-            SMENU2.Text = set.線路.ToString();
+        public void StopTimer()
+        {
+            _timer.Stop();
         }
 
         public void SaveSetting()
         {
-            if (MainNob == null)
+            if (MainNob != null)
             {
-                Debug.WriteLine("useNOB is null");
-                return;
-            }
-
-            MainNob.CodeSetting.上次使用的腳本 = SelectMenu.Text;
-            MainNob!.CodeSetting.組隊玩家技能 = new List<string>();
-            foreach (var cb in comboBoxes)
-            {
-                saveSkillUserList(cb);
-            }
-
-            void saveSkillUserList(ComboBox cb)
-            {
-                try
-                {
-                    if (cb.SelectedItem != null && !string.IsNullOrEmpty(cb.SelectedItem.ToString()))
-                    {
-                        MainNob!.CodeSetting.組隊玩家技能.Add(cb.SelectedItem.ToString()!);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("saveSkillUserList Error -> " + e.ToString());
-                }
-            }
-
-            MainNob.CodeSetting.隊伍技能 = m隊伍技能紀錄;
-            string jsonString = JsonSerializer.Serialize(MainNob.CodeSetting);
-            try
-            {
-                using (StreamWriter outputFile = new StreamWriter($@"{MainNob.PlayerName}_LoadSK.sk"))
-                {
-                    outputFile.WriteLine(jsonString);
-                    Debug.WriteLine("寫入檔案完成");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($@"{MainNob.PlayerName}_LoadSK.sk write Error -> {e.ToString()}");
+                _scriptManager.SaveSetting(MainNob.PlayerName);
             }
         }
-
-        /// <summary>
-        /// 顯示重新驗證時間信息
-        /// </summary>
-        private void ShowReAuthTimeInfo(NOBDATA user)
-        {
-            if (user == null) return;
-            
-            try
-            {
-                string cdkFilePath = $@"{user.Account}_CDK.nob";
-                if (System.IO.File.Exists(cdkFilePath))
-                {
-                    using (System.IO.StreamReader reader = new(cdkFilePath))
-                    {
-                        string jsonString = reader.ReadToEnd();
-                        string dJson = Encoder.AesDecrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
-                        PNobUserData nobUseData = System.Text.Json.JsonSerializer.Deserialize<PNobUserData>(dJson);
-                        
-                        if (nobUseData != null && !string.IsNullOrEmpty(nobUseData.NextReAuthTime))
-                        {
-                            if (DateTime.TryParse(nobUseData.NextReAuthTime, out DateTime nextReAuthDate))
-                            {
-                                TimeSpan timeUntilReAuth = nextReAuthDate - DateTime.Now;
-                                if (timeUntilReAuth.TotalHours > 0)
-                                {
-                                    視窗狀態.AppendText($"\n[重新驗證提示]\n");
-                                    視窗狀態.AppendText($"上次驗證: {nobUseData.LastAuthTime}\n");
-                                    視窗狀態.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
-                                    視窗狀態.AppendText($"剩餘時間: {timeUntilReAuth.Days} 天 {timeUntilReAuth.Hours} 小時\n");
-                                }
-                                else
-                                {
-                                    視窗狀態.AppendText($"\n⚠ 已需要重新驗證！\n");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"讀取驗證信息錯誤: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 檢查當前帳號的有效期
-        /// </summary>
-        private void CheckValidityButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (MainNob == null)
-            {
-                MessageBox.Show("請先選擇並驗證一個角色", "提示");
-                視窗狀態.Clear();
-                視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] ⚠ 請先選擇角色\n");
-                return;
-            }
-
-            視窗狀態.Clear();
-            視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] 查詢賬號有效期中...\n");
-
-            try
-            {
-                // 檢查驗證文件是否存在
-                string cdkFilePath = $@"{MainNob.Account}_CDK.nob";
-                if (!System.IO.File.Exists(cdkFilePath))
-                {
-                    視窗狀態.AppendText($"❌ 找不到驗證文件\n");
-                    視窗狀態.AppendText($"賬號: {MainNob.Account}\n");
-                    視窗狀態.AppendText($"請先進行驗證！\n");
-                    MessageBox.Show($"賬號 {MainNob.Account} 沒有驗證記錄，請先驗證", "未驗證");
-                    return;
-                }
-
-                // 讀取驗證文件
-                using (System.IO.StreamReader reader = new(cdkFilePath))
-                {
-                    string jsonString = reader.ReadToEnd();
-                    string dJson = Encoder.AesDecrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
-                    PNobUserData nobUseData = System.Text.Json.JsonSerializer.Deserialize<PNobUserData>(dJson);
-
-                    if (nobUseData != null && DateTime.TryParse(nobUseData.StartTimer, out DateTime expireDate))
-                    {
-                        TimeSpan remaining = expireDate - DateTime.Now;
-                        
-                        視窗狀態.AppendText($"\n📋 賬號驗證信息\n");
-                        視窗狀態.AppendText($"━━━━━━━━━━━━━━━━━━\n");
-                        視窗狀態.AppendText($"帳號: {MainNob.Account}\n");
-                        視窗狀態.AppendText($"角色: {MainNob.PlayerName}\n");
-                        視窗狀態.AppendText($"\n⏰ 有效期信息\n");
-                        視窗狀態.AppendText($"到期時間: {expireDate:yyyy-MM-dd HH:mm:ss}\n");
-
-                        if (remaining.TotalSeconds > 0)
-                        {
-                            視窗狀態.AppendText($"✅ 狀態: 有效\n");
-                            視窗狀態.AppendText($"剩餘時間: {remaining.Days} 天 {remaining.Hours} 小時 {remaining.Minutes} 分鐘\n");
-                            
-                            // 更新頂部標籤
-                            到期計時.Content = $"到期時間: {expireDate:yyyy-MM-dd} (有效)";
-                            到期計時.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
-                            
-                            if (remaining.TotalDays <= 7)
-                            {
-                                視窗狀態.AppendText($"⚠️ 提醒: 即將過期，請提前續費\n");
-                            }
-                        }
-                        else
-                        {
-                            視窗狀態.AppendText($"❌ 狀態: 已過期\n");
-                            視窗狀態.AppendText($"過期時間: {Math.Abs(remaining.Days)} 天前\n");
-                            視窗狀態.AppendText($"請聯繫管理員續費\n");
-                            
-                            // 更新頂部標籤
-                            到期計時.Content = $"到期時間: {expireDate:yyyy-MM-dd} (已過期)";
-                            到期計時.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
-                        }
-
-                        // 顯示上次驗證信息
-                        if (!string.IsNullOrEmpty(nobUseData.LastAuthTime))
-                        {
-                            視窗狀態.AppendText($"\n📅 驗證記錄\n");
-                            視窗狀態.AppendText($"上次驗證: {nobUseData.LastAuthTime}\n");
-                        }
-
-                        if (!string.IsNullOrEmpty(nobUseData.NextReAuthTime))
-                        {
-                            視窗狀態.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
-                        }
-
-                        視窗狀態.AppendText($"━━━━━━━━━━━━━━━━━━\n");
-                        視窗狀態.AppendText($"[{DateTime.Now:HH:mm:ss}] ✓ 查詢完成\n");
-                    }
-                    else
-                    {
-                        視窗狀態.AppendText($"❌ 驗證文件格式錯誤\n");
-                        視窗狀態.AppendText($"無法解析到期時間\n");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                視窗狀態.AppendText($"❌ 出現錯誤: {ex.Message}\n");
-                Debug.WriteLine($"檢查有效期錯誤: {ex}");
-            }
-        }
-
+        
         /// <summary>
         /// 更新剩餘天數顯示
         /// </summary>
-        private void UpdateRemainingDays()
+        private async void UpdateRemainingDays()
         {
-            if (MainNob == null || MainNob.到期日 == DateTime.MinValue)
+            if (_authManager != null)
             {
-                剩餘天數.Content = "剩餘天數: 未驗證";
-                return;
-            }
-
-            TimeSpan remaining = MainNob.到期日 - DateTime.Now;
-            
-            if (remaining.TotalSeconds > 0)
-            {
-                剩餘天數.Content = $"剩餘天數: {remaining.Days} 天";
-                剩餘天數.Foreground = remaining.Days <= 7 
-                    ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red)
-                    : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 221, 0));
-            }
-            else
-            {
-                剩餘天數.Content = "剩餘天數: 已過期";
-                剩餘天數.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
+               await _authManager.UpdateRemainingDays(到期計時);
             }
         }
 
+        public void 儲存隊員技能組()
+        {
+            _teamManager.SaveTeamSkillSet();
+        }
+
+        public void 讀取隊員技能組()
+        {
+            _teamManager.LoadTeamSkillSet();
+        }
+
+        public void 更新自動使用技能隊員名單()
+        {
+            _teamManager.UpdateAutoSkillTeamMembers();
+        }
     }
 }

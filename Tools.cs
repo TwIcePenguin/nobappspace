@@ -35,6 +35,18 @@ namespace NOBApp
         const uint WM_KEYUP = 0x0101;
         #endregion
 
+        // 新增取得磁碟序號的 Win32 API 作為 WMI失敗的後援
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool GetVolumeInformation(
+            string rootPathName,
+            StringBuilder volumeNameBuffer,
+            int volumeNameSize,
+            out uint volumeSerialNumber,
+            out uint maximumComponentLength,
+            out uint fileSystemFlags,
+            StringBuilder fileSystemNameBuffer,
+            int nFileSystemNameSize);
+
         private static readonly Dictionary<string, Assembly> LoadDlls = new Dictionary<string, Assembly>();
         private static readonly Dictionary<string, object> Assemblies = new Dictionary<string, object>();
 
@@ -259,24 +271,56 @@ namespace NOBApp
         }
 
         /// <summary>
-        /// 取得磁碟序號
+        /// 取得磁碟序號 (優先使用 WMI，失敗後使用 Win32 API)
         /// </summary>
         private static string GetDiskVolumeSerialNumber()
         {
+            //1. WMI 嘗試
             try
             {
-                string systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
-                using (var searcher = new ManagementObjectSearcher($@"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE DeviceID='{systemDrive.TrimEnd('\\')}\'"))
+                string systemDrive = Path.GetPathRoot(Environment.SystemDirectory); // e.g. C:\
+                string driveId = systemDrive.TrimEnd('\\'); // C:
+                driveId = driveId.TrimEnd(':') + ":"; // 確保格式 C:
+                using (var searcher = new ManagementObjectSearcher($"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE DeviceID='{driveId}'"))
                 {
                     foreach (ManagementObject drive in searcher.Get())
                     {
-                        return drive["VolumeSerialNumber"].ToString();
+                        var v = drive["VolumeSerialNumber"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(v))
+                            return v.Trim();
                     }
+                }
+            }
+            catch (ManagementException mex)
+            {
+                Debug.WriteLine($"取得磁碟序號失敗 (WMI): {mex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"取得磁碟序號失敗 (一般): {ex.Message}");
+            }
+
+            //2. Win32 API 後援
+            try
+            {
+                string systemDrive = Path.GetPathRoot(Environment.SystemDirectory); // C:\
+                uint serial;
+                uint maxCompLen;
+                uint fileSysFlags;
+                var volName = new StringBuilder(261);
+                var fsName = new StringBuilder(261);
+                if (GetVolumeInformation(systemDrive, volName, volName.Capacity, out serial, out maxCompLen, out fileSysFlags, fsName, fsName.Capacity))
+                {
+                    return serial.ToString("X8");
+                }
+                else
+                {
+                    Debug.WriteLine("GetVolumeInformation失敗, Win32LastError: " + Marshal.GetLastWin32Error());
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"取得磁碟序號失敗: {ex.Message}");
+                Debug.WriteLine($"取得磁碟序號失敗 (API): {ex.Message}");
             }
 
             return string.Empty;
