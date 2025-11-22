@@ -1,8 +1,5 @@
-/obj
-/bint
-/obj
-/.vs
-/NOBApp.csproj
-/NOBApp.csproj.user
+/bin/
+/obj/
+/.vs/
 /NOBApp.csproj.user
 /Properties/PublishProfiles/FolderProfile.pubxml.user
