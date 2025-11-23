@@ -1,100 +1,16 @@
 ﻿<Application x:Class="NOBApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:NOBApp">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
-        <!-- 全域配色與樣式 -->
-        <Color x:Key="PrimaryColor">#FF389E4A</Color>
-        <Color x:Key="PrimaryHoverColor">#FF48B85C</Color>
-        <Color x:Key="PrimaryPressedColor">#FF2D7A37</Color>
-        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}"/>
-        <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}"/>
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#FFEFF3FA"/>
-        <SolidColorBrush x:Key="PanelBorderBrush" Color="#FFC9D5E3"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Resources/Themes/DefaultTheme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Resources/Themes/SamuraiTheme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Resources/Themes/LightTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <!-- 按鈕統一樣式 -->
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="6,2"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4" SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="{StaticResource PrimaryPressedBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 輔助型按鈕(灰) -->
-        <Style x:Key="SecondaryButton" BasedOn="{StaticResource PrimaryButton}" TargetType="Button">
-            <Setter Property="Background" Value="#FF566270"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#FF6C7D8E"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#FF414B55"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- 輸入框統一樣式 -->
-        <Style TargetType="TextBox" x:Key="InputBox">
-            <Setter Property="Padding" Value="4,2"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="BorderBrush" Value="#FFB7C4D1"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="#FFFFFFFF"/>
-            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
-        </Style>
-
-        <!-- 下拉選單樣式 -->
-        <Style TargetType="ComboBox" x:Key="ComboBoxStyle">
-            <Setter Property="Padding" Value="2"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="BorderBrush" Value="#FFB7C4D1"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
-        </Style>
-
-        <!-- TabControl 樣式簡化 -->
-        <Style TargetType="TabControl" x:Key="CleanTabControl">
-            <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}"/>
-            <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}"/>
-        </Style>
-        <Style TargetType="TabItem" x:Key="CleanTabItem">
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="Margin" Value="0,0,2,0"/>
-            <Setter Property="Background" Value="#FFD9E4EF"/>
-            <Setter Property="BorderBrush" Value="#FFB7C4D1"/>
-            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#FFB9D7F2"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+            <!-- 保留原本 TabControl 排版修正，指向 CurrentTabItemStyle (預設) -->
+            <Style TargetType="TabControl" BasedOn="{StaticResource BaseTabControlStyle}" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

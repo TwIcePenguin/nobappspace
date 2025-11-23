@@ -1,45 +1,48 @@
 ﻿<Window x:Name="企鵝之野望" x:Class="NOBApp.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NOBApp"
-        xmlns:core="clr-namespace:System;assembly=mscorlib"
-        mc:Ignorable="d"
-        Title="企鵝之野望" Height="450" Icon="/448545149_994763355983896_6737183326767466195_n.jpg" Width="700">
-
-    <Grid x:Name="Root" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <Grid>
-            <Button Content="遊戲多開" Height="25" Width="60" Click="MuitOpen_Click" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Canvas.Left="357" Canvas.Top="26" VerticalAlignment="Top" Margin="5,5,0,0"/>
-            <Button x:Name="手把" Content="手把" Height="20" Width="30" Click="Button_Click_手把" HorizontalAlignment="Left" Canvas.Left="358" Canvas.Top="6" VerticalAlignment="Top" Visibility="Visible" Margin="116,7,0,0"/>
-            <TextBox x:Name="TB_GamePadName" Height="20" TextWrapping="Wrap" Width="55" Cursor="" HorizontalAlignment="Left" Canvas.Left="296" Canvas.Top="7" VerticalAlignment="Top" Visibility="Visible" Margin="151,7,0,0"/>
-            <ComboBox x:Name="CMB_Resolution" Height="20" Width="90" IsEditable="True" SelectedIndex="0" HorizontalAlignment="Left" Canvas.Left="260" Canvas.Top="26" VerticalAlignment="Top" Margin="116,32,0,0"/>
-            <TextBox x:Name="OpenGameWindows" Height="25" Text="2" Width="25" ToolTip="多開數量" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Canvas.Left="387" Canvas.Top="26" VerticalAlignment="Top" Margin="70,5,0,0" MaxLines="3"/>
-            <Button x:Name="Btn_Update" Content="手動檢查更新" Height="20" Width="135" Click="Btn_Update_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,32,0,0" Background="#FF62FF73" FontWeight="Bold"/>
-            <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Height="25" Width="56" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="210,5,0,0"/>
-            <Button x:Name="Btn_SetLoad" Content="設定取得" Height="25" Width="39" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="306,5,0,0" FontSize="8"/>
-            <Button x:Name="Btn_SetApply" Content="設定套用" Height="25" Width="40" Canvas.Left="6" Canvas.Top="76" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="266,5,0,0" FontSize="8"/>
-            <Button x:Name="企鵝專用測試A" Content="企鵝A" Height="24" Width="36" Canvas.Left="265" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="5,30,0,0"/>
-            <Button x:Name="企鵝專用測試B" Content="企鵝B" Height="24" Width="36" Canvas.Left="306" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="40,30,0,0"/>
-            <Button x:Name="企鵝專用測試C" Content="企鵝C" Height="24" Width="36" Canvas.Left="347" Canvas.Top="81" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Visible" Margin="75,30,0,0"/>
-            <TextBox x:Name="MainWindowsStatusMsgBox" Height="49" Margin="350,5,5,0" TextWrapping="WrapWithOverflow" Text="" VerticalAlignment="Top" MaxLines="2147483643" MaxLength="6" ScrollViewer.CanContentScroll="True" UseLayoutRounding="True" Visibility="Visible" IsReadOnly="True" HorizontalContentAlignment="Stretch" Padding="0,0,5,0" VerticalContentAlignment="Stretch"/>
-        </Grid>
-        <TabControl x:Name="NBTabControl" Margin="0,60,0,0"/>
-
-        <Grid x:Name="背景圖" ScrollViewer.VerticalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0.7" Panel.ZIndex="-65535" IsHitTestVisible="False" IsEnabled="False" Grid.Column="1" Width="572" Height="722" AutomationProperties.HelpText="手把-空白代表不啟動" Grid.ColumnSpan="3">
-            <Grid.Background>
-                <ImageBrush Stretch="Uniform" ImageSource="/images.jpg" Opacity="0.1" TileMode="None">
-                    <ImageBrush.RelativeTransform>
-                        <TransformGroup>
-                            <ScaleTransform CenterY="0.5" CenterX="0.5"/>
-                            <SkewTransform CenterX="0.5" CenterY="0.5"/>
-                            <RotateTransform CenterX="0.5" CenterY="0.5"/>
-                            <TranslateTransform Y="0.2"/>
-                        </TransformGroup>
-                    </ImageBrush.RelativeTransform>
-                </ImageBrush>
-            </Grid.Background>
-
-        </Grid>
-    </Grid>
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:local="clr-namespace:NOBApp"
+ mc:Ignorable="d"
+ Title="企鵝之野望" Height="450" Icon="/448545149_994763355983896_6737183326767466195_n.jpg" Width="700">
+ <Grid x:Name="Root" Margin="8">
+ <Grid.RowDefinitions>
+ <RowDefinition Height="Auto"/>
+ <RowDefinition Height="*"/>
+ </Grid.RowDefinitions>
+ <Grid Grid.Row="0">
+ <Grid.ColumnDefinitions>
+ <ColumnDefinition Width="Auto"/>
+ <ColumnDefinition Width="*"/>
+ </Grid.ColumnDefinitions>
+ <StackPanel x:Name="LeftButtonsPanel" Orientation="Vertical" Grid.Column="0">
+ <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+ <Button Content="遊戲多開" x:Name="Btn_MultiOpen" Click="MuitOpen_Click" Style="{DynamicResource CurrentButtonStyle}"/>
+ <TextBox x:Name="OpenGameWindows" Text="2" Width="40" ToolTip="多開數量" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{DynamicResource CurrentInputStyle}"/>
+ <ComboBox x:Name="CMB_Resolution" IsEditable="True" SelectedIndex="0" Style="{DynamicResource CurrentComboStyle}"/>
+ <Button x:Name="Btn_AutoRefresh" Content="視窗整理" Style="{DynamicResource CurrentButtonStyle}"/>
+ </StackPanel>
+ <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+ <Button x:Name="手把" Content="手把" Click="Button_Click_手把" Width="50" Style="{DynamicResource CurrentButtonStyle}"/>
+ <TextBox x:Name="TB_GamePadName" Width="100" Style="{DynamicResource CurrentInputStyle}"/>
+ <Button x:Name="Btn_Update" Content="手動檢查更新" Click="Btn_Update_Click" MinWidth="120" Style="{DynamicResource CurrentButtonStyle}"/>
+ </StackPanel>
+ <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+ <Button x:Name="切換風格" Content="切換風格" ToolTip="點擊切換介面風格" Click="Btn_ThemeToggle_Click" Style="{DynamicResource CurrentButtonStyle}"/>
+ <Button x:Name="企鵝專用測試A" Content="企鵝A" Style="{DynamicResource CurrentButtonStyle}"/>
+ <Button x:Name="企鵝專用測試B" Content="企鵝B" Style="{DynamicResource CurrentButtonStyle}"/>
+ <Button x:Name="Btn_SetLoad" Content="設定取得" Width="80" Style="{DynamicResource CurrentButtonStyle}"/>
+ <Button x:Name="Btn_SetApply" Content="設定套用" Width="80" Style="{DynamicResource CurrentButtonStyle}"/>
+ </StackPanel>
+ </StackPanel>
+ <TextBox x:Name="MainWindowsStatusMsgBox" Grid.Column="1" Height="{Binding ElementName=LeftButtonsPanel, Path=ActualHeight}" Margin="12,0,0,0" TextWrapping="WrapWithOverflow" Text="" IsReadOnly="True" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Style="{DynamicResource CurrentInputStyle}"/>
+ </Grid>
+ <TabControl x:Name="NBTabControl" Grid.Row="1" Margin="0,8,0,0" ItemContainerStyle="{DynamicResource CurrentTabItemStyle}"/>
+ <Grid x:Name="背景圖" Panel.ZIndex="-1" Opacity="0.25" IsHitTestVisible="False">
+ <Grid.Background>
+ <ImageBrush Stretch="UniformToFill" ImageSource="/images.jpg" Opacity="0.25"/>
+ </Grid.Background>
+ </Grid>
+ </Grid>
 </Window>

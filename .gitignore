@@ -3,3 +3,17 @@
 /.vs/
 /NOBApp.csproj.user
 /Properties/PublishProfiles/FolderProfile.pubxml.user
+
+# ZIP 發佈文件
+/bin/Release/net8.0-windows7.0/publish/zip/
+*.zip
+
+# 環境變數和 Token
+.env
+.env.local
+*.token
+*.secret
+
+# 編輯器臨時文件
+*.tmp
+*.log

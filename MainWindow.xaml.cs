@@ -51,6 +51,13 @@ namespace NOBApp
         private readonly UpdateManager _updateManager = new();
         private readonly GameWindowManager _gameWindowManager = new();
 
+        //風格循環：使用固定來源鍵
+        private readonly string[] _buttonStylesCycle = { "BaseButtonStyle", "SamuraiButton", "AltButtonStyle" };
+        private readonly string[] _inputStylesCycle = { "BaseInputStyle", "SamuraiInput", "AltInputStyle" }; // 加入預設
+        private readonly string[] _comboStylesCycle = { "BaseComboStyle", "SamuraiCombo", "AltComboStyle" }; // 加入預設
+        private readonly string[] _tabItemStylesCycle = { "DefaultTabItemStyle", "SamuraiTabItem", "AltTabItemStyle" }; // 加入預設
+        private int _styleIndex =0;
+
         #region Initialize
         public MainWindow()
         {
@@ -92,7 +99,7 @@ namespace NOBApp
         {
             主窗狀態 = MainWindowsStatusMsgBox;
             winHeight = 企鵝之野望.Height;
-            企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = 企鵝專用測試C.Visibility = Visibility.Hidden;
+            企鵝專用測試A.Visibility = 企鵝專用測試B.Visibility = Visibility.Hidden;
 
 #if DEBUG
 			企鵝專用測試B.Visibility = 企鵝專用測試A.Visibility = Visibility.Visible;
@@ -103,7 +110,6 @@ namespace NOBApp
         {
             企鵝專用測試A.Click +=企鵝專用測試_Click;
             企鵝專用測試B.Click +=企鵝專用測試_Click;
-            企鵝專用測試C.Click +=企鵝專用測試_Click;
 
             Btn_AutoRefresh.Click += Btn_AutoRefresh_Click;
             Btn_SetLoad.Click += Btn_SetLoad_Click;
@@ -128,6 +134,33 @@ namespace NOBApp
                 Btn_SetLoad.Content = $"取得{page.MainNob.PlayerName}設定";
                 CodeSetting = page.MainNob.CodeSetting;
             }
+        }
+
+        private void ApplyCurrentStyles()
+        {
+            string btnSrcKey = _buttonStylesCycle[_styleIndex % _buttonStylesCycle.Length];
+            string inputSrcKey = _inputStylesCycle[_styleIndex % _inputStylesCycle.Length];
+            string comboSrcKey = _comboStylesCycle[_styleIndex % _comboStylesCycle.Length];
+            string tabSrcKey = _tabItemStylesCycle[_styleIndex % _tabItemStylesCycle.Length];
+
+            var appRes = Application.Current?.Resources;
+            if (appRes != null)
+            {
+                if (TryFindResource(btnSrcKey) is Style btn) appRes["CurrentButtonStyle"] = btn;
+                if (TryFindResource(inputSrcKey) is Style inp) appRes["CurrentInputStyle"] = inp;
+                if (TryFindResource(comboSrcKey) is Style cmb) appRes["CurrentComboStyle"] = cmb;
+                if (TryFindResource(tabSrcKey) is Style tab) appRes["CurrentTabItemStyle"] = tab;
+            }
+
+            // 顯示目前樣式名稱（預設 / 武士 / Alt）
+            string display = btnSrcKey switch
+            {
+                "BaseButtonStyle" => "預設",
+                "SamuraiButton" => "武士",
+                "AltButtonStyle" => "Alt",
+                _ => ($"樣式{_styleIndex +1}")
+            };
+            切換風格.Content = $"切換風格({display})";
         }
 
         #endregion Initialize
@@ -267,10 +300,16 @@ namespace NOBApp
 
         private void Btn_ThemeToggle_Click(object sender, RoutedEventArgs e)
         {
-            // 主題切換功能的樁實現
-    // 這裡可以實現黑白主題的切換邏輯
-            狀態訊息("主題切換功能開發中...", true);
-      }
+            try
+            {
+                _styleIndex = (_styleIndex + 1) % _buttonStylesCycle.Length; //以按鈕風格循環長度為基準
+                ApplyCurrentStyles();
+            }
+            catch (Exception ex)
+            {
+                狀態訊息($"主題切換失敗: {ex.Message}", true);
+            }
+        }
 
         #endregion private founctions
     }

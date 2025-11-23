@@ -1,0 +1,198 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:sys="clr-namespace:System;assembly=mscorlib">
+ <!-- Base font settings (記錄目前預設文字設定) -->
+ <FontFamily x:Key="BaseFont">Microsoft JhengHei UI</FontFamily>
+ <sys:Double x:Key="BaseFontSize">14</sys:Double>
+
+ <!-- BUTTON 基底樣式：移除固定 Height/Margin 避免 Canvas 座標重疊 -->
+ <Style x:Key="BaseButtonStyle" TargetType="Button">
+ <Setter Property="FontFamily" Value="{StaticResource BaseFont}"/>
+ <Setter Property="FontSize" Value="{StaticResource BaseFontSize}"/>
+ <Setter Property="MinHeight" Value="22"/>
+ <Setter Property="Padding" Value="6,0"/>
+ <Setter Property="Cursor" Value="Hand"/>
+ <Setter Property="BorderThickness" Value="1"/>
+ <Setter Property="BorderBrush" Value="#FF7B3F00"/>
+ <Setter Property="Foreground" Value="#FF2B2B2B"/>
+ <Setter Property="Background" Value="#FFF5F5F5"/><!-- 接近系統預設淺底 -->
+ </Style>
+
+ <!-- Samurai 原始按鈕樣式 -->
+ <Style x:Key="SamuraiButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+ <Setter Property="Foreground" Value="#FFE9DAB6"/>
+ <Setter Property="FontWeight" Value="Bold"/>
+ <Setter Property="BorderBrush" Value="#FF7B3F00"/>
+ <Setter Property="Background" Value="#FF3E2E1F"/>
+ <Setter Property="Template">
+ <Setter.Value>
+ <ControlTemplate TargetType="Button">
+ <Border x:Name="Bd" CornerRadius="2" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}">
+ <Border.Effect>
+ <DropShadowEffect Color="#99000000" BlurRadius="6" ShadowDepth="1" Opacity="0.6"/>
+ </Border.Effect>
+ <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+ </Border>
+ <ControlTemplate.Triggers>
+ <Trigger Property="IsMouseOver" Value="True">
+ <Setter TargetName="Bd" Property="Background" Value="#FF56402C"/>
+ </Trigger>
+ <Trigger Property="IsPressed" Value="True">
+ <Setter TargetName="Bd" Property="Background" Value="#FF261A12"/>
+ </Trigger>
+ <Trigger Property="IsEnabled" Value="False">
+ <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+ </Trigger>
+ </ControlTemplate.Triggers>
+ </ControlTemplate>
+ </Setter.Value>
+ </Setter>
+ </Style>
+
+ <!-- Alt 按鈕樣式 -->
+ <Style x:Key="AltButtonStyle" TargetType="Button" BasedOn="{StaticResource SamuraiButton}">
+ <Setter Property="Foreground" Value="#FFFDF7EC"/>
+ <Setter Property="Background" Value="#FF2D3A46"/>
+ <Setter Property="BorderBrush" Value="#FF557A99"/>
+ <Setter Property="Template">
+ <Setter.Value>
+ <ControlTemplate TargetType="Button">
+ <Border x:Name="Bd" CornerRadius="4" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}">
+ <Border.Effect>
+ <DropShadowEffect Color="#66000000" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+ </Border.Effect>
+ <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+ </Border>
+ <ControlTemplate.Triggers>
+ <Trigger Property="IsMouseOver" Value="True">
+ <Setter TargetName="Bd" Property="Background" Value="#FF3B4D5C"/>
+ </Trigger>
+ <Trigger Property="IsPressed" Value="True">
+ <Setter TargetName="Bd" Property="Background" Value="#FF1B252C"/>
+ </Trigger>
+ <Trigger Property="IsEnabled" Value="False">
+ <Setter TargetName="Bd" Property="Opacity" Value="0.35"/>
+ </Trigger>
+ </ControlTemplate.Triggers>
+ </ControlTemplate>
+ </Setter.Value>
+ </Setter>
+ </Style>
+
+ <!--目前預設使用按鈕樣式 (記錄用，接近系統風格) -->
+ <Style x:Key="CurrentButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}"/>
+
+ <!-- TEXTBOX 基底樣式：移除固定 Height/Margin 避免座標衝突 -->
+ <Style x:Key="BaseInputStyle" TargetType="TextBox">
+ <Setter Property="FontFamily" Value="{StaticResource BaseFont}"/>
+ <Setter Property="FontSize" Value="{StaticResource BaseFontSize}"/>
+ <Setter Property="MinHeight" Value="22"/>
+ <Setter Property="Foreground" Value="#FF2B2B2B"/>
+ <Setter Property="BorderBrush" Value="#FF7B3F00"/>
+ <Setter Property="BorderThickness" Value="1"/>
+ <Setter Property="Background" Value="#FFF5F5F5"/>
+ <Setter Property="Padding" Value="4,2"/>
+ <Setter Property="VerticalContentAlignment" Value="Center"/>
+ <Setter Property="Margin" Value="4,0,4,0"/>
+ </Style>
+
+ <!-- Samurai TextBox -->
+ <Style x:Key="SamuraiInput" TargetType="TextBox" BasedOn="{StaticResource BaseInputStyle}">
+ <Setter Property="Background" Value="#FFF5E6C8"/>
+ </Style>
+
+ <!-- Alt TextBox -->
+ <Style x:Key="AltInputStyle" TargetType="TextBox" BasedOn="{StaticResource SamuraiInput}">
+ <Setter Property="Foreground" Value="#FFE9E2D0"/>
+ <Setter Property="Background" Value="#FF2D3A46"/>
+ <Setter Property="BorderBrush" Value="#FF557A99"/>
+ </Style>
+
+ <!-- Current (預設) TextBox -->
+ <Style x:Key="CurrentInputStyle" TargetType="TextBox" BasedOn="{StaticResource BaseInputStyle}"/>
+
+ <!-- COMBOBOX 基底 -->
+ <Style x:Key="BaseComboStyle" TargetType="ComboBox">
+ <Setter Property="FontFamily" Value="{StaticResource BaseFont}"/>
+ <Setter Property="FontSize" Value="{StaticResource BaseFontSize}"/>
+ <Setter Property="MinHeight" Value="22"/>
+ <Setter Property="Foreground" Value="#FF2B2B2B"/>
+ <Setter Property="BorderBrush" Value="#FF7B3F00"/>
+ <Setter Property="BorderThickness" Value="1"/>
+ <Setter Property="Background" Value="#FFF5F5F5"/>
+ <Setter Property="Padding" Value="2"/>
+ <Setter Property="MinWidth" Value="100"/>
+ </Style>
+
+ <Style x:Key="SamuraiCombo" TargetType="ComboBox" BasedOn="{StaticResource BaseComboStyle}">
+ <Setter Property="Background" Value="#FFF5E6C8"/>
+ </Style>
+
+ <Style x:Key="AltComboStyle" TargetType="ComboBox" BasedOn="{StaticResource SamuraiCombo}">
+ <Setter Property="Foreground" Value="#FFE9E2D0"/>
+ <Setter Property="Background" Value="#FF2D3A46"/>
+ <Setter Property="BorderBrush" Value="#FF557A99"/>
+ </Style>
+
+ <Style x:Key="CurrentComboStyle" TargetType="ComboBox" BasedOn="{StaticResource BaseComboStyle}"/>
+
+ <!-- TABITEM Samurai -->
+ <Style x:Key="SamuraiTabItem" TargetType="TabItem">
+ <Setter Property="FontFamily" Value="{StaticResource BaseFont}"/>
+ <Setter Property="FontSize" Value="{StaticResource BaseFontSize}"/>
+ <Setter Property="Foreground" Value="#FFE9DAB6"/>
+ <Setter Property="FontWeight" Value="Bold"/>
+ <Setter Property="Margin" Value="2,0,2,0"/>
+ <Setter Property="Padding" Value="10,4"/>
+ <Setter Property="Background" Value="#FF3E2E1F"/>
+ <Setter Property="BorderBrush" Value="#FF7B3F00"/>
+ <Setter Property="BorderThickness" Value="1"/>
+ <Setter Property="Cursor" Value="Hand"/>
+ <Setter Property="Template">
+ <Setter.Value>
+ <ControlTemplate TargetType="TabItem">
+ <Grid>
+ <Border x:Name="HeaderBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3,3,0,0" Padding="{TemplateBinding Padding}">
+ <Border.Effect>
+ <DropShadowEffect Color="#99000000" BlurRadius="6" ShadowDepth="1" Opacity="0.6"/>
+ </Border.Effect>
+ <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+ </Border>
+ </Grid>
+ <ControlTemplate.Triggers>
+ <Trigger Property="IsMouseOver" Value="True">
+ <Setter TargetName="HeaderBorder" Property="Background" Value="#FF56402C"/>
+ </Trigger>
+ <Trigger Property="IsSelected" Value="True">
+ <Setter TargetName="HeaderBorder" Property="Background" Value="#FF261A12"/>
+ </Trigger>
+ <Trigger Property="IsEnabled" Value="False">
+ <Setter TargetName="HeaderBorder" Property="Opacity" Value="0.4"/>
+ </Trigger>
+ </ControlTemplate.Triggers>
+ </ControlTemplate>
+ </Setter.Value>
+ </Setter>
+ </Style>
+
+ <!-- Alt TabItem -->
+ <Style x:Key="AltTabItemStyle" TargetType="TabItem" BasedOn="{StaticResource SamuraiTabItem}">
+ <Setter Property="Foreground" Value="#FFFDF7EC"/>
+ <Setter Property="Background" Value="#FF2D3A46"/>
+ <Setter Property="BorderBrush" Value="#FF557A99"/>
+ </Style>
+
+ <!-- 預設 TabItem 樣式來源（空樣式，即系統預設） -->
+ <Style x:Key="DefaultTabItemStyle" TargetType="TabItem"/>
+
+ <!-- Current (預設) TabItem：不再繼承 Samurai，使用系統預設外觀 -->
+ <Style x:Key="CurrentTabItemStyle" TargetType="TabItem"/>
+
+ <!-- TabControl 排版樣式 -->
+ <Style x:Key="BaseTabControlStyle" TargetType="TabControl">
+ <Setter Property="Margin" Value="0"/>
+ <Setter Property="Padding" Value="0"/>
+ <Setter Property="BorderThickness" Value="0"/>
+ <Setter Property="ItemContainerStyle" Value="{StaticResource CurrentTabItemStyle}"/>
+ </Style>
+</ResourceDictionary>

@@ -201,7 +201,7 @@ namespace NOBApp
             戰鬥輔助面.Collapsed += (s, e) => OnExpandersChanged();
 
             List_鎖定名單.SelectionChanged += 排序_SelectionChanged;
-            List_忽略名單.SelectionChanged += 排序_SelectionChanged;
+            List_IgnoreList.SelectionChanged += 排序_SelectionChanged;
             List_目前名單.SelectionChanged += 排序_SelectionChanged;
 
             IGMouse.Checked += (s, e) =>

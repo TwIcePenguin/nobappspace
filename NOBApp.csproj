@@ -17,6 +17,25 @@
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 	</PropertyGroup>
 
+	<!-- 在 Release 建置前遞增版本號並設定組件版本 -->
+	<Target Name="IncrementVersionBeforeReleaseBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
+		<Message Importance="High" Text="🔄 Release 建置前更新版本號" />
+		<Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\UpdateVersion.ps1' -VersionFile '$(MSBuildProjectDirectory)\VersionInfo.cs' -Force&quot;" ContinueOnError="false" />
+	</Target>
+	<Target Name="SetAssemblyVersionFromVersionInfo" BeforeTargets="CoreCompile">
+		<ReadLinesFromFile File="$(MSBuildProjectDirectory)\VersionInfo.cs">
+			<Output TaskParameter="Lines" ItemName="VLines" />
+		</ReadLinesFromFile>
+		<PropertyGroup>
+			<VContent>@(VLines,' ')</VContent>
+			<ComputedVersion>$([System.Text.RegularExpressions.Regex]::Match('$(VContent)', 'public\s+const\s+string\s+Version\s*=\s*"([^"]+)"').Groups[1].Value)</ComputedVersion>
+			<AssemblyVersion>$(ComputedVersion)</AssemblyVersion>
+			<FileVersion>$(ComputedVersion)</FileVersion>
+			<InformationalVersion>$(ComputedVersion)</InformationalVersion>
+		</PropertyGroup>
+		<Message Importance="High" Text="✅ 組件版本已設定: $(ComputedVersion)" />
+	</Target>
+
 	<ItemGroup>
 	 <Compile Remove="Sports\黃泉盡頭Gemini.cs" />
 	</ItemGroup>
@@ -104,43 +123,47 @@
 		</None>
 	</ItemGroup>
 
-	<Target Name="CustomActionsAfterPublish" AfterTargets="Publish">
-		<Message Text="AfterTargets 開始執行" Importance="high" />
+	<!-- 發佈後僅讀取版本與打包，不再遞增版本號 -->
+	<Target Name="CustomActionsAfterPublish" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+		<Message Text="========================================" Importance="high" />
+		<Message Text="🚀 開始執行自訂發佈後置工作" Importance="high" />
+		<Message Text="========================================" Importance="high" />
+		<Message Importance="High" Text="📁 PublishDir: $(PublishDir)" />
+		<Message Importance="High" Text="⚙️ Configuration: $(Configuration)" />
+
+		<!--讀取版本號 -->
 		<ReadLinesFromFile File="$(MSBuildProjectDirectory)\VersionInfo.cs">
 			<Output TaskParameter="Lines" ItemName="VersionFileLines" />
 		</ReadLinesFromFile>
-
 		<PropertyGroup>
-			<!-- 將所有行合併為一個字串 -->
-			<VersionFileContent>@(VersionFileLines, ' ')</VersionFileContent>
-			<!-- 使用正則表達式提取版本號 -->
-			<VersionNumber>$([System.Text.RegularExpressions.Regex]::Match('$(VersionFileContent)', 'public\s+const\s+string\s+Version\s*=\s*"([^"]+)"').Groups[1].Value)</VersionNumber>
+			<VersionFileContent>@(VersionFileLines,' ')</VersionFileContent>
+			<VersionNumber>$([System.Text.RegularExpressions.Regex]::Match('$(VersionFileContent)','public\s+const\s+string\s+Version\s*=\s*"([^"]+)"').Groups[1].Value)</VersionNumber>
+			<!-- 固定 ZIP目錄為 publish\zip -->
+			<ZipOutputDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0-windows7.0\publish\zip\</ZipOutputDir>
+			<ZipFilePath>$(ZipOutputDir)v$(VersionNumber).zip</ZipFilePath>
 		</PropertyGroup>
+		<Message Importance="High" Text="✅版本號: $(VersionNumber)" />
+		<WriteLinesToFile File="$(PublishDir)VERSION.txt" Lines="Version=$(VersionNumber)" Overwrite="true" />
+		<Message Importance="High" Text="📝 已建立版本記錄檔: $(PublishDir)VERSION.txt" />
+		<Message Importance="High" Text="📦 ZIP 輸出目錄: $(ZipOutputDir)" />
+		<Message Importance="High" Text="📦 ZIP 檔案路徑: $(ZipFilePath)" />
 
-		<PropertyGroup>
-			<!-- 使用正則表達式從文件中提取版本號 -->
-			<VersionNumber>$([System.Text.RegularExpressions.Regex]::Match('$(VersionFileContent)', 'Version\s*=\s*"([^"]+)"').Groups[1].Value)</VersionNumber>
-		</PropertyGroup>
-		<!-- 調試輸出 -->
-		<Message Importance="High" Text="版號資料夾: $(VersionFileContent)" />
-		<Message Importance="High" Text="版號: $(VersionNumber)" />
-		
-		<PropertyGroup>
-			<OutputDir>$(PublishDir)</OutputDir>
-			<ZipFilePath>C:\NOBAPP\v$(VersionNumber).zip</ZipFilePath>
-			<SevenZipPath>"C:\Program Files\7-Zip\7z.exe"</SevenZipPath>
-		</PropertyGroup>
-		<Message Importance="High" Text="版號 : $(VersionNumber)" />
-		<Message Importance="High" Text="輸出資料夾 (PublishDir): $(OutputDir)" />
+		<!-- 給檔案系統一個緩衝時間，避免仍有鎖定 -->
+		<Exec Command="powershell.exe -NoProfile -Command &quot;Start-Sleep -Milliseconds 800&quot;" />
 
-		<ItemGroup>
-			<OldZipFiles Include="$(PublishDir)v*.zip" />
-		</ItemGroup>
-		<Delete Files="@(OldZipFiles)" />
+		<Message Text="步驟2️⃣ 打包應用程式" Importance="high" />
+		<Message Text="⬆️ 建立 ZIP 檔案..." Importance="high" />
+		<MakeDir Directories="$(ZipOutputDir)" />
+		<Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\CreateZip.ps1' -SourcePath '$(PublishDir)' -ZipPath '$(ZipFilePath)'&quot;" ContinueOnError="false" />
+		<Message Importance="High" Text="✅ ZIP 檔案已建立: $(ZipFilePath)" />
 
-		<Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\CheckFileLock.ps1&quot; -FilePath &quot;$(OutputDir)NOBApp.exe&quot; -MaxRetries5 -DelaySeconds2" />
-		<Exec Command="$(SevenZipPath) a -tzip &quot;$(ZipFilePath)&quot; &quot;$(OutputDir)*&quot;" />
+		<Message Text="步驟3️⃣ 上傳到 GitHub Release" Importance="high" />
+		<Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\PostBuildScript.ps1' -OutputPath '$(ZipOutputDir)' -VersionInfoPath '$(MSBuildProjectDirectory)\VersionInfo.cs' -GitHubToken '$(GITHUB_TOKEN)' -GitHubRepo 'TwIcePenguin/nobapp' -GitFolder '$(MSBuildProjectDirectory)'&quot;" ContinueOnError="true" />
+		<Message Text="========================================" Importance="high" />
+		<Message Text="✅ 發佈後置工作完成" Importance="high" />
+		<Message Text="========================================" Importance="high" />
 	</Target>
+
 	<Target Name="UpdateVersionOnDebugBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">
 		<Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(ProjectDir)UpdateVersion.ps1&quot;" />
 		<Message Text="已在 Debug 建置時更新版本號" Importance="high" />

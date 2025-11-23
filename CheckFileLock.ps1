@@ -17,7 +17,7 @@
    }
 
    if ($retry -eq $MaxRetries) {
-       Write-Error "ÀÉ®× $FilePath ¤´³QÂê©w¡AµLªkÄ~ÄòÀ£ÁY¡C"
+       Write-Error "ï¿½É®ï¿½ $FilePath ï¿½ï¿½ï¿½Qï¿½ï¿½wï¿½Aï¿½Lï¿½kï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½C"
        exit 1
    }
    

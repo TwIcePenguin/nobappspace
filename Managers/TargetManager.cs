@@ -22,7 +22,7 @@ namespace NOBApp.Managers
         public void UpdateNPCTargetsIfNeeded()
         {
             var targetViewPage = _view.TargetViewPage;
-            var listIgnore = _view.List_忽略名單;
+            var listIgnore = _view.List_IgnoreList;
             var listLock = _view.List_鎖定名單;
             var listCurrent = _view.List_目前名單;
 
@@ -132,7 +132,7 @@ namespace NOBApp.Managers
         {
             var listCurrent = _view.List_目前名單;
             var listLock = _view.List_鎖定名單;
-            var listIgnore = _view.List_忽略名單;
+            var listIgnore = _view.List_IgnoreList;
 
             if (listCurrent == null || listLock == null || listIgnore == null)
                 return;
