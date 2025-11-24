@@ -1,80 +1,105 @@
-# CreateZip.ps1 - 建立 ZIP 檔案
+﻿# CreateZip.ps1 - Create a ZIP file from a publish win-x86 folder
 param (
- [string]$SourcePath = "",
- [string]$ZipPath = ""
+    [string]$SourcePath = "",
+    [string]$ZipPath = ""
 )
+
 $ErrorActionPreference = 'Stop'
+
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "📦 ZIP 檔案建立腳本 (win-x86 專用)" -ForegroundColor Cyan
+Write-Host "Create ZIP from publish folder (expected: win-x86)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# 正規化路徑
-$SourcePath = ($SourcePath).Trim()
-$ZipPath = ($ZipPath).Trim()
+# Trim and normalize inputs
+if ($SourcePath) { $SourcePath = $SourcePath.Trim() }
+if ($ZipPath) { $ZipPath = $ZipPath.Trim() }
 
-if ([string]::IsNullOrEmpty($SourcePath)) { Write-Host "❌ 未提供來源路徑" -ForegroundColor Red; exit1 }
-if ([string]::IsNullOrEmpty($ZipPath)) { Write-Host "❌ 未提供 ZIP 路徑" -ForegroundColor Red; exit1 }
-if (-not (Test-Path $SourcePath)) { Write-Host "❌來源路徑不存在: $SourcePath" -ForegroundColor Red; exit1 }
+if ([string]::IsNullOrEmpty($SourcePath)) { Write-Host "Error: SourcePath is required." -ForegroundColor Red; exit 1 }
+if ([string]::IsNullOrEmpty($ZipPath)) { Write-Host "Error: ZipPath is required." -ForegroundColor Red; exit 1 }
 
-#只允許打包 win-x86目錄 (防止誤包 publish 上層)
-$leaf = Split-Path $SourcePath -Leaf
-if ($leaf -ne 'win-x86') {
- Write-Host "⚠️ 警告:來源目錄並非 win-x86，已取消打包。來源: $leaf" -ForegroundColor Yellow
- exit1
-}
-
-# 確保壓縮目標資料夾存在
-$targetDir = [System.IO.Path]::GetDirectoryName($ZipPath)
-if (-not (Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir | Out-Null }
-
-Write-Host "📁來源: $SourcePath" -ForegroundColor Gray
-Write-Host "📦目標: $ZipPath" -ForegroundColor Gray
-
-# 收集要打包的檔案 (僅 win-x86 下內容)
-$allFiles = Get-ChildItem -Path $SourcePath -Recurse -File
-if ($allFiles.Count -eq0) { Write-Host "⚠️ win-x86目錄沒有檔案" -ForegroundColor Yellow; exit1 }
-
-# 建立暫存 staging 資料夾避免鎖定
-$stagingDir = Join-Path ([System.IO.Path]::GetTempPath()) ("nobapp_staging_" + [Guid]::NewGuid().ToString())
-New-Item -ItemType Directory -Path $stagingDir | Out-Null
-
-Write-Host "🧪 暫存 staging: $stagingDir" -ForegroundColor Gray
-
-# 複製檔案 (保留相對路徑結構)
-foreach ($f in $allFiles) {
- $rel = $f.FullName.Substring($SourcePath.Length).TrimStart('\','/')
- $destFile = Join-Path $stagingDir $rel
- $destDir = [System.IO.Path]::GetDirectoryName($destFile)
- if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-Null }
- try { Copy-Item -Path $f.FullName -Destination $destFile -Force } catch { Write-Host "⚠️ 複製失敗: $($f.FullName) -> $($_.Exception.Message)" -ForegroundColor Yellow }
-}
-
-# 載入壓縮組件
-try { Add-Type -AssemblyName System.IO.Compression.FileSystem } catch { Write-Host "❌ 無法載入壓縮組件: $($_.Exception.Message)" -ForegroundColor Red; Remove-Item $stagingDir -Recurse -Force; exit1 }
-
-# 若舊 ZIP 存在，先刪除
-if (Test-Path $ZipPath) {
- try { Remove-Item $ZipPath -Force } catch { Write-Host "⚠️ 無法刪除舊 ZIP: $($_.Exception.Message)" -ForegroundColor Yellow }
-}
-
-# 建立新的 ZIP
+# Resolve SourcePath to absolute path when possible
 try {
- Write-Host "⬆️ 建立 ZIP (僅 win-x86內容)..." -ForegroundColor Cyan
- [System.IO.Compression.ZipFile]::CreateFromDirectory($stagingDir, $ZipPath, [System.IO.Compression.CompressionLevel]::Optimal, $false)
- Write-Host "✅ ZIP 建立完成" -ForegroundColor Green
+    $resolvedSource = Resolve-Path -Path $SourcePath -ErrorAction Stop
+    $SourcePath = $resolvedSource.Path
 } catch {
- Write-Host "❌ 壓縮失敗: $($_.Exception.Message)" -ForegroundColor Red
- try { if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force } } catch {}
- Remove-Item $stagingDir -Recurse -Force
- exit1
+    # If Resolve-Path fails, try to combine with current directory
+    $combined = Join-Path -Path (Get-Location).Path -ChildPath $SourcePath
+    if (Test-Path $combined) { $SourcePath = (Resolve-Path $combined).Path } else { Write-Host "Error: SourcePath not found: $SourcePath" -ForegroundColor Red; exit 1 }
 }
 
-# 清理 staging
-try { Remove-Item $stagingDir -Recurse -Force } catch { Write-Host "⚠️ 暫存清理失敗: $($_.Exception.Message)" -ForegroundColor Yellow }
+# Ensure ZipPath is a full path
+try {
+    $zipFull = [System.IO.Path]::GetFullPath($ZipPath)
+    $ZipPath = $zipFull
+} catch {
+    Write-Host "Error: Invalid ZipPath: $ZipPath" -ForegroundColor Red
+    exit 1
+}
 
+# Verify SourcePath ends with win-x86 (case-insensitive)
+$leaf = Split-Path $SourcePath -Leaf
+if ($leaf.ToLowerInvariant() -ne 'win-x86') {
+    Write-Host "Warning: Expected SourcePath leaf 'win-x86' but found '$leaf'" -ForegroundColor Yellow
+    # Continue anyway
+}
+
+# Ensure target directory exists
+$targetDir = [System.IO.Path]::GetDirectoryName($ZipPath)
+if (-not (Test-Path $targetDir)) {
+    try { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null } catch { Write-Host "Error: Cannot create target directory: $targetDir ($($_.Exception.Message))" -ForegroundColor Red; exit 1 }
+}
+
+Write-Host ("Source: {0}" -f $SourcePath) -ForegroundColor Gray
+Write-Host ("Zip:    {0}" -f $ZipPath) -ForegroundColor Gray
+
+# Collect files
+$allFiles = Get-ChildItem -Path $SourcePath -Recurse -File -ErrorAction SilentlyContinue
+if (-not $allFiles -or $allFiles.Count -eq 0) { Write-Host "Warning: No files found under SourcePath: $SourcePath" -ForegroundColor Yellow; exit 1 }
+
+# Create staging area
+$stagingDir = Join-Path ([System.IO.Path]::GetTempPath()) ("nobapp_staging_" + [Guid]::NewGuid().ToString())
+try { New-Item -ItemType Directory -Path $stagingDir | Out-Null } catch { Write-Host "Error: Cannot create staging dir: $($stagingDir)" -ForegroundColor Red; exit 1 }
+Write-Host ("Staging: {0}" -f $stagingDir) -ForegroundColor Gray
+
+# Copy files into staging preserving relative paths
+foreach ($f in $allFiles) {
+    $rel = $f.FullName.Substring($SourcePath.Length).TrimStart('\','/')
+    $destFile = Join-Path $stagingDir $rel
+    $destDir = [System.IO.Path]::GetDirectoryName($destFile)
+    if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-Null }
+    try { Copy-Item -Path $f.FullName -Destination $destFile -Force -ErrorAction Stop } catch { Write-Host ("Warning: copy failed: {0} -> {1} : {2}" -f $f.FullName, $destFile, $_.Exception.Message) -ForegroundColor Yellow }
+}
+
+# Ensure Zip APIs are available
+try { Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop } catch { Write-Host ("Error: Could not load compression assembly: {0}" -f $_.Exception.Message) -ForegroundColor Red; Remove-Item $stagingDir -Recurse -Force; exit 1 }
+
+# Remove existing zip if any
 if (Test-Path $ZipPath) {
- $zipSizeMB = [math]::Round((Get-Item $ZipPath).Length /1MB,2)
- Write-Host "📊 大小: $zipSizeMB MB" -ForegroundColor Green
- Write-Host "📍 路徑: $ZipPath" -ForegroundColor Green
- exit0
-} else { Write-Host "❌ 最終 ZIP 不存在" -ForegroundColor Red; exit1 }
+    try { Remove-Item $ZipPath -Force -ErrorAction Stop } catch { Write-Host ("Warning: cannot remove existing zip: {0}" -f $_.Exception.Message) -ForegroundColor Yellow }
+}
+
+# Create zip
+try {
+    Write-Host "Creating ZIP from staging..." -ForegroundColor Cyan
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($stagingDir, $ZipPath, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+    Write-Host "ZIP created." -ForegroundColor Green
+} catch {
+    Write-Host ("Error: Failed to create ZIP: {0}" -f $_.Exception.Message) -ForegroundColor Red
+    try { if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force } } catch {}
+    Remove-Item $stagingDir -Recurse -Force
+    exit 1
+}
+
+# Cleanup staging
+try { Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue } catch { }
+
+# Verify zip exists
+if (Test-Path $ZipPath) {
+    $zipSizeMB = [math]::Round((Get-Item $ZipPath).Length / 1MB, 2)
+    Write-Host ("ZIP size: {0} MB" -f $zipSizeMB) -ForegroundColor Green
+    Write-Host ("ZIP path: {0}" -f $ZipPath) -ForegroundColor Green
+    exit 0
+} else {
+    Write-Host "Error: ZIP file not found after creation." -ForegroundColor Red
+    exit 1
+}

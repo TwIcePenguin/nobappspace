@@ -17,11 +17,7 @@
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 	</PropertyGroup>
 
-	<!-- 在 Release 建置前遞增版本號並設定組件版本 -->
-	<Target Name="IncrementVersionBeforeReleaseBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
-		<Message Importance="High" Text="🔄 Release 建置前更新版本號" />
-		<Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\UpdateVersion.ps1' -VersionFile '$(MSBuildProjectDirectory)\VersionInfo.cs' -Force&quot;" ContinueOnError="false" />
-	</Target>
+	<!-- 版本更新邏輯已移至 PublishAndUpload.ps1，以避免檔案鎖定問題 -->
 	<Target Name="SetAssemblyVersionFromVersionInfo" BeforeTargets="CoreCompile">
 		<ReadLinesFromFile File="$(MSBuildProjectDirectory)\VersionInfo.cs">
 			<Output TaskParameter="Lines" ItemName="VLines" />
@@ -154,18 +150,14 @@
 		<Message Text="步驟2️⃣ 打包應用程式" Importance="high" />
 		<Message Text="⬆️ 建立 ZIP 檔案..." Importance="high" />
 		<MakeDir Directories="$(ZipOutputDir)" />
-		<Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\CreateZip.ps1' -SourcePath '$(PublishDir)' -ZipPath '$(ZipFilePath)'&quot;" ContinueOnError="false" />
+		<Exec Command="chcp 65001 >nul &amp; powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\CreateZip.ps1' -SourcePath '$(PublishDir)' -ZipPath '$(ZipFilePath)'&quot;" ContinueOnError="false" />
 		<Message Importance="High" Text="✅ ZIP 檔案已建立: $(ZipFilePath)" />
 
 		<Message Text="步驟3️⃣ 上傳到 GitHub Release" Importance="high" />
-		<Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\PostBuildScript.ps1' -OutputPath '$(ZipOutputDir)' -VersionInfoPath '$(MSBuildProjectDirectory)\VersionInfo.cs' -GitHubToken '$(GITHUB_TOKEN)' -GitHubRepo 'TwIcePenguin/nobapp' -GitFolder '$(MSBuildProjectDirectory)'&quot;" ContinueOnError="true" />
+		<Exec Command="chcp 65001 >nul &amp; powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '$(MSBuildProjectDirectory)\PostBuildScript.ps1' -OutputPath '$(ZipOutputDir)' -VersionInfoPath '$(MSBuildProjectDirectory)\VersionInfo.cs' -GitHubRepo 'TwIcePenguin/nobappspace' -GitFolder '$(MSBuildProjectDirectory)'&quot;" ContinueOnError="true" />
 		<Message Text="========================================" Importance="high" />
 		<Message Text="✅ 發佈後置工作完成" Importance="high" />
 		<Message Text="========================================" Importance="high" />
 	</Target>
 
-	<Target Name="UpdateVersionOnDebugBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">
-		<Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(ProjectDir)UpdateVersion.ps1&quot;" />
-		<Message Text="已在 Debug 建置時更新版本號" Importance="high" />
-	</Target>
 </Project>

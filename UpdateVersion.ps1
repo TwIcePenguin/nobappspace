@@ -31,9 +31,16 @@ if ($content -match $versionPattern) {
         $buildNumber++
         $newVersion = "$majorVersion.$minorVersion.$buildNumber"
         $newContent = $content -replace $versionPattern, "public const string Version = `"$newVersion`""
-        # 以 UTF8 寫回（常見 CI 與編輯器都能正確處理 UTF8）
-        Set-Content -Path $VersionFile -Value $newContent -Encoding UTF8
-        Write-Host "已更新版本為 $newVersion （組態: $Configuration）"
+        
+        try {
+            # 以 UTF8 寫回（常見 CI 與編輯器都能正確處理 UTF8）
+            Set-Content -Path $VersionFile -Value $newContent -Encoding UTF8 -ErrorAction Stop
+            Write-Host "已更新版本為 $newVersion （組態: $Configuration）"
+        } catch {
+            Write-Host "❌ 寫入版本檔案 '$VersionFile' 失敗！" -ForegroundColor Red
+            Write-Host "錯誤詳情: $($_.Exception.Message)" -ForegroundColor Red
+            exit 1
+        }
         # 輸出版本號供調用端使用
         Write-Output $newVersion
     } else {
@@ -42,4 +49,5 @@ if ($content -match $versionPattern) {
     }
 } else {
     Write-Host "在 $VersionFile 中找不到符合的版本字串（格式應為 public const string Version = \"X.Y.Z\"）。"
+    exit 1
 }
