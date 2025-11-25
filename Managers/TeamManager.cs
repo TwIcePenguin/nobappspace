@@ -245,12 +245,22 @@ namespace NOBApp.Managers
                     {
                         if (spChild is Canvas header && header.Height == 30)
                         {
+                            // Set header controls: ComboBox (SelectFID_x) and CheckBoxes
                             foreach (var item in header.Children)
                             {
                                 if (item is CheckBox cb)
                                 {
                                     if (cb.Name.Contains("同步"))
                                         cb.IsChecked = set.同步;
+                                }
+                                else if (item is ComboBox combo)
+                                {
+                                    // restore the saved user name into the combo box
+                                    try
+                                    {
+                                        combo.Text = set.用名 ?? string.Empty;
+                                    }
+                                    catch { }
                                 }
                             }
                         }
@@ -319,12 +329,25 @@ namespace NOBApp.Managers
                         {
                             if (spChild is Canvas header && header.Height == 30)
                             {
+                                // Read ComboBox selection (player name) and assign NOB if possible
                                 foreach (var item in header.Children)
                                 {
                                     if (item is CheckBox cb)
                                     {
                                         if (cb.Name.Contains("同步")) member.同步 = cb.IsChecked == true;
                                         if (cb.Name.Contains("背景ENTER")) member.背景Enter = cb.IsChecked == true;
+                                    }
+                                    else if (item is ComboBox combo)
+                                    {
+                                        var txt = combo.Text?.Trim() ?? string.Empty;
+                                        if (!string.IsNullOrEmpty(txt))
+                                        {
+                                            var nob = MainWindow.AllNobWindowsList?.Find(n => n.PlayerName == txt);
+                                            if (nob != null)
+                                            {
+                                                member.NOB = nob;
+                                            }
+                                        }
                                     }
                                 }
                             }
