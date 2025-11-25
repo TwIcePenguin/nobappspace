@@ -990,10 +990,27 @@ namespace NOBApp
 
         public void LoadSetting()
         {
-            // Implementation based on original logic
-            if (MainNob != null)
+            if (MainNob == null) return;
+
+            try
             {
+                // Ensure team member structures are initialized from current running windows
+                _teamManager.InitializeTeamMembersFromAllNobs();
+
+                // Load player-specific settings from disk into MainNob.CodeSetting
                 _scriptManager.LoadSetting(MainNob.PlayerName);
+
+                // Reflect loaded settings into the UI
+                _scriptManager.SettingLoadToUI();
+
+                // Apply saved team skill records (同步, 技能設定) to 隊員智能功能組
+                _teamManager.UpdateAutoSkillTeamMembers();
+
+                Debug.WriteLine("LoadSetting: completed initialization and applied team settings.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"LoadSetting: failed to load/apply settings: {ex.Message}");
             }
         }
 

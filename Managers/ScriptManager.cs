@@ -155,6 +155,9 @@ namespace NOBApp.Managers
                 var setting = _view.MainNob?.CodeSetting;
                 if (setting == null) return;
 
+                // Ensure team skill records are included before saving
+                setting.隊伍技能 = NobMainCodePage.m隊伍技能紀錄 ?? new 隊伍技能紀錄();
+
                 setting.上次使用的腳本 = _view.SelectMenu.Text;
 
                 string settingFile = $@"{playerName}_Setting.json";
@@ -181,6 +184,10 @@ namespace NOBApp.Managers
                     if (loadedSetting != null)
                     {
                         _view.MainNob.CodeSetting = loadedSetting;
+
+                        // Restore team skill records into the shared runtime store
+                        NobMainCodePage.m隊伍技能紀錄 = loadedSetting.隊伍技能 ?? new 隊伍技能紀錄();
+
                         Debug.WriteLine($"Loaded settings for {playerName}");
                     }
                 }
