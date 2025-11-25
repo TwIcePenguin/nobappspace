@@ -1081,9 +1081,9 @@ namespace NOBApp
             {
                 var panelName = $"RoundsPanel_{memberIndex}";
                 var panel = this.FindName(panelName) as StackPanel;
-                if (panel != null)
+                if (panel != null && panel.Children.Count > 0)
                 {
-                    panel.Children.Clear();
+                    panel.Children.RemoveAt(panel.Children.Count - 1);
                 }
             }
         }
