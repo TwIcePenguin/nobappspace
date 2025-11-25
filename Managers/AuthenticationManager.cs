@@ -259,16 +259,21 @@ namespace NOBApp.Managers
 						if (_view.MainNob.到期日 >= checkTime)
 						{
 							Tools.isBANACC = false;
-							Tools.IsVIP = true;
+							
+							// 設定帳號等級
+							if (_view.MainNob.特殊者) Tools.CurrentLevel = Tools.AccountLevel.Special;
+							else if (_view.MainNob.贊助者) Tools.CurrentLevel = Tools.AccountLevel.Sponsor;
+							else Tools.CurrentLevel = Tools.AccountLevel.VIP;
+
 							vipSp.IsEnabled = true;
-							if (_view.MainNob.特殊者 || _view.MainNob.贊助者)
+							if (Tools.IsVIP) // IsVIP 屬性會自動檢查 CurrentLevel >= VIP
 							{
 								vipSp.IsChecked = true;
 							}
 						}
 						else
 						{
-							Tools.IsVIP = false;
+							Tools.CurrentLevel = Tools.AccountLevel.Free;
 							vipSp.IsEnabled = false;
 							vipSp.IsChecked = false;
 						}
@@ -442,10 +447,13 @@ namespace NOBApp.Managers
 
 				if (remaining.TotalSeconds > 0)
 				{
-					remainingDaysLabel.Content = $"剩餘天數: {remaining.Days} 天";
+					// 顯示完整到期日與剩餘天數
+					remainingDaysLabel.Content = $"到期日: {_view.MainNob.到期日:yyyy/MM/dd HH:mm} (剩餘 {remaining.Days} 天)";
+					
+					// 調整顏色，避免太亮看不清楚 (正常使用白色，快到期使用紅色)
 					remainingDaysLabel.Foreground = remaining.Days <= 7
-				? new SolidColorBrush(Colors.Red)
-				   : new SolidColorBrush(Color.FromRgb(255, 221, 0));
+						? new SolidColorBrush(Colors.Red)
+						: new SolidColorBrush(Colors.White);
 				}
 				else
 				{
@@ -547,20 +555,17 @@ namespace NOBApp.Managers
 						if (remaining.TotalSeconds > 0)
 						{
 							vipSp.IsEnabled = true;
-							bool isVip = false;
-							if (nobUseData.CheckC != null && nobUseData.CheckC.Contains("1"))
-							{
-								isVip = true;
-							}
-							if (_view.MainNob.特殊者 || _view.MainNob.贊助者)
-							{
-								isVip = true;
-							}
+							
+							// 設定帳號等級
+							if (_view.MainNob.特殊者) Tools.CurrentLevel = Tools.AccountLevel.Special;
+							else if (_view.MainNob.贊助者) Tools.CurrentLevel = Tools.AccountLevel.Sponsor;
+							else if (nobUseData.CheckC != null && nobUseData.CheckC.Contains("1")) Tools.CurrentLevel = Tools.AccountLevel.VIP;
+							else Tools.CurrentLevel = Tools.AccountLevel.Free;
 
-							if (isVip)
+							if (Tools.IsVIP)
 							{
 								vipSp.IsChecked = true;
-								statusBox.AppendText($"👑 VIP 權限: 已啟用\n");
+								statusBox.AppendText($"👑 VIP 權限: 已啟用 ({Tools.CurrentLevel})\n");
 							}
 						}
 						else
