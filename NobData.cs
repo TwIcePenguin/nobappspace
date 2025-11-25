@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -14,6 +15,11 @@ namespace NOBApp
 {
     public class NOBDATA : NOBBehavior
     {
+        private CancellationTokenSource? _infoCts;
+        private string _cachedAccount = string.Empty;
+        private string _cachedPassword = string.Empty;
+        private string _cachedPlayerName = string.Empty;
+
         public NOBDATA(Process proc) : base(proc)
         {
             bool _initWH = true;
@@ -28,7 +34,56 @@ namespace NOBApp
                 }
                 Task.Delay(100).Wait();
             }
-            LogID = Account;
+
+            // Start background refresh which will populate cached Account/PlayerName shortly after construction.
+            _infoCts?.Cancel();
+            _infoCts = new CancellationTokenSource();
+            _ = Task.Run(() => RefreshBasicInfoLoop(_infoCts.Token));
+
+            // Set initial LogID to placeholder to avoid heavy read here
+            LogID = "(loading)";
+        }
+
+        private async Task RefreshBasicInfoLoop(CancellationToken token)
+        {
+            try
+            {
+                int attempts = 0;
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var acc = ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+                        var pas = ReadString(GetFullAddress(AddressData.Pas), 0, 15);
+                        var name = ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+
+                        if (!string.IsNullOrEmpty(acc)) _cachedAccount = acc;
+                        if (!string.IsNullOrEmpty(pas)) _cachedPassword = pas;
+                        if (!string.IsNullOrEmpty(name)) _cachedPlayerName = name;
+
+                        if (!string.IsNullOrEmpty(_cachedAccount) && LogID == "(loading)")
+                        {
+                            LogID = _cachedAccount;
+                        }
+
+                        attempts++;
+                        await Task.Delay(attempts < 3 ? 200 : 500, token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"RefreshBasicInfoLoop error: {ex.Message}");
+                        await Task.Delay(500, token);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"RefreshBasicInfoLoop fatal: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -78,10 +133,14 @@ namespace NOBApp
                 ? fullAddress
                 : _addressCache[address] = $"{BASE_ADDRESS}{address}";
 
-        // 角色基本資訊
-        public string Account => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
-        public string Password => ReadString(GetFullAddress(AddressData.Pas), 0, 15);
-        public string PlayerName => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+        // 角色基本資訊: return cached first to avoid blocking UI
+        public string Account => !string.IsNullOrEmpty(_cachedAccount) ? _cachedAccount : ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string Password => !string.IsNullOrEmpty(_cachedPassword) ? _cachedPassword : ReadString(GetFullAddress(AddressData.Pas), 0, 15);
+        public string PlayerName => !string.IsNullOrEmpty(_cachedPlayerName) ? _cachedPlayerName : ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+
+        // 同步直接讀取（需要即時值時使用）
+        public string ReadAccountNow() => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string ReadPlayerNameNow() => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
 
         // 位置和地圖資訊
         public int MAPID => ReadInt(GetFullAddress(AddressData.地圖位置), 1);
@@ -137,7 +196,7 @@ namespace NOBApp
         public bool ResetPoint = false;
 
 
-        // 1. 首先新增遊戲狀態的枚舉類型
+        // 1. 首先新增遊戲狀態的枚舌類型
         public enum GameState
         {
             Unknown = 0,
@@ -228,10 +287,10 @@ namespace NOBApp
         {
             get
             {
-                // 需要檢查的六個位址
+                // 需要檢查的位址陣列，結構為 [baseAddress, offset1, offset2...]
                 string[][] addressPairs = new string[][]
                 {
-            new[] { AddressData.頻道認證A, "0", "192", "384" }
+                    new[] { AddressData.頻道認證A, "0", "192", "384" }
                 };
 
                 foreach (var basePair in addressPairs)
@@ -240,8 +299,17 @@ namespace NOBApp
                     for (int i = 1; i < basePair.Length; i++)
                     {
                         string offset = basePair[i];
-                        string addr = offset == "0" ? baseAddr : baseAddr.AddressAdd(int.Parse(offset));
+                        string addr;
 
+                        // 安全解析 offset，避免拋出異常
+                        if (offset == "0")
+                            addr = baseAddr;
+                        else if (int.TryParse(offset, out var offVal))
+                            addr = baseAddr.AddressAdd(offVal);
+                        else
+                            addr = baseAddr; // fallback
+
+                        // 使用更健壯的讀取與比對方法
                         if (驗證國家字串包含("胖鵝科技", addr))
                         {
                             return true;
@@ -254,8 +322,34 @@ namespace NOBApp
 
         private bool 驗證國家字串包含(string 搜尋字串, string address)
         {
-            Debug.WriteLine(MainWindow.dmSoft?.ReadString(Hwnd, $"{BASE_ADDRESS}{address}", 1, 16));
-            return MainWindow.dmSoft?.ReadString(Hwnd, $"{BASE_ADDRESS}{address}", 1, 16)?.Contains(搜尋字串) ?? false;
+            // 使用 GetFullAddress 統一字串前綴，並加入重試與例外處理，避免單次讀取失敗讓整個流程卡住
+            try
+            {
+                string fullAddr = GetFullAddress(address);
+                int attempts = 3;
+                for (int i = 0; i < attempts; i++)
+                {
+                    try
+                    {
+                        var result = MainWindow.dmSoft?.ReadString(Hwnd, fullAddr, 1, 16);
+                        Debug.WriteLine(result);
+                        if (!string.IsNullOrEmpty(result) && result.Contains(搜尋字串))
+                            return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"ReadString exception @{fullAddr}: {ex.Message}");
+                        // 若發生例外，稍微等待再重試
+                    }
+                    Task.Delay(100).Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"驗證字串包含失敗: {ex.Message}");
+            }
+
+            return false;
         }
 
         // 目標處理
@@ -309,7 +403,7 @@ namespace NOBApp
         public bool 希望取得 = false;
         /// <summary>
         /// 判斷是否開始隨機地圖上打怪
-        /// </summary>
+            /// </summary>
         public bool 開打 = false;
         public bool F5解無敵 = false;
         //使用 Enter 點怪(舊式)
@@ -336,6 +430,7 @@ namespace NOBApp
 
         public void CloseGame()
         {
+            _infoCts?.Cancel();
             Proc.Kill();
         }
         public void ClearBTData()
@@ -386,7 +481,8 @@ namespace NOBApp
                         StartRunCode = false;
                         string msg = $"{RunCode?.GetType().Name ?? "無腳本"} 狀態長時間沒有變化 需要請企鵝確認";
                         DiscordNotifier.SendNotificationAsync(PlayerName, msg);
-                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");//TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
                     }
                 }
             }
@@ -693,7 +789,10 @@ namespace NOBApp
             if (supDataCheck.Length > 0 && supDataCheck[supDataCheck.Length - 1].ToString().Contains("4"))
             {
                 string newD = supDataCheck.Length > 0 ? supDataCheck[0] + "0" : "00";
-                MainWindow.dmSoft.WriteData(Hwnd, GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
+                if (MainWindow.dmSoft != null)
+                {
+                    MainWindow.dmSoft.WriteData(Hwnd, GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
+                }
             }
         }
 
@@ -1156,7 +1255,7 @@ namespace NOBApp
                     if (int.TryParse(array[0], out int width) && int.TryParse(array[1], out int height))
                     {
                         UpdateWindowSize(width, height, -0.1f);
-                    }
+                    }   
                 }
             }
             else
