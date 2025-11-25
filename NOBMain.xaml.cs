@@ -187,10 +187,12 @@ namespace NOBApp
             A套路.Click += 套路_Click;
             B套路.Click += 套路_Click;
             C套路.Click += 套路_Click;
+            D套路.Click += 套路_Click;
+            E套路.Click += 套路_Click;
+            F套路.Click += 套路_Click;
 
             儲存套路.Click += 儲存套路_Click;
 
-            直接下指令_1.TextChanged += 直接下指令_TextChanged;
             同步_1.Click += 同步_Click;
 
             戰鬥輔助面.LayoutUpdated -= 戰鬥輔助面_LayoutUpdated; // 移除舊 handler 避免疊加
@@ -990,10 +992,27 @@ namespace NOBApp
 
         public void LoadSetting()
         {
-            // Implementation based on original logic
-            if (MainNob != null)
+            if (MainNob == null) return;
+
+            try
             {
+                // Ensure team member structures are initialized from current running windows
+                _teamManager.InitializeTeamMembersFromAllNobs();
+
+                // Load player-specific settings from disk into MainNob.CodeSetting
                 _scriptManager.LoadSetting(MainNob.PlayerName);
+
+                // Reflect loaded settings into the UI
+                _scriptManager.SettingLoadToUI();
+
+                // Apply saved team skill records (同步, 技能設定) to 隊員智能功能組
+                _teamManager.UpdateAutoSkillTeamMembers();
+
+                Debug.WriteLine("LoadSetting: completed initialization and applied team settings.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"LoadSetting: failed to load/apply settings: {ex.Message}");
             }
         }
 
@@ -1049,6 +1068,220 @@ namespace NOBApp
         public void 更新自動使用技能隊員名單()
         {
             _teamManager.UpdateAutoSkillTeamMembers();
+        }
+
+        public void AddRound_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tag && int.TryParse(tag, out int memberIndex))
+            {
+                var panelName = $"RoundsPanel_{memberIndex}";
+                var panel = this.FindName(panelName) as StackPanel;
+
+                // 檢查目前已有的回合數
+                // 如果不是 VIP 且已經有 1 個回合，則禁止新增
+                if (!Tools.IsVIP && panel != null && panel.Children.Count >= 1)
+                {
+                    MessageBox.Show("非 VIP 會員僅能設定一輪戰鬥。\n若需設定多輪戰鬥，請升級 VIP 會員。", "權限不足", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                AddRoundRow(memberIndex);
+            }
+        }
+
+        public void ClearRounds_Click(object sender, RoutedEventArgs e)
+        {
+             if (sender is Button btn && btn.Tag is string tag && int.TryParse(tag, out int memberIndex))
+            {
+                var panelName = $"RoundsPanel_{memberIndex}";
+                var panel = this.FindName(panelName) as StackPanel;
+                if (panel != null && panel.Children.Count > 0)
+                {
+                    panel.Children.RemoveAt(panel.Children.Count - 1);
+
+                    // 當移除回合後，恢復上一個回合的重複選項功能
+                    if (panel.Children.Count > 0)
+                    {
+                        var lastRow = panel.Children[panel.Children.Count - 1] as Canvas;
+                        if (lastRow != null)
+                        {
+                            foreach (var child in lastRow.Children)
+                            {
+                                if (child is CheckBox cb && (cb.Tag as string) == "重複")
+                                {
+                                    cb.IsEnabled = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void AddRoundRow(int memberIndex, RoundConfig? config = null, int roundNum = -1)
+        {
+            var panelName = $"RoundsPanel_{memberIndex}";
+            var panel = this.FindName(panelName) as StackPanel;
+            if (panel == null) return;
+
+            // 新增回合時，將上一個回合的重複選項取消並鎖定
+            if (panel.Children.Count > 0)
+            {
+                var lastRow = panel.Children[panel.Children.Count - 1] as Canvas;
+                if (lastRow != null)
+                {
+                    foreach (var child in lastRow.Children)
+                    {
+                        if (child is CheckBox cb && (cb.Tag as string) == "重複")
+                        {
+                            cb.IsChecked = false;
+                            cb.IsEnabled = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            Canvas row = new Canvas();
+            row.Height = 30;
+
+            // Helper to create TextBox
+            TextBox CreateTextBox(string name, string def, double w, double l, string tip, string bg)
+            {
+                var tb = new TextBox
+                {
+                    Text = def,
+                    Width = w,
+                    Height = 20,
+                    TextWrapping = TextWrapping.Wrap,
+                    ToolTip = tip,
+                    MaxLength = 4,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString(bg),
+                    Tag = name 
+                };
+                Canvas.SetLeft(tb, l);
+                Canvas.SetTop(tb, 5);
+                try { tb.Style = (Style)FindResource("CurrentInputStyle"); } catch {}
+                return tb;
+            }
+
+            // Helper to create CheckBox
+            CheckBox CreateCheckBox(string name, string content, double l)
+            {
+                var cb = new CheckBox
+                {
+                    Content = content,
+                    Tag = name
+                };
+                Canvas.SetLeft(cb, l);
+                Canvas.SetTop(cb, 8);
+                return cb;
+            }
+
+            // Helper to create Label
+            Label CreateLabel(string name, string content, double w, double l, string tip, string bg)
+            {
+                var lbl = new Label
+                {
+                    Content = content,
+                    Width = w,
+                    Height = 24,
+                    ToolTip = tip,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString(bg),
+                    Tag = name,
+                    Padding = new Thickness(0),
+                    FontSize = 12,
+                    FontWeight = FontWeights.Bold
+                };
+                Canvas.SetLeft(lbl, l);
+                Canvas.SetTop(lbl, 3);
+                return lbl;
+            }
+
+            int rNum = roundNum != -1 ? roundNum : (panel.Children.Count + 1);
+            var lblRound = CreateLabel("回合", rNum.ToString(), 30, 0, "回合數", "#FFFCE4EC");
+
+            // CheckBoxes
+            var cbOnce = CreateCheckBox("開場一", "一次", 35);
+            var cbRepeat = CreateCheckBox("重複", "重複", 90);
+            if (config != null)
+            {
+                cbOnce.IsChecked = config.一次放;
+                cbRepeat.IsChecked = config.重複放;
+            }
+            
+            // TextBoxes
+            var tbSpeed = CreateTextBox("程式速度", config?.程式速度.ToString() ?? "100", 56, 145, "程式運作速度", "#FFE8F5E9");
+            
+            var tbDelay = CreateTextBox("延遲施放", config?.延遲.ToString() ?? "0", 56, 205, "延遲", "#FFFCE4EC");
+            var tbInterval = CreateTextBox("間隔時間放", config?.間隔.ToString() ?? "0", 56, 265, "間隔", "#FFFCE4EC");
+            
+            var tbS1 = CreateTextBox("技能段1", config?.技能段1.ToString() ?? "", 32, 325, "技能段1", "#FFFFF9C4");
+            var tbS2 = CreateTextBox("技能段2", config?.技能段2.ToString() ?? "", 32, 360, "技能段2", "#FFFFF9C4");
+            var tbS3 = CreateTextBox("技能段3", config?.技能段3.ToString() ?? "", 32, 395, "技能段3", "#FFFFF9C4");
+            
+            var tbA = CreateTextBox("施放A", config?.施放A ?? "", 32, 430, "施放A", "#FFC8E6C9");
+            var tbB = CreateTextBox("施放B", config?.施放B ?? "", 32, 465, "施放B", "#FFC8E6C9");
+            var tbC = CreateTextBox("施放C", config?.施放C ?? "", 32, 500, "施放C", "#FFC8E6C9");
+
+            row.Children.Add(lblRound);
+            row.Children.Add(cbOnce);
+            row.Children.Add(cbRepeat);
+            row.Children.Add(tbSpeed);
+            row.Children.Add(tbDelay);
+            row.Children.Add(tbInterval);
+            row.Children.Add(tbS1);
+            row.Children.Add(tbS2);
+            row.Children.Add(tbS3);
+            row.Children.Add(tbA);
+            row.Children.Add(tbB);
+            row.Children.Add(tbC);
+
+            panel.Children.Add(row);
+        }
+
+        public void SetTabHeader(string text)
+        {
+            if (RootTabItem == null) return;
+
+            if (RootTabItem.Header is StackPanel panel)
+            {
+                foreach (var child in panel.Children)
+                {
+                    if (child is TextBlock tb)
+                    {
+                        tb.Text = text;
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                // Recreate the structure if it's missing
+                var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+                var headerText = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
+                var focusButton = new Button 
+                { 
+                    Content = "F", 
+                    Width = 20, 
+                    Height = 20, 
+                    Margin = new Thickness(5, 0, 0, 0),
+                    ToolTip = "Focus Window",
+                    FontSize = 10,
+                    Padding = new Thickness(0)
+                };
+                
+                focusButton.Click += (s, e) => FocusUserWindows();
+
+                headerPanel.Children.Add(headerText);
+                headerPanel.Children.Add(focusButton);
+                RootTabItem.Header = headerPanel;
+            }
         }
     }
 }

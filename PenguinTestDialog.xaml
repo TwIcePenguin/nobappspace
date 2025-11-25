@@ -1,4 +1,4 @@
-<Window x:Class="NOBApp.PenguinTestDialog"
+﻿<Window x:Class="NOBApp.PenguinTestDialog"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  Title="企鵝測試 B" Height="220" Width="420" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">

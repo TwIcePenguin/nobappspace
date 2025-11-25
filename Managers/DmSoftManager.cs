@@ -1,4 +1,4 @@
-using RegisterDmSoftConsoleApp.Configs;
+﻿using RegisterDmSoftConsoleApp.Configs;
 using RegisterDmSoftConsoleApp.DmSoft;
 using System;
 using System.Diagnostics;

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -14,6 +15,11 @@ namespace NOBApp
 {
     public class NOBDATA : NOBBehavior
     {
+        private CancellationTokenSource? _infoCts;
+        private string _cachedAccount = string.Empty;
+        private string _cachedPassword = string.Empty;
+        private string _cachedPlayerName = string.Empty;
+
         public NOBDATA(Process proc) : base(proc)
         {
             bool _initWH = true;
@@ -28,7 +34,56 @@ namespace NOBApp
                 }
                 Task.Delay(100).Wait();
             }
-            LogID = Account;
+
+            // Start background refresh which will populate cached Account/PlayerName shortly after construction.
+            _infoCts?.Cancel();
+            _infoCts = new CancellationTokenSource();
+            _ = Task.Run(() => RefreshBasicInfoLoop(_infoCts.Token));
+
+            // Set initial LogID to placeholder to avoid heavy read here
+            LogID = "(loading)";
+        }
+
+        private async Task RefreshBasicInfoLoop(CancellationToken token)
+        {
+            try
+            {
+                int attempts = 0;
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var acc = ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+                        var pas = ReadString(GetFullAddress(AddressData.Pas), 0, 15);
+                        var name = ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+
+                        if (!string.IsNullOrEmpty(acc)) _cachedAccount = acc;
+                        if (!string.IsNullOrEmpty(pas)) _cachedPassword = pas;
+                        if (!string.IsNullOrEmpty(name)) _cachedPlayerName = name;
+
+                        if (!string.IsNullOrEmpty(_cachedAccount) && LogID == "(loading)")
+                        {
+                            LogID = _cachedAccount;
+                        }
+
+                        attempts++;
+                        await Task.Delay(attempts < 3 ? 200 : 500, token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"RefreshBasicInfoLoop error: {ex.Message}");
+                        await Task.Delay(500, token);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"RefreshBasicInfoLoop fatal: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -61,6 +116,8 @@ namespace NOBApp
 
         public Setting CodeSetting = new();
         public 自動技能組 AutoSkillSet = new();
+        public int CurrentRound { get; set; } = 1;
+        private bool _wasInBattle = false;
         public DateTime 到期日 = DateTime.Now.AddYears(99);
         public RECT 原視窗;
         public int NowHeight;
@@ -78,10 +135,14 @@ namespace NOBApp
                 ? fullAddress
                 : _addressCache[address] = $"{BASE_ADDRESS}{address}";
 
-        // 角色基本資訊
-        public string Account => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
-        public string Password => ReadString(GetFullAddress(AddressData.Pas), 0, 15);
-        public string PlayerName => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+        // 角色基本資訊: return cached first to avoid blocking UI
+        public string Account => !string.IsNullOrEmpty(_cachedAccount) ? _cachedAccount : ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string Password => !string.IsNullOrEmpty(_cachedPassword) ? _cachedPassword : ReadString(GetFullAddress(AddressData.Pas), 0, 15);
+        public string PlayerName => !string.IsNullOrEmpty(_cachedPlayerName) ? _cachedPlayerName : ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+
+        // 同步直接讀取（需要即時值時使用）
+        public string ReadAccountNow() => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string ReadPlayerNameNow() => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
 
         // 位置和地圖資訊
         public int MAPID => ReadInt(GetFullAddress(AddressData.地圖位置), 1);
@@ -137,7 +198,7 @@ namespace NOBApp
         public bool ResetPoint = false;
 
 
-        // 1. 首先新增遊戲狀態的枚舉類型
+        // 1. 首先新增遊戲狀態的枚舌類型
         public enum GameState
         {
             Unknown = 0,
@@ -228,10 +289,10 @@ namespace NOBApp
         {
             get
             {
-                // 需要檢查的六個位址
+                // 需要檢查的位址陣列，結構為 [baseAddress, offset1, offset2...]
                 string[][] addressPairs = new string[][]
                 {
-            new[] { AddressData.頻道認證A, "0", "192", "384" }
+                    new[] { AddressData.頻道認證A, "0", "192", "384" }
                 };
 
                 foreach (var basePair in addressPairs)
@@ -240,8 +301,17 @@ namespace NOBApp
                     for (int i = 1; i < basePair.Length; i++)
                     {
                         string offset = basePair[i];
-                        string addr = offset == "0" ? baseAddr : baseAddr.AddressAdd(int.Parse(offset));
+                        string addr;
 
+                        // 安全解析 offset，避免拋出異常
+                        if (offset == "0")
+                            addr = baseAddr;
+                        else if (int.TryParse(offset, out var offVal))
+                            addr = baseAddr.AddressAdd(offVal);
+                        else
+                            addr = baseAddr; // fallback
+
+                        // 使用更健壯的讀取與比對方法
                         if (驗證國家字串包含("胖鵝科技", addr))
                         {
                             return true;
@@ -254,8 +324,34 @@ namespace NOBApp
 
         private bool 驗證國家字串包含(string 搜尋字串, string address)
         {
-            Debug.WriteLine(MainWindow.dmSoft?.ReadString(Hwnd, $"{BASE_ADDRESS}{address}", 1, 16));
-            return MainWindow.dmSoft?.ReadString(Hwnd, $"{BASE_ADDRESS}{address}", 1, 16)?.Contains(搜尋字串) ?? false;
+            // 使用 GetFullAddress 統一字串前綴，並加入重試與例外處理，避免單次讀取失敗讓整個流程卡住
+            try
+            {
+                string fullAddr = GetFullAddress(address);
+                int attempts = 3;
+                for (int i = 0; i < attempts; i++)
+                {
+                    try
+                    {
+                        var result = MainWindow.dmSoft?.ReadString(Hwnd, fullAddr, 1, 16);
+                        Debug.WriteLine(result);
+                        if (!string.IsNullOrEmpty(result) && result.Contains(搜尋字串))
+                            return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"ReadString exception @{fullAddr}: {ex.Message}");
+                        // 若發生例外，稍微等待再重試
+                    }
+                    Task.Delay(100).Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"驗證字串包含失敗: {ex.Message}");
+            }
+
+            return false;
         }
 
         // 目標處理
@@ -309,7 +405,7 @@ namespace NOBApp
         public bool 希望取得 = false;
         /// <summary>
         /// 判斷是否開始隨機地圖上打怪
-        /// </summary>
+            /// </summary>
         public bool 開打 = false;
         public bool F5解無敵 = false;
         //使用 Enter 點怪(舊式)
@@ -336,6 +432,7 @@ namespace NOBApp
 
         public void CloseGame()
         {
+            _infoCts?.Cancel();
             Proc.Kill();
         }
         public void ClearBTData()
@@ -386,7 +483,8 @@ namespace NOBApp
                         StartRunCode = false;
                         string msg = $"{RunCode?.GetType().Name ?? "無腳本"} 狀態長時間沒有變化 需要請企鵝確認";
                         DiscordNotifier.SendNotificationAsync(PlayerName, msg);
-                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");//TelegramNotifier.SendNotificationAsync(PlayerName, "狀態長時間沒有變化 需要確認");
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
                     }
                 }
             }
@@ -400,6 +498,17 @@ namespace NOBApp
                 return;
             Log($"2 啟動自動輔助中");
             啟動自動輔助中 = true;
+
+            // Debug: print current AutoSkillSet values to help trace configuration
+            try
+            {
+                Debug.WriteLine($"[AutoSkillSet] {PlayerName} -> 同步={AutoSkillSet.同步}, 一次放={AutoSkillSet.一次放}, 重複放={AutoSkillSet.重複放}, 需選擇={AutoSkillSet.需選擇}, 搖屁股={AutoSkillSet.搖屁股}, 背景Enter={AutoSkillSet.背景Enter}, 延遲={AutoSkillSet.延遲}, 間隔={AutoSkillSet.間隔}, 技能段1={AutoSkillSet.技能段1}, 技能段2={AutoSkillSet.技能段2}, 技能段3={AutoSkillSet.技能段3}, 施放A={AutoSkillSet.施放A}, 施放B={AutoSkillSet.施放B}, 施放C={AutoSkillSet.施放C}, 程式速度={AutoSkillSet.程式速度}, 特殊運作={AutoSkillSet.特殊運作}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to log AutoSkillSet for {PlayerName}: {ex.Message}");
+            }
+            
 
             bool 希望完成 = false;
             已經放過一次 = false;
@@ -418,7 +527,15 @@ namespace NOBApp
                     continue;
                 }
 
-                if (戰鬥中)
+                bool isInBattle = 戰鬥中;
+                if (isInBattle && !_wasInBattle)
+                {
+                    CurrentRound = 1;
+                    // Debug.WriteLine($"Battle Start, Round {CurrentRound}");
+                }
+                _wasInBattle = isInBattle;
+
+                if (isInBattle)
                 {
                     希望完成 = false;
                     處理戰鬥流程();
@@ -468,7 +585,22 @@ namespace NOBApp
         public void 處理戰鬥流程(bool isSkipCheck = false)
         {
             int checkDo = 0;
-            //Log($"進入戰鬥中{_IsRuning} {IsUseAutoSkill} {AutoSkillSet.一次放 || AutoSkillSet.重複放}");
+            
+            // Determine configuration for current round
+            bool useRoundConfig = AutoSkillSet.RoundConfigs.TryGetValue(CurrentRound, out var roundConfig);
+            
+            bool config_重複放 = useRoundConfig ? roundConfig.重複放 : AutoSkillSet.重複放;
+            bool config_一次放 = useRoundConfig ? roundConfig.一次放 : AutoSkillSet.一次放;
+            int config_延遲 = useRoundConfig ? roundConfig.延遲 : AutoSkillSet.延遲;
+            int config_技能段1 = useRoundConfig ? roundConfig.技能段1 : AutoSkillSet.技能段1;
+            int config_技能段2 = useRoundConfig ? roundConfig.技能段2 : AutoSkillSet.技能段2;
+            int config_技能段3 = useRoundConfig ? roundConfig.技能段3 : AutoSkillSet.技能段3;
+            string config_施放A = useRoundConfig ? roundConfig.施放A : AutoSkillSet.施放A;
+            string config_施放B = useRoundConfig ? roundConfig.施放B : AutoSkillSet.施放B;
+            string config_施放C = useRoundConfig ? roundConfig.施放C : AutoSkillSet.施放C;
+            int config_程式速度 = useRoundConfig ? roundConfig.程式速度 : AutoSkillSet.程式速度;
+
+            //Log($"進入戰鬥中{_IsRuning} {IsUseAutoSkill} {config_一次放 || config_重複放}");
             #region 戰鬥中
             //目前選數量 
             var index = MainWindow.dmSoft!.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
@@ -477,7 +609,7 @@ namespace NOBApp
                 BtDataUpdate();
             }
 
-            if (AutoSkillSet.一次放 || AutoSkillSet.重複放)
+            if (config_一次放 || config_重複放)
             {
                 if (_IsRuning)
                     return;
@@ -493,41 +625,41 @@ namespace NOBApp
                         string newD = supDataCheck[0] + "0";
                         MainWindow.dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
                     }
-                    //Log($"有指令 準備進入指令 - 2 -> Index {index} 放過依次 : {已經放過一次} SP:{AutoSkillSet.特殊運作} {AutoSkillSet.技能段1} {AutoSkillSet.技能段2}");
+                    //Log($"有指令 準備進入指令 - 2 -> Index {index} 放過依次 : {已經放過一次} SP:{AutoSkillSet.特殊運作} {config_技能段1} {config_技能段2}");
                     if (index > 0)
                     {
                         if (已經放過一次)
                             break;
 
-                        if (AutoSkillSet.延遲 > 0)
+                        if (config_延遲 > 0)
                         {
-                            Task.Delay(AutoSkillSet.延遲).Wait();
+                            Task.Delay(config_延遲).Wait();
                         }
                         if (AutoSkillSet.特殊運作)
                         {
                             int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
                             Log("setindex : " + setindex);
 
-                            Task.Delay(AutoSkillSet.程式速度).Wait();
+                            Task.Delay(config_程式速度).Wait();
                             if (setindex == 0)
                             {
-                                直向選擇(AutoSkillSet.技能段1, AutoSkillSet.程式速度, isSkipCheck);
+                                直向選擇(config_技能段1, config_程式速度, isSkipCheck);
                             }
-                            if (setindex == 1 && AutoSkillSet.技能段2 >= 0)
+                            if (setindex == 1 && config_技能段2 >= 0)
                             {
-                                直向選擇(AutoSkillSet.技能段2, AutoSkillSet.程式速度, isSkipCheck);
+                                直向選擇(config_技能段2, config_程式速度, isSkipCheck);
                             }
 
                             int setNum = -1;
                             if (setindex == 2)
                             {
-                                if (AutoSkillSet.技能段3 >= 0)
-                                    直向選擇(AutoSkillSet.技能段3, AutoSkillSet.程式速度, isSkipCheck);
+                                if (config_技能段3 >= 0)
+                                    直向選擇(config_技能段3, config_程式速度, isSkipCheck);
 
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
+                                if (string.IsNullOrEmpty(config_施放A) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放A);
-                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放A);
+                                    直向選擇(setNum == -1 ? 0 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -538,16 +670,16 @@ namespace NOBApp
 
                             if (setindex == 3)
                             {
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
+                                if (string.IsNullOrEmpty(config_施放A) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放A);
-                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放A);
+                                    直向選擇(setNum == -1 ? 0 : setNum, config_程式速度, isSkipCheck);
                                 }
 
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
+                                if (string.IsNullOrEmpty(config_施放B) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放B);
-                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放B);
+                                    直向選擇(setNum == -1 ? 0 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -558,16 +690,16 @@ namespace NOBApp
 
                             if (setindex == 4)
                             {
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
+                                if (string.IsNullOrEmpty(config_施放B) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放B);
-                                    直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放B);
+                                    直向選擇(setNum == -1 ? 1 : setNum, config_程式速度, isSkipCheck);
                                 }
 
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
+                                if (string.IsNullOrEmpty(config_施放C) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放C);
-                                    直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放C);
+                                    直向選擇(setNum == -1 ? 1 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -578,10 +710,10 @@ namespace NOBApp
 
                             if (setindex == 5)
                             {
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
+                                if (string.IsNullOrEmpty(config_施放C) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放C);
-                                    直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放C);
+                                    直向選擇(setNum == -1 ? 2 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -614,11 +746,16 @@ namespace NOBApp
                     if (index <= 0)
                     {
                         checkDo = 0;
-                        if (放技能完成 && AutoSkillSet.一次放)
-                            已經放過一次 = true;
+                        if (放技能完成)
+                        {
+                            if (config_一次放)
+                                已經放過一次 = true;
+                            
+                            CurrentRound++;
+                        }
                         break;
                     }
-                    Task.Delay(AutoSkillSet.程式速度).Wait();
+                    Task.Delay(config_程式速度).Wait();
                 }
                 while ((isSkipCheck || IsUseAutoSkill) && index > 0);
                 _IsRuning = false;
@@ -693,7 +830,10 @@ namespace NOBApp
             if (supDataCheck.Length > 0 && supDataCheck[supDataCheck.Length - 1].ToString().Contains("4"))
             {
                 string newD = supDataCheck.Length > 0 ? supDataCheck[0] + "0" : "00";
-                MainWindow.dmSoft.WriteData(Hwnd, GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
+                if (MainWindow.dmSoft != null)
+                {
+                    MainWindow.dmSoft.WriteData(Hwnd, GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
+                }
             }
         }
 
@@ -1156,7 +1296,7 @@ namespace NOBApp
                     if (int.TryParse(array[0], out int width) && int.TryParse(array[1], out int height))
                     {
                         UpdateWindowSize(width, height, -0.1f);
-                    }
+                    }   
                 }
             }
             else

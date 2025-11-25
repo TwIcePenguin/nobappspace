@@ -43,15 +43,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<COMReference Include="dm">
-			<VersionMinor>0</VersionMinor>
-			<VersionMajor>1</VersionMajor>
-			<Guid>84288aad-ba02-4ef2-85ec-3fad4d11354d</Guid>
-			<Lcid>0</Lcid>
-			<WrapperTool>tlbimp</WrapperTool>
-			<Isolated>false</Isolated>
-			<EmbedInteropTypes>true</EmbedInteropTypes>
-		</COMReference>
+		<!-- Replace COMReference (unsupported by SDK MSBuild) with a direct file reference to the interop/COM proxy DLL if present. -->
+		<!-- If you need true COM tlb import, generate interop assembly with tlbimp.exe and reference the generated assembly here. -->
+		<Reference Include="dm">
+			<HintPath>libs\dm.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>

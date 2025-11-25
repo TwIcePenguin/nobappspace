@@ -91,9 +91,28 @@ namespace NOBApp
         public List<隊員資料紀錄檔> 方案A { get; set; } = new List<隊員資料紀錄檔>();
         public List<隊員資料紀錄檔> 方案B { get; set; } = new List<隊員資料紀錄檔>();
         public List<隊員資料紀錄檔> 方案C { get; set; } = new List<隊員資料紀錄檔>();
+        public List<隊員資料紀錄檔> 方案D { get; set; } = new List<隊員資料紀錄檔>();
+        public List<隊員資料紀錄檔> 方案E { get; set; } = new List<隊員資料紀錄檔>();
+        public List<隊員資料紀錄檔> 方案F { get; set; } = new List<隊員資料紀錄檔>();
     }
+    public class RoundConfig
+    {
+        public bool 重複放 { get; set; }
+        public bool 一次放 { get; set; }
+        public int 延遲 { get; set; }
+        public int 間隔 { get; set; }
+        public int 技能段1 { get; set; }
+        public int 技能段2 { get; set; }
+        public int 技能段3 { get; set; }
+        public string 施放A { get; set; } = string.Empty;
+        public string 施放B { get; set; } = string.Empty;
+        public string 施放C { get; set; } = string.Empty;
+        public int 程式速度 { get; set; }
+    }
+
     public class 隊員資料紀錄檔
     {
+        public Dictionary<int, RoundConfig> RoundConfigs { get; set; } = new Dictionary<int, RoundConfig>();
         public bool 同步 { get; set; }
         public string 用名 { get; set; } = string.Empty;
         public bool 重複放 { get; set; }
@@ -107,6 +126,7 @@ namespace NOBApp
         public string 施放B { get; set; } = string.Empty;
         public string 施放C { get; set; } = string.Empty;
         public int 程式速度 { get; set; }
+        public int 回合 { get; set; }
     }
 
     public class Setting

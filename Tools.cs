@@ -146,7 +146,38 @@ namespace NOBApp
         {
             return (int.Parse(str, NumberStyles.HexNumber) + i).ToString("X");
         }
-        public static bool IsVIP = false;
+
+        // 使用 Enum 來區分帳號等級，方便後續擴充與驗證
+        public enum AccountLevel
+        {
+            None = 0,
+            Free = 1,
+            VIP = 2,
+            Sponsor = 3,  // 贊助者
+            Special = 4,  // 特殊者
+            Admin = 99
+        }
+
+        public static AccountLevel CurrentLevel = AccountLevel.None;
+
+        // IsVIP 改為唯讀屬性，根據 CurrentLevel 判斷
+        public static bool IsVIP 
+        {
+            get { return CurrentLevel >= AccountLevel.VIP; }
+            set 
+            { 
+                // 為了相容舊程式碼的賦值操作，這裡做簡單的轉換
+                if (value)
+                {
+                    if (CurrentLevel < AccountLevel.VIP) CurrentLevel = AccountLevel.VIP;
+                }
+                else
+                {
+                    CurrentLevel = AccountLevel.Free;
+                }
+            }
+        }
+
         public static bool isBANACC = false;
 
         /// <summary>

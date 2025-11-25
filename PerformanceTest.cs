@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.Drawing;
 
@@ -8,27 +8,27 @@ namespace NOBApp
     {
         public static void TestGetColorCopNum(IntPtr hwnd, Point posStart, Point WeHi, string colorStr)
         {
-            // ´ú¶qÀu¤Æ«eªº¤èªk°õ¦æ®É¶¡
+            // æ¸¬é‡å„ªåŒ–å‰çš„æ–¹æ³•åŸ·è¡Œæ™‚é–“
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             int resultBefore = ColorTools.GetColorNum(hwnd, posStart, WeHi, colorStr);
             stopwatch.Stop();
             long timeBefore = stopwatch.ElapsedMilliseconds;
 
-            // ¥´¦Lµ²ªG
-              Debug.WriteLine($"Àu¤Æ«eªº°õ¦æ®É¶¡: {timeBefore} ²@¬í, ¤Ç°tªºÃC¦â¼Æ¶q: {resultBefore}");
+            // æ‰“å°çµæœ
+              Debug.WriteLine($"å„ªåŒ–å‰çš„åŸ·è¡Œæ™‚é–“: {timeBefore} æ¯«ç§’, åŒ¹é…çš„é¡è‰²æ•¸é‡: {resultBefore}");
 
-            // ´ú¶qÀu¤Æ«áªº¤èªk°õ¦æ®É¶¡
+            // æ¸¬é‡å„ªåŒ–å¾Œçš„æ–¹æ³•åŸ·è¡Œæ™‚é–“
             stopwatch.Restart();
             int resultAfter = ColorTools.GetColorNum(hwnd, posStart, WeHi, colorStr);
             stopwatch.Stop();
             long timeAfter = stopwatch.ElapsedMilliseconds;
 
-            // ¥´¦Lµ²ªG
-              Debug.WriteLine($"Àu¤Æ«áªº°õ¦æ®É¶¡: {timeAfter} ²@¬í, ¤Ç°tªºÃC¦â¼Æ¶q: {resultAfter}");
+            // æ‰“å°çµæœ
+              Debug.WriteLine($"å„ªåŒ–å¾Œçš„åŸ·è¡Œæ™‚é–“: {timeAfter} æ¯«ç§’, åŒ¹é…çš„é¡è‰²æ•¸é‡: {resultAfter}");
 
-            // ¤ñ¸ûµ²ªG
-              Debug.WriteLine($"©Ê¯à§ï¶i: {(timeBefore - timeAfter) / (double)timeBefore * 100}%");
+            // æ¯”è¼ƒçµæœ
+              Debug.WriteLine($"æ€§èƒ½æ”¹é€²: {(timeBefore - timeAfter) / (double)timeBefore * 100}%");
         }
     }
 }
