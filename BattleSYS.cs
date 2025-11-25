@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NOBApp
 {
@@ -22,9 +19,9 @@ namespace NOBApp
             public int 技能段1 { get; set; }
             public int 技能段2 { get; set; }
             public int 技能段3 { get; set; }
-            public string 施放A { get; set; }
-            public string 施放B { get; set; }
-            public string 施放C { get; set; }
+            public string 施放A { get; set; } = string.Empty;
+            public string 施放B { get; set; } = string.Empty;
+            public string 施放C { get; set; } = string.Empty;
             public int 程式速度 { get; set; }
             public bool 特殊運作 = false;
         }
@@ -36,7 +33,7 @@ namespace NOBApp
             int index = -1;
             if (t != null)
             {
-                index = t.FindIndex(0, tdata => { return tdata.FullName.Contains(chID, 0); });
+                index = t.FindIndex(0, tdata => { return tdata.FullName.Contains(chID); });
             }
             return index;
         }
@@ -47,7 +44,7 @@ namespace NOBApp
             if (d == null)
                 return 0;
             else
-                return d!.UID;
+                return d.UID;
         }
     }
 }
