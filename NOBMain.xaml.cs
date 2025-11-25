@@ -190,7 +190,6 @@ namespace NOBApp
 
             儲存套路.Click += 儲存套路_Click;
 
-            直接下指令_1.TextChanged += 直接下指令_TextChanged;
             同步_1.Click += 同步_Click;
 
             戰鬥輔助面.LayoutUpdated -= 戰鬥輔助面_LayoutUpdated; // 移除舊 handler 避免疊加
@@ -1066,6 +1065,113 @@ namespace NOBApp
         public void 更新自動使用技能隊員名單()
         {
             _teamManager.UpdateAutoSkillTeamMembers();
+        }
+
+        public void AddRound_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tag && int.TryParse(tag, out int memberIndex))
+            {
+                AddRoundRow(memberIndex);
+            }
+        }
+
+        public void ClearRounds_Click(object sender, RoutedEventArgs e)
+        {
+             if (sender is Button btn && btn.Tag is string tag && int.TryParse(tag, out int memberIndex))
+            {
+                var panelName = $"RoundsPanel_{memberIndex}";
+                var panel = this.FindName(panelName) as StackPanel;
+                if (panel != null)
+                {
+                    panel.Children.Clear();
+                }
+            }
+        }
+
+        public void AddRoundRow(int memberIndex, RoundConfig? config = null, int roundNum = -1)
+        {
+            var panelName = $"RoundsPanel_{memberIndex}";
+            var panel = this.FindName(panelName) as StackPanel;
+            if (panel == null) return;
+
+            Canvas row = new Canvas();
+            row.Height = 30;
+
+            // Helper to create TextBox
+            TextBox CreateTextBox(string name, string def, double w, double l, string tip, string bg)
+            {
+                var tb = new TextBox
+                {
+                    Text = def,
+                    Width = w,
+                    Height = 20,
+                    TextWrapping = TextWrapping.Wrap,
+                    ToolTip = tip,
+                    MaxLength = 4,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString(bg),
+                    Tag = name 
+                };
+                Canvas.SetLeft(tb, l);
+                Canvas.SetTop(tb, 5);
+                try { tb.Style = (Style)FindResource("CurrentInputStyle"); } catch {}
+                return tb;
+            }
+
+            // Helper to create CheckBox
+            CheckBox CreateCheckBox(string name, string content, double l)
+            {
+                var cb = new CheckBox
+                {
+                    Content = content,
+                    Tag = name
+                };
+                Canvas.SetLeft(cb, l);
+                Canvas.SetTop(cb, 8);
+                return cb;
+            }
+
+            // CheckBoxes
+            var cbOnce = CreateCheckBox("開場一", "一次", 243);
+            var cbRepeat = CreateCheckBox("重複", "重複", 305);
+            if (config != null)
+            {
+                cbOnce.IsChecked = config.一次放;
+                cbRepeat.IsChecked = config.重複放;
+            }
+            row.Children.Add(cbOnce);
+            row.Children.Add(cbRepeat);
+
+            // TextBoxes
+            var tbSpeed = CreateTextBox("程式速度", config?.程式速度.ToString() ?? "100", 56, 39, "程式運作速度", "#FFE8F5E9");
+            
+            int rNum = roundNum != -1 ? roundNum : (panel.Children.Count + 1);
+            var tbRound = CreateTextBox("回合", rNum.ToString(), 32, 0, "回合數", "#FFFCE4EC");
+            
+            var tbDelay = CreateTextBox("延遲施放", config?.延遲.ToString() ?? "0", 56, 98, "延遲", "#FFFCE4EC");
+            var tbInterval = CreateTextBox("間隔時間放", config?.間隔.ToString() ?? "0", 56, 158, "間隔", "#FFFCE4EC");
+            
+            var tbS1 = CreateTextBox("技能段1", config?.技能段1.ToString() ?? "", 32, 218, "技能段1", "#FFFFF9C4");
+            var tbS2 = CreateTextBox("技能段2", config?.技能段2.ToString() ?? "", 32, 254, "技能段2", "#FFFFF9C4");
+            var tbS3 = CreateTextBox("技能段3", config?.技能段3.ToString() ?? "", 32, 290, "技能段3", "#FFFFF9C4");
+            
+            var tbA = CreateTextBox("施放A", config?.施放A ?? "", 32, 326, "施放A", "#FFC8E6C9");
+            var tbB = CreateTextBox("施放B", config?.施放B ?? "", 32, 362, "施放B", "#FFC8E6C9");
+            var tbC = CreateTextBox("施放C", config?.施放C ?? "", 32, 398, "施放C", "#FFC8E6C9");
+
+            row.Children.Add(tbSpeed);
+            row.Children.Add(tbRound);
+            row.Children.Add(tbDelay);
+            row.Children.Add(tbInterval);
+            row.Children.Add(tbS1);
+            row.Children.Add(tbS2);
+            row.Children.Add(tbS3);
+            row.Children.Add(tbA);
+            row.Children.Add(tbB);
+            row.Children.Add(tbC);
+
+            panel.Children.Add(row);
         }
     }
 }
