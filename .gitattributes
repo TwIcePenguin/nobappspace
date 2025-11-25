@@ -1,0 +1,17 @@
+# Enforce UTF-8 encoding for source files to avoid encoding corruption
+# Use working-tree-encoding to have Git convert to UTF-8 in the working tree
+*.cs text working-tree-encoding=UTF-8
+*.xaml text working-tree-encoding=UTF-8
+*.resx text working-tree-encoding=UTF-8
+*.config text working-tree-encoding=UTF-8
+*.json text working-tree-encoding=UTF-8
+*.xml text working-tree-encoding=UTF-8
+# Ensure scripts remain executable
+*.ps1 text eol=crlf
+# Images and binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+# Lock files
+.packages.lock.json text working-tree-encoding=UTF-8
