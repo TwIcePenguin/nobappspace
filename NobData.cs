@@ -497,6 +497,17 @@ namespace NOBApp
             Log($"2 啟動自動輔助中");
             啟動自動輔助中 = true;
 
+            // Debug: print current AutoSkillSet values to help trace configuration
+            try
+            {
+                Debug.WriteLine($"[AutoSkillSet] {PlayerName} -> 同步={AutoSkillSet.同步}, 一次放={AutoSkillSet.一次放}, 重複放={AutoSkillSet.重複放}, 需選擇={AutoSkillSet.需選擇}, 搖屁股={AutoSkillSet.搖屁股}, 背景Enter={AutoSkillSet.背景Enter}, 延遲={AutoSkillSet.延遲}, 間隔={AutoSkillSet.間隔}, 技能段1={AutoSkillSet.技能段1}, 技能段2={AutoSkillSet.技能段2}, 技能段3={AutoSkillSet.技能段3}, 施放A={AutoSkillSet.施放A}, 施放B={AutoSkillSet.施放B}, 施放C={AutoSkillSet.施放C}, 程式速度={AutoSkillSet.程式速度}, 特殊運作={AutoSkillSet.特殊運作}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to log AutoSkillSet for {PlayerName}: {ex.Message}");
+            }
+            
+
             bool 希望完成 = false;
             已經放過一次 = false;
             放技能完成 = false;

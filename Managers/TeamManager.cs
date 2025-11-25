@@ -241,6 +241,23 @@ namespace NOBApp.Managers
                         member.施放B = set.施放B;
                         member.施放C = set.施放C;
                         member.程式速度 = set.程式速度;
+
+                        // Also sync values into the runtime NOBDATA AutoSkillSet so battle logic uses them
+                        if (member.NOB != null)
+                        {
+                            member.NOB.AutoSkillSet.同步 = member.同步;
+                            member.NOB.AutoSkillSet.一次放 = member.一次放;
+                            member.NOB.AutoSkillSet.重複放 = member.重複放;
+                            member.NOB.AutoSkillSet.延遲 = member.延遲;
+                            member.NOB.AutoSkillSet.間隔 = member.間隔;
+                            member.NOB.AutoSkillSet.技能段1 = member.技能段1;
+                            member.NOB.AutoSkillSet.技能段2 = member.技能段2;
+                            member.NOB.AutoSkillSet.技能段3 = member.技能段3;
+                            member.NOB.AutoSkillSet.施放A = member.施放A;
+                            member.NOB.AutoSkillSet.施放B = member.施放B;
+                            member.NOB.AutoSkillSet.施放C = member.施放C;
+                            member.NOB.AutoSkillSet.程式速度 = member.程式速度;
+                        }
                     }
                     else
                     {
@@ -262,6 +279,24 @@ namespace NOBApp.Managers
                             newMember.施放B = set.施放B;
                             newMember.施放C = set.施放C;
                             newMember.程式速度 = set.程式速度;
+
+                            // apply to nob runtime AutoSkillSet as well
+                            if (nob != null)
+                            {
+                                nob.AutoSkillSet.同步 = newMember.同步;
+                                nob.AutoSkillSet.一次放 = newMember.一次放;
+                                nob.AutoSkillSet.重複放 = newMember.重複放;
+                                nob.AutoSkillSet.延遲 = newMember.延遲;
+                                nob.AutoSkillSet.間隔 = newMember.間隔;
+                                nob.AutoSkillSet.技能段1 = newMember.技能段1;
+                                nob.AutoSkillSet.技能段2 = newMember.技能段2;
+                                nob.AutoSkillSet.技能段3 = newMember.技能段3;
+                                nob.AutoSkillSet.施放A = newMember.施放A;
+                                nob.AutoSkillSet.施放B = newMember.施放B;
+                                nob.AutoSkillSet.施放C = newMember.施放C;
+                                nob.AutoSkillSet.程式速度 = newMember.程式速度;
+                            }
+
                             NobMainCodePage.隊員智能功能組.Add(newMember);
                         }
                     }
@@ -302,6 +337,24 @@ namespace NOBApp.Managers
                         施放C = string.Empty,
                         程式速度 = 0
                     };
+
+                    // Initialize the NOBDATA AutoSkillSet to match the member defaults
+                    if (nob != null)
+                    {
+                        nob.AutoSkillSet.同步 = member.同步;
+                        nob.AutoSkillSet.一次放 = member.一次放;
+                        nob.AutoSkillSet.重複放 = member.重複放;
+                        nob.AutoSkillSet.延遲 = member.延遲;
+                        nob.AutoSkillSet.間隔 = member.間隔;
+                        nob.AutoSkillSet.技能段1 = member.技能段1;
+                        nob.AutoSkillSet.技能段2 = member.技能段2;
+                        nob.AutoSkillSet.技能段3 = member.技能段3;
+                        nob.AutoSkillSet.施放A = member.施放A;
+                        nob.AutoSkillSet.施放B = member.施放B;
+                        nob.AutoSkillSet.施放C = member.施放C;
+                        nob.AutoSkillSet.程式速度 = member.程式速度;
+                    }
+
                     NobMainCodePage.隊員智能功能組.Add(member);
                 }
 

@@ -17,3 +17,9 @@
 # 編輯器臨時文件
 *.tmp
 *.log
+/bin/Debug/net8.0-windows7.0/NOBApp.dll
+/bin/Debug/net8.0-windows7.0/NOBApp.exe
+/bin/Debug/net8.0-windows7.0/NOBApp.pdb
+/bin/Debug/net8.0-windows7.0/NOBApp.dll
+/bin/Debug/net8.0-windows7.0/NOBApp.exe
+/bin/Debug/net8.0-windows7.0/NOBApp.pdb
