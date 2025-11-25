@@ -5,9 +5,25 @@ namespace NOBApp
 {
     public partial class NobMainCodePage
     {
+        public class RoundConfig
+        {
+            public bool 重複放 { get; set; }
+            public bool 一次放 { get; set; }
+            public int 延遲 { get; set; }
+            public int 間隔 { get; set; }
+            public int 技能段1 { get; set; }
+            public int 技能段2 { get; set; }
+            public int 技能段3 { get; set; }
+            public string 施放A { get; set; } = string.Empty;
+            public string 施放B { get; set; } = string.Empty;
+            public string 施放C { get; set; } = string.Empty;
+            public int 程式速度 { get; set; }
+        }
+
         public class 自動技能組
         {
             public NOBDATA? NOB;
+            public Dictionary<int, RoundConfig> RoundConfigs { get; set; } = new Dictionary<int, RoundConfig>();
             public bool 同步 { get; set; }
             public bool 重複放 { get; set; }
             public bool 一次放 { get; set; }

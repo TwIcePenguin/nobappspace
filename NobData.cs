@@ -116,6 +116,8 @@ namespace NOBApp
 
         public Setting CodeSetting = new();
         public 自動技能組 AutoSkillSet = new();
+        public int CurrentRound { get; set; } = 1;
+        private bool _wasInBattle = false;
         public DateTime 到期日 = DateTime.Now.AddYears(99);
         public RECT 原視窗;
         public int NowHeight;
@@ -525,7 +527,15 @@ namespace NOBApp
                     continue;
                 }
 
-                if (戰鬥中)
+                bool isInBattle = 戰鬥中;
+                if (isInBattle && !_wasInBattle)
+                {
+                    CurrentRound = 1;
+                    // Debug.WriteLine($"Battle Start, Round {CurrentRound}");
+                }
+                _wasInBattle = isInBattle;
+
+                if (isInBattle)
                 {
                     希望完成 = false;
                     處理戰鬥流程();
@@ -575,7 +585,22 @@ namespace NOBApp
         public void 處理戰鬥流程(bool isSkipCheck = false)
         {
             int checkDo = 0;
-            //Log($"進入戰鬥中{_IsRuning} {IsUseAutoSkill} {AutoSkillSet.一次放 || AutoSkillSet.重複放}");
+            
+            // Determine configuration for current round
+            bool useRoundConfig = AutoSkillSet.RoundConfigs.TryGetValue(CurrentRound, out var roundConfig);
+            
+            bool config_重複放 = useRoundConfig ? roundConfig.重複放 : AutoSkillSet.重複放;
+            bool config_一次放 = useRoundConfig ? roundConfig.一次放 : AutoSkillSet.一次放;
+            int config_延遲 = useRoundConfig ? roundConfig.延遲 : AutoSkillSet.延遲;
+            int config_技能段1 = useRoundConfig ? roundConfig.技能段1 : AutoSkillSet.技能段1;
+            int config_技能段2 = useRoundConfig ? roundConfig.技能段2 : AutoSkillSet.技能段2;
+            int config_技能段3 = useRoundConfig ? roundConfig.技能段3 : AutoSkillSet.技能段3;
+            string config_施放A = useRoundConfig ? roundConfig.施放A : AutoSkillSet.施放A;
+            string config_施放B = useRoundConfig ? roundConfig.施放B : AutoSkillSet.施放B;
+            string config_施放C = useRoundConfig ? roundConfig.施放C : AutoSkillSet.施放C;
+            int config_程式速度 = useRoundConfig ? roundConfig.程式速度 : AutoSkillSet.程式速度;
+
+            //Log($"進入戰鬥中{_IsRuning} {IsUseAutoSkill} {config_一次放 || config_重複放}");
             #region 戰鬥中
             //目前選數量 
             var index = MainWindow.dmSoft!.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
@@ -584,7 +609,7 @@ namespace NOBApp
                 BtDataUpdate();
             }
 
-            if (AutoSkillSet.一次放 || AutoSkillSet.重複放)
+            if (config_一次放 || config_重複放)
             {
                 if (_IsRuning)
                     return;
@@ -600,41 +625,41 @@ namespace NOBApp
                         string newD = supDataCheck[0] + "0";
                         MainWindow.dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
                     }
-                    //Log($"有指令 準備進入指令 - 2 -> Index {index} 放過依次 : {已經放過一次} SP:{AutoSkillSet.特殊運作} {AutoSkillSet.技能段1} {AutoSkillSet.技能段2}");
+                    //Log($"有指令 準備進入指令 - 2 -> Index {index} 放過依次 : {已經放過一次} SP:{AutoSkillSet.特殊運作} {config_技能段1} {config_技能段2}");
                     if (index > 0)
                     {
                         if (已經放過一次)
                             break;
 
-                        if (AutoSkillSet.延遲 > 0)
+                        if (config_延遲 > 0)
                         {
-                            Task.Delay(AutoSkillSet.延遲).Wait();
+                            Task.Delay(config_延遲).Wait();
                         }
                         if (AutoSkillSet.特殊運作)
                         {
                             int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
                             Log("setindex : " + setindex);
 
-                            Task.Delay(AutoSkillSet.程式速度).Wait();
+                            Task.Delay(config_程式速度).Wait();
                             if (setindex == 0)
                             {
-                                直向選擇(AutoSkillSet.技能段1, AutoSkillSet.程式速度, isSkipCheck);
+                                直向選擇(config_技能段1, config_程式速度, isSkipCheck);
                             }
-                            if (setindex == 1 && AutoSkillSet.技能段2 >= 0)
+                            if (setindex == 1 && config_技能段2 >= 0)
                             {
-                                直向選擇(AutoSkillSet.技能段2, AutoSkillSet.程式速度, isSkipCheck);
+                                直向選擇(config_技能段2, config_程式速度, isSkipCheck);
                             }
 
                             int setNum = -1;
                             if (setindex == 2)
                             {
-                                if (AutoSkillSet.技能段3 >= 0)
-                                    直向選擇(AutoSkillSet.技能段3, AutoSkillSet.程式速度, isSkipCheck);
+                                if (config_技能段3 >= 0)
+                                    直向選擇(config_技能段3, config_程式速度, isSkipCheck);
 
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
+                                if (string.IsNullOrEmpty(config_施放A) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放A);
-                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放A);
+                                    直向選擇(setNum == -1 ? 0 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -645,16 +670,16 @@ namespace NOBApp
 
                             if (setindex == 3)
                             {
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放A) == false)
+                                if (string.IsNullOrEmpty(config_施放A) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放A);
-                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放A);
+                                    直向選擇(setNum == -1 ? 0 : setNum, config_程式速度, isSkipCheck);
                                 }
 
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
+                                if (string.IsNullOrEmpty(config_施放B) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放B);
-                                    直向選擇(setNum == -1 ? 0 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放B);
+                                    直向選擇(setNum == -1 ? 0 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -665,16 +690,16 @@ namespace NOBApp
 
                             if (setindex == 4)
                             {
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放B) == false)
+                                if (string.IsNullOrEmpty(config_施放B) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放B);
-                                    直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放B);
+                                    直向選擇(setNum == -1 ? 1 : setNum, config_程式速度, isSkipCheck);
                                 }
 
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
+                                if (string.IsNullOrEmpty(config_施放C) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放C);
-                                    直向選擇(setNum == -1 ? 1 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放C);
+                                    直向選擇(setNum == -1 ? 1 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -685,10 +710,10 @@ namespace NOBApp
 
                             if (setindex == 5)
                             {
-                                if (string.IsNullOrEmpty(AutoSkillSet.施放C) == false)
+                                if (string.IsNullOrEmpty(config_施放C) == false)
                                 {
-                                    setNum = check(MYTeamData, AutoSkillSet.施放C);
-                                    直向選擇(setNum == -1 ? 2 : setNum, AutoSkillSet.程式速度, isSkipCheck);
+                                    setNum = check(MYTeamData, config_施放C);
+                                    直向選擇(setNum == -1 ? 2 : setNum, config_程式速度, isSkipCheck);
                                 }
                                 else
                                 {
@@ -721,11 +746,16 @@ namespace NOBApp
                     if (index <= 0)
                     {
                         checkDo = 0;
-                        if (放技能完成 && AutoSkillSet.一次放)
-                            已經放過一次 = true;
+                        if (放技能完成)
+                        {
+                            if (config_一次放)
+                                已經放過一次 = true;
+                            
+                            CurrentRound++;
+                        }
                         break;
                     }
-                    Task.Delay(AutoSkillSet.程式速度).Wait();
+                    Task.Delay(config_程式速度).Wait();
                 }
                 while ((isSkipCheck || IsUseAutoSkill) && index > 0);
                 _IsRuning = false;

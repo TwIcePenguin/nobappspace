@@ -348,6 +348,29 @@ namespace NOBApp.Managers
                             member.NOB.AutoSkillSet.施放B = member.施放B;
                             member.NOB.AutoSkillSet.施放C = member.施放C;
                             member.NOB.AutoSkillSet.程式速度 = member.程式速度;
+
+                            // Sync RoundConfigs
+                            member.NOB.AutoSkillSet.RoundConfigs.Clear();
+                            if (set.RoundConfigs != null)
+                            {
+                                foreach (var kvp in set.RoundConfigs)
+                                {
+                                    member.NOB.AutoSkillSet.RoundConfigs[kvp.Key] = new NobMainCodePage.RoundConfig
+                                    {
+                                        重複放 = kvp.Value.重複放,
+                                        一次放 = kvp.Value.一次放,
+                                        延遲 = kvp.Value.延遲,
+                                        間隔 = kvp.Value.間隔,
+                                        技能段1 = kvp.Value.技能段1,
+                                        技能段2 = kvp.Value.技能段2,
+                                        技能段3 = kvp.Value.技能段3,
+                                        施放A = kvp.Value.施放A,
+                                        施放B = kvp.Value.施放B,
+                                        施放C = kvp.Value.施放C,
+                                        程式速度 = kvp.Value.程式速度
+                                    };
+                                }
+                            }
                         }
                     }
                     else
@@ -362,7 +385,7 @@ namespace NOBApp.Managers
                             newMember.一次放 = set.一次放;
                             newMember.重複放 = set.重複放;
                             newMember.延遲 = set.延遲;
-                            newMember.間隔 = set.間隔;
+                            newMember.間隔 = set.技能段3;
                             newMember.技能段1 = set.技能段1;
                             newMember.技能段2 = set.技能段2;
                             newMember.技能段3 = set.技能段3;
@@ -370,6 +393,28 @@ namespace NOBApp.Managers
                             newMember.施放B = set.施放B;
                             newMember.施放C = set.施放C;
                             newMember.程式速度 = set.程式速度;
+
+                            // Sync RoundConfigs
+                            if (set.RoundConfigs != null)
+                            {
+                                foreach (var kvp in set.RoundConfigs)
+                                {
+                                    newMember.RoundConfigs[kvp.Key] = new NobMainCodePage.RoundConfig
+                                    {
+                                        重複放 = kvp.Value.重複放,
+                                        一次放 = kvp.Value.一次放,
+                                        延遲 = kvp.Value.延遲,
+                                        間隔 = kvp.Value.間隔,
+                                        技能段1 = kvp.Value.技能段1,
+                                        技能段2 = kvp.Value.技能段2,
+                                        技能段3 = kvp.Value.技能段3,
+                                        施放A = kvp.Value.施放A,
+                                        施放B = kvp.Value.施放B,
+                                        施放C = kvp.Value.施放C,
+                                        程式速度 = kvp.Value.程式速度
+                                    };
+                                }
+                            }
 
                             // apply to nob runtime AutoSkillSet as well
                             if (nob != null)
@@ -386,6 +431,13 @@ namespace NOBApp.Managers
                                 nob.AutoSkillSet.施放B = newMember.施放B;
                                 nob.AutoSkillSet.施放C = newMember.施放C;
                                 nob.AutoSkillSet.程式速度 = newMember.程式速度;
+
+                                // Sync RoundConfigs
+                                nob.AutoSkillSet.RoundConfigs.Clear();
+                                foreach (var kvp in newMember.RoundConfigs)
+                                {
+                                    nob.AutoSkillSet.RoundConfigs[kvp.Key] = kvp.Value;
+                                }
                             }
 
                             NobMainCodePage.隊員智能功能組.Add(newMember);
