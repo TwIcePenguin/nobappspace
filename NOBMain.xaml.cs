@@ -1069,15 +1069,19 @@ namespace NOBApp
 
         public void AddRound_Click(object sender, RoutedEventArgs e)
         {
-            // 1. 檢查 VIP 權限 (只要是 VIP 即可，不需勾選 VIPSP)
-            if (!Tools.IsVIP)
-            {
-                MessageBox.Show("多輪戰鬥設定僅限 VIP 會員使用。", "權限不足", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             if (sender is Button btn && btn.Tag is string tag && int.TryParse(tag, out int memberIndex))
             {
+                var panelName = $"RoundsPanel_{memberIndex}";
+                var panel = this.FindName(panelName) as StackPanel;
+
+                // 檢查目前已有的回合數
+                // 如果不是 VIP 且已經有 1 個回合，則禁止新增
+                if (!Tools.IsVIP && panel != null && panel.Children.Count >= 1)
+                {
+                    MessageBox.Show("非 VIP 會員僅能設定一輪戰鬥。\n若需設定多輪戰鬥，請升級 VIP 會員。", "權限不足", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 AddRoundRow(memberIndex);
             }
         }
