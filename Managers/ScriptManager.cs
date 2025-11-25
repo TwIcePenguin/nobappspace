@@ -152,6 +152,9 @@ namespace NOBApp.Managers
             if (string.IsNullOrEmpty(playerName)) return;
             try
             {
+                // Read current UI values back into CodeSetting before saving
+                ReadSettingFromUI();
+
                 var setting = _view.MainNob?.CodeSetting;
                 if (setting == null) return;
 
@@ -214,6 +217,45 @@ namespace NOBApp.Managers
             _view.TBX搜尋範圍.Text = setting.搜尋範圍.ToString();
             _view.其他選項A.Text = setting.其他選項A.ToString();
             _view.其他選項B.Text = setting.其他選項B.ToString();
+            _view.腳本Point.Text = setting.MPoint.ToString();
+            _view.E點怪.IsChecked = setting.Enter點怪;
+            _view.FNPCID.Text = setting.目標A.ToString();
+            _view.SMENU2.Text = setting.線路.ToString();
+
+            // Update Target Buttons Content if they have values
+            if (setting.目標A != 0) _view.Btn_TargetA.Content = "鎖定:" + setting.目標A;
+            if (setting.目標B != 0) _view.Btn_TargetB.Content = "鎖定:" + setting.目標B;
+            if (setting.目標C != 0) _view.Btn_TargetC.Content = "鎖定:" + setting.目標C;
+            if (setting.目標D != 0) _view.Btn_TargetD.Content = "鎖定:" + setting.目標D;
+            if (setting.目標E != 0) _view.Btn_TargetE.Content = "鎖定:" + setting.目標E;
+            if (setting.目標F != 0) _view.Btn_TargetF.Content = "鎖定:" + setting.目標F;
+        }
+
+        public void ReadSettingFromUI()
+        {
+            if (_view.MainNob == null) return;
+            var setting = _view.MainNob.CodeSetting;
+
+            setting.上次使用的腳本 = _view.SelectMenu.Text;
+            setting.使用定位點 = _view.CB_定位點.IsChecked ?? false;
+            
+            if (int.TryParse(_view.後退時間.Text, out int backTime)) setting.後退時間 = backTime;
+            if (int.TryParse(_view.延遲係數.Text, out int delay)) setting.延遲係數 = delay;
+            
+            setting.AllInTeam = _view.CB_AllIn.IsChecked ?? false;
+            
+            if (int.TryParse(_view.TB_SetCNum.Text, out int cNum)) setting.連續戰鬥 = cNum;
+            if (int.TryParse(_view.TB_選擇關卡.Text, out int level)) setting.選擇關卡 = level;
+            if (int.TryParse(_view.TB_選擇難度.Text, out int diff)) setting.選擇難度 = diff;
+            if (int.TryParse(_view.TBX搜尋範圍.Text, out int range)) setting.搜尋範圍 = range;
+            if (int.TryParse(_view.其他選項A.Text, out int optA)) setting.其他選項A = optA;
+            if (int.TryParse(_view.其他選項B.Text, out int optB)) setting.其他選項B = optB;
+            if (int.TryParse(_view.腳本Point.Text, out int mPoint)) setting.MPoint = mPoint;
+            
+            setting.Enter點怪 = _view.E點怪.IsChecked ?? false;
+            
+            if (int.TryParse(_view.FNPCID.Text, out int targetA)) setting.目標A = targetA;
+            if (int.TryParse(_view.SMENU2.Text, out int line)) setting.線路 = line;
         }
     }
 }

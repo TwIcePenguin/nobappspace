@@ -1262,11 +1262,25 @@ namespace NOBApp
             }
             else
             {
-                // If it's not a StackPanel yet (e.g. legacy or simple string), just set the content
-                // But ideally we want to preserve the button if we can, or recreate it.
-                // For now, let's just set it as string if it's not our custom panel, 
-                // but since we are modifying TabManager, it should be a panel.
-                RootTabItem.Header = text;
+                // Recreate the structure if it's missing
+                var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+                var headerText = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
+                var focusButton = new Button 
+                { 
+                    Content = "F", 
+                    Width = 20, 
+                    Height = 20, 
+                    Margin = new Thickness(5, 0, 0, 0),
+                    ToolTip = "Focus Window",
+                    FontSize = 10,
+                    Padding = new Thickness(0)
+                };
+                
+                focusButton.Click += (s, e) => FocusUserWindows();
+
+                headerPanel.Children.Add(headerText);
+                headerPanel.Children.Add(focusButton);
+                RootTabItem.Header = headerPanel;
             }
         }
     }

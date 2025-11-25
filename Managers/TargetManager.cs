@@ -80,6 +80,7 @@ namespace NOBApp.Managers
             {
                 _view.MainNob.CodeSetting.目標A = tid;
                 clickedButton.Content = "鎖定:" + tid;
+                _view.FNPCID.Text = tid.ToString();
             }
             else if (buttonName.Contains("TargetB"))
             {
