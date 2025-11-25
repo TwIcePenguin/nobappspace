@@ -112,8 +112,8 @@
             <Expander x:Name="戰鬥輔助面" Grid.ColumnSpan="4" Header="戰鬥輔助" Margin="0,5,0,0" VerticalAlignment="Top">
                 <Grid Background="#FFE5E5E5" Height="530">
                     <Canvas x:Name="技能頁面" VerticalAlignment="Stretch">
-                        <ScrollViewer Canvas.Top="100" Width="666" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalScrollBarVisibility="Disabled">
-                            <StackPanel x:Name="隊員額外功能頁面" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" CanVerticallyScroll="True" ScrollViewer.CanContentScroll="True">
+                        <ScrollViewer Canvas.Top="100" Width="666" Height="400" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="隊員額外功能頁面" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" CanVerticallyScroll="True" ScrollViewer.CanContentScroll="True">
                                 <StackPanel x:Name="隊員頁面_1" Margin="0,0,0,5">
                                     <Canvas Height="30">
                                         <ComboBox Visibility="Visible" x:Name="SelectFID_1" Height="20" VerticalAlignment="Top" Width="120" Canvas.Left="50" HorizontalAlignment="Center" Style="{DynamicResource CurrentComboStyle}"/>
@@ -214,6 +214,9 @@
                         <RadioButton x:Name="A套路" Content="A套" Canvas.Top="58" HorizontalAlignment="Center" VerticalAlignment="Top" Width="40" IsChecked="True" />
                         <RadioButton x:Name="B套路" Content="B套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="50" />
                         <RadioButton x:Name="C套路" Content="C套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="100" />
+                        <RadioButton x:Name="D套路" Content="D套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="150" />
+                        <RadioButton x:Name="E套路" Content="E套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="200" />
+                        <RadioButton x:Name="F套路" Content="F套" Canvas.Top="58" Width="43" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="250" />
                         <CheckBox x:Name="希望取得" Content="希望取得" Height="18" Width="74" Visibility="Visible" Canvas.Top="38" Canvas.Left="169" HorizontalAlignment="Center" VerticalAlignment="Top" />
                         <CheckBox x:Name="UseSkill_CB" Content="啟動額外功能" Height="20" Width="109" Visibility="Visible" HorizontalAlignment="Center" Canvas.Top="0" VerticalAlignment="Top" Margin="0,10,0,0" />
                     </Canvas>

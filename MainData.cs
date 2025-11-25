@@ -91,6 +91,9 @@ namespace NOBApp
         public List<隊員資料紀錄檔> 方案A { get; set; } = new List<隊員資料紀錄檔>();
         public List<隊員資料紀錄檔> 方案B { get; set; } = new List<隊員資料紀錄檔>();
         public List<隊員資料紀錄檔> 方案C { get; set; } = new List<隊員資料紀錄檔>();
+        public List<隊員資料紀錄檔> 方案D { get; set; } = new List<隊員資料紀錄檔>();
+        public List<隊員資料紀錄檔> 方案E { get; set; } = new List<隊員資料紀錄檔>();
+        public List<隊員資料紀錄檔> 方案F { get; set; } = new List<隊員資料紀錄檔>();
     }
     public class RoundConfig
     {

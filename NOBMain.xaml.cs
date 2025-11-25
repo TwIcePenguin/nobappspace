@@ -187,6 +187,9 @@ namespace NOBApp
             A套路.Click += 套路_Click;
             B套路.Click += 套路_Click;
             C套路.Click += 套路_Click;
+            D套路.Click += 套路_Click;
+            E套路.Click += 套路_Click;
+            F套路.Click += 套路_Click;
 
             儲存套路.Click += 儲存套路_Click;
 
@@ -1095,6 +1098,23 @@ namespace NOBApp
                 if (panel != null && panel.Children.Count > 0)
                 {
                     panel.Children.RemoveAt(panel.Children.Count - 1);
+
+                    // 當移除回合後，恢復上一個回合的重複選項功能
+                    if (panel.Children.Count > 0)
+                    {
+                        var lastRow = panel.Children[panel.Children.Count - 1] as Canvas;
+                        if (lastRow != null)
+                        {
+                            foreach (var child in lastRow.Children)
+                            {
+                                if (child is CheckBox cb && (cb.Tag as string) == "重複")
+                                {
+                                    cb.IsEnabled = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1104,6 +1124,24 @@ namespace NOBApp
             var panelName = $"RoundsPanel_{memberIndex}";
             var panel = this.FindName(panelName) as StackPanel;
             if (panel == null) return;
+
+            // 新增回合時，將上一個回合的重複選項取消並鎖定
+            if (panel.Children.Count > 0)
+            {
+                var lastRow = panel.Children[panel.Children.Count - 1] as Canvas;
+                if (lastRow != null)
+                {
+                    foreach (var child in lastRow.Children)
+                    {
+                        if (child is CheckBox cb && (cb.Tag as string) == "重複")
+                        {
+                            cb.IsChecked = false;
+                            cb.IsEnabled = false;
+                            break;
+                        }
+                    }
+                }
+            }
 
             Canvas row = new Canvas();
             row.Height = 30;
@@ -1143,36 +1181,58 @@ namespace NOBApp
                 return cb;
             }
 
+            // Helper to create Label
+            Label CreateLabel(string name, string content, double w, double l, string tip, string bg)
+            {
+                var lbl = new Label
+                {
+                    Content = content,
+                    Width = w,
+                    Height = 24,
+                    ToolTip = tip,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter().ConvertFromString(bg),
+                    Tag = name,
+                    Padding = new Thickness(0),
+                    FontSize = 12,
+                    FontWeight = FontWeights.Bold
+                };
+                Canvas.SetLeft(lbl, l);
+                Canvas.SetTop(lbl, 3);
+                return lbl;
+            }
+
+            int rNum = roundNum != -1 ? roundNum : (panel.Children.Count + 1);
+            var lblRound = CreateLabel("回合", rNum.ToString(), 30, 0, "回合數", "#FFFCE4EC");
+
             // CheckBoxes
-            var cbOnce = CreateCheckBox("開場一", "一次", 243);
-            var cbRepeat = CreateCheckBox("重複", "重複", 305);
+            var cbOnce = CreateCheckBox("開場一", "一次", 35);
+            var cbRepeat = CreateCheckBox("重複", "重複", 90);
             if (config != null)
             {
                 cbOnce.IsChecked = config.一次放;
                 cbRepeat.IsChecked = config.重複放;
             }
+            
+            // TextBoxes
+            var tbSpeed = CreateTextBox("程式速度", config?.程式速度.ToString() ?? "100", 56, 145, "程式運作速度", "#FFE8F5E9");
+            
+            var tbDelay = CreateTextBox("延遲施放", config?.延遲.ToString() ?? "0", 56, 205, "延遲", "#FFFCE4EC");
+            var tbInterval = CreateTextBox("間隔時間放", config?.間隔.ToString() ?? "0", 56, 265, "間隔", "#FFFCE4EC");
+            
+            var tbS1 = CreateTextBox("技能段1", config?.技能段1.ToString() ?? "", 32, 325, "技能段1", "#FFFFF9C4");
+            var tbS2 = CreateTextBox("技能段2", config?.技能段2.ToString() ?? "", 32, 360, "技能段2", "#FFFFF9C4");
+            var tbS3 = CreateTextBox("技能段3", config?.技能段3.ToString() ?? "", 32, 395, "技能段3", "#FFFFF9C4");
+            
+            var tbA = CreateTextBox("施放A", config?.施放A ?? "", 32, 430, "施放A", "#FFC8E6C9");
+            var tbB = CreateTextBox("施放B", config?.施放B ?? "", 32, 465, "施放B", "#FFC8E6C9");
+            var tbC = CreateTextBox("施放C", config?.施放C ?? "", 32, 500, "施放C", "#FFC8E6C9");
+
+            row.Children.Add(lblRound);
             row.Children.Add(cbOnce);
             row.Children.Add(cbRepeat);
-
-            // TextBoxes
-            var tbSpeed = CreateTextBox("程式速度", config?.程式速度.ToString() ?? "100", 56, 39, "程式運作速度", "#FFE8F5E9");
-            
-            int rNum = roundNum != -1 ? roundNum : (panel.Children.Count + 1);
-            var tbRound = CreateTextBox("回合", rNum.ToString(), 32, 0, "回合數", "#FFFCE4EC");
-            
-            var tbDelay = CreateTextBox("延遲施放", config?.延遲.ToString() ?? "0", 56, 98, "延遲", "#FFFCE4EC");
-            var tbInterval = CreateTextBox("間隔時間放", config?.間隔.ToString() ?? "0", 56, 158, "間隔", "#FFFCE4EC");
-            
-            var tbS1 = CreateTextBox("技能段1", config?.技能段1.ToString() ?? "", 32, 218, "技能段1", "#FFFFF9C4");
-            var tbS2 = CreateTextBox("技能段2", config?.技能段2.ToString() ?? "", 32, 254, "技能段2", "#FFFFF9C4");
-            var tbS3 = CreateTextBox("技能段3", config?.技能段3.ToString() ?? "", 32, 290, "技能段3", "#FFFFF9C4");
-            
-            var tbA = CreateTextBox("施放A", config?.施放A ?? "", 32, 326, "施放A", "#FFC8E6C9");
-            var tbB = CreateTextBox("施放B", config?.施放B ?? "", 32, 362, "施放B", "#FFC8E6C9");
-            var tbC = CreateTextBox("施放C", config?.施放C ?? "", 32, 398, "施放C", "#FFC8E6C9");
-
             row.Children.Add(tbSpeed);
-            row.Children.Add(tbRound);
             row.Children.Add(tbDelay);
             row.Children.Add(tbInterval);
             row.Children.Add(tbS1);
@@ -1183,6 +1243,31 @@ namespace NOBApp
             row.Children.Add(tbC);
 
             panel.Children.Add(row);
+        }
+
+        public void SetTabHeader(string text)
+        {
+            if (RootTabItem == null) return;
+
+            if (RootTabItem.Header is StackPanel panel)
+            {
+                foreach (var child in panel.Children)
+                {
+                    if (child is TextBlock tb)
+                    {
+                        tb.Text = text;
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                // If it's not a StackPanel yet (e.g. legacy or simple string), just set the content
+                // But ideally we want to preserve the button if we can, or recreate it.
+                // For now, let's just set it as string if it's not our custom panel, 
+                // but since we are modifying TabManager, it should be a panel.
+                RootTabItem.Header = text;
+            }
         }
     }
 }

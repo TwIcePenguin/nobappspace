@@ -146,6 +146,21 @@ namespace NOBApp.Managers
                     Debug.WriteLine("儲存完成C");
                     NobMainCodePage.m隊伍技能紀錄.方案C = list;
                 }
+                if (_view.D套路.IsChecked == true)
+                {
+                    Debug.WriteLine("儲存完成D");
+                    NobMainCodePage.m隊伍技能紀錄.方案D = list;
+                }
+                if (_view.E套路.IsChecked == true)
+                {
+                    Debug.WriteLine("儲存完成E");
+                    NobMainCodePage.m隊伍技能紀錄.方案E = list;
+                }
+                if (_view.F套路.IsChecked == true)
+                {
+                    Debug.WriteLine("儲存完成F");
+                    NobMainCodePage.m隊伍技能紀錄.方案F = list;
+                }
 
                 _view.SaveSetting(); // Need to be public
             }
@@ -175,6 +190,21 @@ namespace NOBApp.Managers
                 {
                     list = NobMainCodePage.m隊伍技能紀錄.方案C;
                     Debug.WriteLine("讀取C");
+                }
+                if (_view.D套路.IsChecked == true)
+                {
+                    list = NobMainCodePage.m隊伍技能紀錄.方案D;
+                    Debug.WriteLine("讀取D");
+                }
+                if (_view.E套路.IsChecked == true)
+                {
+                    list = NobMainCodePage.m隊伍技能紀錄.方案E;
+                    Debug.WriteLine("讀取E");
+                }
+                if (_view.F套路.IsChecked == true)
+                {
+                    list = NobMainCodePage.m隊伍技能紀錄.方案F;
+                    Debug.WriteLine("讀取F");
                 }
                 int no = 1;
                 if (list != null)
@@ -382,6 +412,11 @@ namespace NOBApp.Managers
                                                 if (tag == "施放B") config.施放B = tb.Text;
                                                 if (tag == "施放C") config.施放C = tb.Text;
                                             }
+                                            if (item is Label lbl)
+                                            {
+                                                string tag = lbl.Tag as string ?? "";
+                                                if (tag == "回合" && int.TryParse(lbl.Content?.ToString(), out var r)) roundNum = r;
+                                            }
                                         }
 
                                         if (roundNum != -1)
@@ -432,6 +467,12 @@ namespace NOBApp.Managers
                     list = NobMainCodePage.m隊伍技能紀錄.方案B;
                 else if (_view.C套路.IsChecked == true)
                     list = NobMainCodePage.m隊伍技能紀錄.方案C;
+                else if (_view.D套路.IsChecked == true)
+                    list = NobMainCodePage.m隊伍技能紀錄.方案D;
+                else if (_view.E套路.IsChecked == true)
+                    list = NobMainCodePage.m隊伍技能紀錄.方案E;
+                else if (_view.F套路.IsChecked == true)
+                    list = NobMainCodePage.m隊伍技能紀錄.方案F;
 
                 if (list == null || list.Count == 0)
                     return;

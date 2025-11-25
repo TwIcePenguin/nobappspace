@@ -336,7 +336,7 @@ namespace NOBApp.Managers
 				cbHid.IsEnabled = !isPass;
 				if (isPass)
 				{
-					rootTabItem.Header = $"{_view.MainNob!.PlayerName}";
+					_view.SetTabHeader($"{_view.MainNob!.PlayerName}");
 				}
 
 				lockBtn.Content = isPass ? "解除" : "驗證";

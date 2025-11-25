@@ -102,25 +102,51 @@ namespace NOBApp.Managers
  }
  }
 
- private void CreateTabItem(TabControl tabControl, TabItemState state, int index, List<NOBDATA> allNobWindows)
- {
- var tabItem = new TabItem { Header = state.Header };
- tabItem.MouseDoubleClick += OnTabFocus;
- var content = new NobMainCodePage { RootTabItem = tabItem, PageIndex = index };
- tabItem.Content = content;
- tabControl.Items.Add(tabItem);
- if (!string.IsNullOrEmpty(state.PlayerName) && state.IsVerified)
- {
- var nobData = allNobWindows.Find(n => n.PlayerName == state.PlayerName);
- if (nobData != null)
- {
- content.AutoRestoreState = true;
- content.PlayerToRestore = state.PlayerName;
- }
- }
- }
+        private void CreateTabItem(TabControl tabControl, TabItemState state, int index, List<NOBDATA> allNobWindows)
+        {
+            var tabItem = new TabItem();
 
- private void OnTabFocus(object sender, MouseButtonEventArgs e)
+            // Create custom header with Button
+            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            var headerText = new TextBlock { Text = state.Header, VerticalAlignment = System.Windows.VerticalAlignment.Center };
+            var focusButton = new Button 
+            { 
+                Content = "F", 
+                Width = 20, 
+                Height = 20, 
+                Margin = new System.Windows.Thickness(5, 0, 0, 0),
+                ToolTip = "Focus Window",
+                FontSize = 10,
+                Padding = new System.Windows.Thickness(0)
+            };
+
+            focusButton.Click += (s, e) => 
+            {
+                if (tabItem.Content is NobMainCodePage page)
+                {
+                    page.FocusUserWindows();
+                }
+            };
+
+            headerPanel.Children.Add(headerText);
+            headerPanel.Children.Add(focusButton);
+
+            tabItem.Header = headerPanel;
+            tabItem.MouseDoubleClick += OnTabFocus;
+
+            var content = new NobMainCodePage { RootTabItem = tabItem, PageIndex = index };
+            tabItem.Content = content;
+            tabControl.Items.Add(tabItem);
+            if (!string.IsNullOrEmpty(state.PlayerName) && state.IsVerified)
+            {
+                var nobData = allNobWindows.Find(n => n.PlayerName == state.PlayerName);
+                if (nobData != null)
+                {
+                    content.AutoRestoreState = true;
+                    content.PlayerToRestore = state.PlayerName;
+                }
+            }
+        } private void OnTabFocus(object sender, MouseButtonEventArgs e)
  {
  if (sender is TabItem tab && tab.Content is NobMainCodePage page)
  {
