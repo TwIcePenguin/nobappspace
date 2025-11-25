@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Text.Json;
 
 namespace NOBApp.Managers
 {
@@ -61,6 +62,9 @@ namespace NOBApp.Managers
 
             _view.更新自動使用技能隊員名單(); // Need to be public
 
+            // Read current UI controls into 隊員智能功能組 before saving
+            ReadSkillSettingsFromUI();
+
             if (NobMainCodePage.隊員智能功能組 != null && NobMainCodePage.隊員智能功能組.Count > 0)
             {
                 List<隊員資料紀錄檔> list = new();
@@ -84,6 +88,23 @@ namespace NOBApp.Managers
                     user.間隔 = item.間隔;
                     user.程式速度 = item.程式速度;
                     list.Add(user);
+                }
+
+                // Debug: print what will be saved
+                try
+                {
+                    Debug.WriteLine($"[SaveTeamSkills] Preparing to save {list.Count} team entries (route A/B/C selection).\nEntries:");
+                    foreach (var u in list)
+                    {
+                        Debug.WriteLine($" - {u.用名}: 同步={u.同步}, 一次放={u.一次放}, 重複放={u.重複放}, 延遲={u.延遲}, 間隔={u.間隔}, 技能段s=({u.技能段1},{u.技能段2},{u.技能段3}), 施放=({u.施放A},{u.施放B},{u.施放C}), 程式速度={u.程式速度}");
+                    }
+
+                    var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true });
+                    Debug.WriteLine($"[SaveTeamSkills] JSON preview:\n{json}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[SaveTeamSkills] Failed to produce debug output: {ex.Message}");
                 }
 
                 if (aRoute.IsChecked == true)
@@ -145,7 +166,8 @@ namespace NOBApp.Managers
                 }
                 
                 Debug.WriteLine("讀取完成");
-                _view.更新自動使用技能隊員名單(); // Need to be public
+                // After writing the loaded values into UI controls, read them back into the runtime list
+                ReadSkillSettingsFromUI();
             }
         }
 
@@ -197,6 +219,75 @@ namespace NOBApp.Managers
                         }
                     }
                 }
+            }
+        }
+
+        // Read UI control values from the skill setting panel into the runtime 隊員智能功能組 list
+        private void ReadSkillSettingsFromUI()
+        {
+            try
+            {
+                var skillSettingPage = _view.隊員額外功能頁面;
+                if (skillSettingPage == null) return;
+
+                // For each canvas slot in the UI, extract its index and apply contained controls to the corresponding member
+                foreach (var child in skillSettingPage.Children)
+                {
+                    if (child is Canvas c)
+                    {
+                        // Expect canvas name contains _{num}
+                        var name = c.Name ?? string.Empty;
+                        int slot = -1;
+                        var idxPos = name.LastIndexOf('_');
+                        if (idxPos >= 0 && int.TryParse(name.Substring(idxPos + 1), out var parsed))
+                        {
+                            slot = parsed - 1; // UI uses 1-based numbering
+                        }
+
+                        if (slot < 0 || slot >= NobMainCodePage.隊員智能功能組.Count)
+                            continue;
+
+                        var member = NobMainCodePage.隊員智能功能組[slot];
+                        foreach (var item in c.Children)
+                        {
+                            if (item is CheckBox cb)
+                            {
+                                if (cb.Name.Contains("重複"))
+                                    member.重複放 = cb.IsChecked == true;
+                                if (cb.Name.Contains("開場"))
+                                    member.一次放 = cb.IsChecked == true;
+                                if (cb.Name.Contains("同步"))
+                                    member.同步 = cb.IsChecked == true;
+                            }
+
+                            if (item is TextBox tb)
+                            {
+                                if (tb.Name.Contains("延遲") && int.TryParse(tb.Text, out var vDelay))
+                                    member.延遲 = vDelay;
+                                if (tb.Name.Contains("間隔") && int.TryParse(tb.Text, out var vInterval))
+                                    member.間隔 = vInterval;
+                                if (tb.Name.Contains("技能段1") && int.TryParse(tb.Text, out var s1))
+                                    member.技能段1 = s1;
+                                if (tb.Name.Contains("技能段2") && int.TryParse(tb.Text, out var s2))
+                                    member.技能段2 = s2;
+                                if (tb.Name.Contains("技能段3") && int.TryParse(tb.Text, out var s3))
+                                    member.技能段3 = s3;
+                                if (tb.Name.Contains("施放A"))
+                                    member.施放A = tb.Text ?? string.Empty;
+                                if (tb.Name.Contains("施放B"))
+                                    member.施放B = tb.Text ?? string.Empty;
+                                if (tb.Name.Contains("施放C"))
+                                    member.施放C = tb.Text ?? string.Empty;
+                                if (tb.Name.Contains("程式速度") && int.TryParse(tb.Text, out var spd))
+                                    member.程式速度 = spd;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ReadSkillSettingsFromUI error: {ex.Message}");
             }
         }
 
