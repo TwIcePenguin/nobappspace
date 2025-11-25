@@ -206,7 +206,111 @@ namespace NOBApp.Managers
 
         public void UpdateAutoSkillTeamMembers()
         {
-            // Placeholder for future enhancements; keeps API contract with NobMainCodePage.
+            try
+            {
+                // Determine which route is active
+                List<隊員資料紀錄檔> list = null;
+                if (_view.A套路.IsChecked == true)
+                    list = NobMainCodePage.m隊伍技能紀錄.方案A;
+                else if (_view.B套路.IsChecked == true)
+                    list = NobMainCodePage.m隊伍技能紀錄.方案B;
+                else if (_view.C套路.IsChecked == true)
+                    list = NobMainCodePage.m隊伍技能紀錄.方案C;
+
+                if (list == null || list.Count == 0)
+                    return;
+
+                foreach (var set in list)
+                {
+                    if (string.IsNullOrEmpty(set.用名))
+                        continue;
+
+                    // find existing auto skill entry by player name
+                    var member = NobMainCodePage.隊員智能功能組.Find(x => x.NOB != null && x.NOB.PlayerName == set.用名);
+                    if (member != null)
+                    {
+                        member.同步 = set.同步;
+                        member.一次放 = set.一次放;
+                        member.重複放 = set.重複放;
+                        member.延遲 = set.延遲;
+                        member.間隔 = set.間隔;
+                        member.技能段1 = set.技能段1;
+                        member.技能段2 = set.技能段2;
+                        member.技能段3 = set.技能段3;
+                        member.施放A = set.施放A;
+                        member.施放B = set.施放B;
+                        member.施放C = set.施放C;
+                        member.程式速度 = set.程式速度;
+                    }
+                    else
+                    {
+                        // try to find NOBDATA in AllNobWindowsList
+                        var nob = MainWindow.AllNobWindowsList?.Find(n => n.PlayerName == set.用名);
+                        if (nob != null)
+                        {
+                            var newMember = new NobMainCodePage.自動技能組();
+                            newMember.NOB = nob;
+                            newMember.同步 = set.同步;
+                            newMember.一次放 = set.一次放;
+                            newMember.重複放 = set.重複放;
+                            newMember.延遲 = set.延遲;
+                            newMember.間隔 = set.間隔;
+                            newMember.技能段1 = set.技能段1;
+                            newMember.技能段2 = set.技能段2;
+                            newMember.技能段3 = set.技能段3;
+                            newMember.施放A = set.施放A;
+                            newMember.施放B = set.施放B;
+                            newMember.施放C = set.施放C;
+                            newMember.程式速度 = set.程式速度;
+                            NobMainCodePage.隊員智能功能組.Add(newMember);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UpdateAutoSkillTeamMembers error: {ex.Message}");
+            }
+        }
+
+        // New: initialize 隊員智能功能組 from current AllNobWindowsList
+        public void InitializeTeamMembersFromAllNobs()
+        {
+            try
+            {
+                NobMainCodePage.隊員智能功能組.Clear();
+                var all = MainWindow.AllNobWindowsList;
+                if (all == null || all.Count == 0)
+                    return;
+
+                foreach (var nob in all)
+                {
+                    if (nob == null) continue;
+                    var member = new NobMainCodePage.自動技能組()
+                    {
+                        NOB = nob,
+                        同步 = false,
+                        重複放 = false,
+                        一次放 = false,
+                        延遲 = 0,
+                        間隔 = 0,
+                        技能段1 = -1,
+                        技能段2 = -1,
+                        技能段3 = -1,
+                        施放A = string.Empty,
+                        施放B = string.Empty,
+                        施放C = string.Empty,
+                        程式速度 = 0
+                    };
+                    NobMainCodePage.隊員智能功能組.Add(member);
+                }
+
+                Debug.WriteLine($"Initialized 隊員智能功能組 with {NobMainCodePage.隊員智能功能組.Count} entries.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"InitializeTeamMembersFromAllNobs error: {ex.Message}");
+            }
         }
     }
 }
