@@ -214,6 +214,15 @@ namespace NOBApp.Managers
             _view.TB_SetCNum.Text = setting.連續戰鬥.ToString();
             _view.TB_選擇關卡.Text = setting.選擇關卡.ToString();
             _view.TB_選擇難度.Text = setting.選擇難度.ToString();
+            // If the compact per-script textbox SMENU1 is visible, mirror the value there too
+            try
+            {
+                if (_view.SMENU1.Visibility == Visibility.Visible)
+                {
+                    _view.SMENU1.Text = setting.選擇難度.ToString();
+                }
+            }
+            catch { }
             _view.TBX搜尋範圍.Text = setting.搜尋範圍.ToString();
             _view.其他選項A.Text = setting.其他選項A.ToString();
             _view.其他選項B.Text = setting.其他選項B.ToString();
@@ -247,6 +256,15 @@ namespace NOBApp.Managers
             if (int.TryParse(_view.TB_SetCNum.Text, out int cNum)) setting.連續戰鬥 = cNum;
             if (int.TryParse(_view.TB_選擇關卡.Text, out int level)) setting.選擇關卡 = level;
             if (int.TryParse(_view.TB_選擇難度.Text, out int diff)) setting.選擇難度 = diff;
+            // Prefer SMENU1 when visible (user may input difficulty there)
+            try
+            {
+                if (_view.SMENU1.Visibility == Visibility.Visible && int.TryParse(_view.SMENU1.Text, out int smDiff))
+                {
+                    setting.選擇難度 = smDiff;
+                }
+            }
+            catch { }
             if (int.TryParse(_view.TBX搜尋範圍.Text, out int range)) setting.搜尋範圍 = range;
             if (int.TryParse(_view.其他選項A.Text, out int optA)) setting.其他選項A = optA;
             if (int.TryParse(_view.其他選項B.Text, out int optB)) setting.其他選項B = optB;

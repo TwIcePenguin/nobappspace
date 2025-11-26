@@ -18,9 +18,12 @@ namespace NOBApp.Managers
         public string LatestVersion => _latestVersion;
 
         private readonly UpdateChecker _updateChecker = new UpdateChecker();
+        private bool _isChecking = false;
 
         public async Task CheckForUpdatesAsync(Action<string>? statusCallback, Action<string>? uiApplyCallback)
         {
+            if (_isChecking) return;
+            _isChecking = true;
             try
             {
                 var release = await _updateChecker.GetLatestReleaseAsync();
@@ -32,6 +35,10 @@ namespace NOBApp.Managers
             catch (Exception ex)
             {
                 statusCallback?.Invoke($"檢查更新失敗: {ex.Message}");
+            }
+            finally
+            {
+                _isChecking = false;
             }
         }
 

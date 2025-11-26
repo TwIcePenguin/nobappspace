@@ -9,17 +9,22 @@ namespace NOBApp.Managers
     public class UpdateDownloader
     {
         private static string UpdateUrl = "https://github.com/TwIcePenguin/nobappspace/releases/download/{tag}/{filename}.zip";
+        private static readonly HttpClient _httpClient = new HttpClient();
+
+        static UpdateDownloader()
+        {
+            _httpClient.Timeout = TimeSpan.FromMinutes(5);
+        }
 
         public static async Task DownloadUpdate(string tag)
         {
             try
             {
-                // 檢查更新文件是否已存在
+                // 檢查更新文件是否已存在，若存在則刪除以確保下載最新版
                 string updateFilePath = Path.Combine(Environment.CurrentDirectory, "update.zip");
                 if (File.Exists(updateFilePath))
                 {
-                    Debug.WriteLine($"更新文件已存在: {updateFilePath}，跳過下載");
-                    return; // 如果文件已存在，跳過下載步驟
+                    try { File.Delete(updateFilePath); } catch { }
                 }
 
                 string url = UpdateUrl.Replace("{tag}", tag).Replace("{filename}", tag);
@@ -29,16 +34,12 @@ namespace NOBApp.Managers
                 string logPath = Path.Combine(Environment.CurrentDirectory, "update_log.txt");
                 File.AppendAllText(logPath, $"[{DateTime.Now}] 開始下載更新: {url}\n");
 
-                using (HttpClient client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromMinutes(5);
-                    byte[] updateData = await client.GetByteArrayAsync(url);
+                byte[] updateData = await _httpClient.GetByteArrayAsync(url);
 
-                    File.AppendAllText(logPath, $"[{DateTime.Now}] 下載完成，檔案大小: {updateData.Length} 字節\n");
-                    await File.WriteAllBytesAsync(updateFilePath, updateData);
+                File.AppendAllText(logPath, $"[{DateTime.Now}] 下載完成，檔案大小: {updateData.Length} 字節\n");
+                await File.WriteAllBytesAsync(updateFilePath, updateData);
 
-                    File.AppendAllText(logPath, $"[{DateTime.Now}] 已保存更新檔到: {updateFilePath}\n");
-                }
+                File.AppendAllText(logPath, $"[{DateTime.Now}] 已保存更新檔到: {updateFilePath}\n");
             }
             catch (Exception ex)
             {

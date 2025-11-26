@@ -747,19 +747,11 @@ namespace NOBApp
                 {
                     MainNob.CodeSetting.線路 = line;
                 }
-                // Read difficulty: prefer SMENU1 (per-script small textbox) when visible, otherwise use TB_選擇難度
-                int chosenDiff = 0;
-                if (SMENU1.Visibility == Visibility.Visible && int.TryParse(SMENU1.Text, out int sm))
+                if (int.TryParse(SMENU1.Text, out int lv))
                 {
-                    chosenDiff = sm;
-                    Debug.WriteLine("SMENU1 (選擇難度) : " + chosenDiff);
+                    Debug.WriteLine("SMENU1 : " + lv);
+                    MainNob.CodeSetting.選擇難度 = lv;
                 }
-                else if (!string.IsNullOrEmpty(TB_選擇難度.Text) && int.TryParse(TB_選擇難度.Text, out int tbv))
-                {
-                    chosenDiff = tbv;
-                    Debug.WriteLine("TB_選擇難度 : " + chosenDiff);
-                }
-                MainNob.CodeSetting.選擇難度 = chosenDiff;
                 if (int.TryParse(後退時間.Text, out int t))
                 {
                     MainNob.CodeSetting.後退時間 = t;

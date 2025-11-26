@@ -9,22 +9,23 @@ namespace NOBApp.Managers
     public class UpdateChecker
     {
         private static string GitHubApiUrl = "https://api.github.com/repos/TwIcePenguin/nobappspace/releases/latest";
+        private static readonly HttpClient _httpClient = new HttpClient();
+
+        static UpdateChecker()
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
+            _httpClient.Timeout = TimeSpan.FromSeconds(10);
+        }
 
         public async Task<GitHubRelease> GetLatestReleaseAsync()
         {
             try
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
-                    client.Timeout = TimeSpan.FromSeconds(10);
-
-                    Debug.WriteLine($"正在檢查 GitHub 更新: {GitHubApiUrl}");
-                    string json = await client.GetStringAsync(GitHubApiUrl);
-                    var release = JsonSerializer.Deserialize<GitHubRelease>(json);
-                    Debug.WriteLine($"獲取到版本: {release?.tag_name}");
-                    return release ?? new GitHubRelease { tag_name = VersionInfo.Version };
-                }
+                Debug.WriteLine($"正在檢查 GitHub 更新: {GitHubApiUrl}");
+                string json = await _httpClient.GetStringAsync(GitHubApiUrl);
+                var release = JsonSerializer.Deserialize<GitHubRelease>(json);
+                Debug.WriteLine($"獲取到版本: {release?.tag_name}");
+                return release ?? new GitHubRelease { tag_name = VersionInfo.Version };
             }
             catch (HttpRequestException ex)
             {

@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using NOBApp;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using NOBApp;
 
 namespace NOBApp.Sports
 {
@@ -162,7 +165,7 @@ namespace NOBApp.Sports
 				await Task.Delay(100, token);
 				if (MainNob.GetTargetIDINT() == MainNob.CodeSetting.目標A)
 				{
-					_outsideMapId = MainNob.MAPID;
+					MainNob.Log($"搜尋到入口NPC 入場開始");
 					break;
 				}
 
@@ -175,21 +178,23 @@ namespace NOBApp.Sports
 				}
 			}
 
-			_cachedMapId = MainNob.MAPID;
-			MainNob.Log($"入場開始，快取地圖：{_cachedMapId}"); // 入場開始，記錄快取地圖ID
 
-			if (MainNob.MAPID == _outsideMapId) CurrentStage = ScriptStage.Entrance;
+			if (MainNob.GetTargetIDINT() != -1 &&
+				MainNob.GetTargetIDINT() == MainNob.CodeSetting.目標A) CurrentStage = ScriptStage.Entrance;
 			else CurrentStage = ScriptStage.FindTarget;
 
 			// Report tasks in parallel
 			var tasks = new List<Task>();
+
 			foreach (var nob in NobTeam)
 			{
 				tasks.Add(ReportTask(nob, token));
 			}
 			await Task.WhenAll(tasks);
 
-			if (MainNob.MAPID != _cachedMapId)
+			MainNob.鎖定NPC(MainNob.CodeSetting.目標A);
+			await Task.Delay(100, token);
+			if (MainNob.GetTargetIDINT() != MainNob.CodeSetting.目標A)
 			{
 				_clearCount = 0;
 				CurrentStage = ScriptStage.FindTarget;
@@ -207,9 +212,9 @@ namespace NOBApp.Sports
 		/// <returns>非同步任務</returns>
 		private async Task HandleFindTarget(CancellationToken token)
 		{
-			if (IsOutsideMap())
+			if (await IsOutsideMap(MainNob!))
 			{
-				MainNob!.Log($"尋找目標階段：目前在外部地圖（{MainNob.MAPID}），返回入場"); // 尋找目標階段：目前在外部地圖，返回入場
+				MainNob!.Log($"尋找目標階段：目前在外部地圖，返回入場"); // 尋找目標階段：目前在外部地圖，返回入場
 				CurrentStage = ScriptStage.Entrance;
 				return;
 			}
@@ -226,9 +231,9 @@ namespace NOBApp.Sports
 		/// <returns>非同步任務</returns>
 		private async Task HandleExit(CancellationToken token)
 		{
-			if (IsOutsideMap())
+			if (await IsOutsideMap(MainNob!))
 			{
-				MainNob!.Log($"退出階段：目前在外部地圖（{MainNob.MAPID}），返回入場"); // 退出階段：目前在外部地圖，返回入場
+				MainNob!.Log($"退出階段：目前在外部地圖，返回入場"); // 退出階段：目前在外部地圖，返回入場
 				CurrentStage = ScriptStage.Entrance;
 				return;
 			}
@@ -672,10 +677,11 @@ namespace NOBApp.Sports
 
 				while (MainNob!.StartRunCode)
 				{
+					MainNob.鎖定NPC(MainNob.CodeSetting.目標A);
 					token.ThrowIfCancellationRequested();
 					await Task.Delay(300, token);
 
-					if (MainNob.MAPID != _cachedMapId)
+					if (MainNob.GetTargetIDINT() == -1)
 					{
 						MainNob.Log("報告期間發現意外進入。"); // 報告期間意外進入
 						MainNob.副本進入完成 = true;
@@ -764,12 +770,22 @@ namespace NOBApp.Sports
 				token.ThrowIfCancellationRequested();
 				await Task.Delay(200, token);
 
-				if (MainNob.MAPID != _cachedMapId)
+				MainNob.鎖定NPC(MainNob.CodeSetting.目標A);
+				await Task.Delay(200, token);
+				if (MainNob.GetTargetIDINT() != -1 &&
+					MainNob.GetTargetIDINT() != MainNob.CodeSetting.目標A)
 				{
 					MainNob.Log("接受期間發現意外進入。"); // 接受期間意外進入
 					MainNob.副本進入完成 = true;
 					CurrentStage = ScriptStage.FindTarget;
 					return;
+				}
+
+				if (useNOB.任務選擇框)
+				{
+					MainNob.Log("發現意外任務選擇框 離開框框重新接任務。");
+					useNOB.KeyPress(VKeys.KEY_ESCAPE, 5);
+					continue;
 				}
 
 				if (useNOB.對話與結束戰鬥)
@@ -787,12 +803,10 @@ namespace NOBApp.Sports
 							int okCheck = 0;
 							while (MainNob.StartRunCode)
 							{
-								useNOB.鎖定NPC(_waterMessengerId);
+								useNOB.鎖定NPC(useNOB.CodeSetting.目標A);
 								await Task.Delay(200, token);
-								useNOB.KeyPress(VKeys.KEY_S);
-								useNOB.KeyPress(VKeys.KEY_W);
 
-								if (MainNob.GetTargetIDINT() != _waterMessengerId) okCheck++;
+								if (MainNob.GetTargetIDINT() != useNOB.CodeSetting.目標A) okCheck++;
 
 								if (okCheck > 2)
 								{
@@ -860,23 +874,23 @@ namespace NOBApp.Sports
 		private async Task LeaveDungeon(NOBDATA useNOB, CancellationToken token)
 		{
 			useNOB.副本離開完成 = false;
-			useNOB.Log("離開副本：" + useNOB.PlayerName); // 離開副本
 			useNOB.KeyPress(VKeys.KEY_ESCAPE, 10);
 
 			int checkDone = 0;
 			int errorL = 0;
-			int cacheID = _waterMessengerId;
+			//int cacheID = _waterMessengerId;
 
+			useNOB.Log("離開副本：" + useNOB.PlayerName + " : " + _waterMessengerId); // 離開副本
 			while (MainNob!.StartRunCode)
 			{
 				token.ThrowIfCancellationRequested();
 
-				if (IsOutsideMap())
+				if (await IsOutsideMap(useNOB))
 				{
-					useNOB.Log($"已在外部地圖：{useNOB.MAPID}"); // 已在外部
+					useNOB.Log($"已在外部地圖"); // 已在外部
 					return;
 				}
-
+				useNOB.鎖定NPC(_waterMessengerId);
 				await Task.Delay(500, token);
 
 				if (_isNpcFound && useNOB.GetTargetIDINT() != -1)
@@ -927,12 +941,13 @@ namespace NOBApp.Sports
 					}
 					else
 					{
-						useNOB.MoveToNPC(cacheID);
+						useNOB.MoveToNPC(_waterMessengerId);
 						await Task.Delay(500, token);
 					}
 				}
 				else
 				{
+					useNOB.Log($"Find ColorCheckWater NPC {useNOB.PlayerName}");
 					await FindSpecificNpc(useNOB, ColorCheckWater, token);
 				}
 			}
@@ -943,12 +958,14 @@ namespace NOBApp.Sports
 		#region Helper Methods
 
 		/// <summary>
-		/// 檢查是否在外部地圖
+		/// 檢查是否在接任務的地點
 		/// </summary>
 		/// <returns>是否在外部地圖</returns>
-		private bool IsOutsideMap()
+		private async Task<bool> IsOutsideMap(NOBDATA useNOB)
 		{
-			return Math.Abs(MainNob!.MAPID - _outsideMapId) < 10;
+			useNOB?.鎖定NPC(MainNob!.CodeSetting.目標A);
+			await Task.Delay(300);
+			return useNOB?.GetTargetIDINT() == MainNob?.CodeSetting.目標A;
 		}
 
 		/// <summary>
@@ -1058,6 +1075,8 @@ namespace NOBApp.Sports
 					await Task.Delay(100, token);
 					if (useNOB.GetTargetIDINT() == _waterMessengerId)
 					{
+						useNOB.Log($"Debug : {useNOB.PlayerName} Find Npc {_waterMessengerId} Done");
+
 						_isNpcFound = true;
 						return;
 					}
@@ -1071,7 +1090,7 @@ namespace NOBApp.Sports
 
 				var c2 = ColorTools.GetColorNum(useNOB.Proc.MainWindowHandle, new System.Drawing.Point(900, 70), new System.Drawing.Point(100, 70), "F6F67A");
 				await Task.Delay(100, token);
-
+				useNOB.Log($"Debug : Find Npc Color {c2} => {colorNum}");
 				if (c2 == colorNum)
 				{
 					_isNpcFound = true;
@@ -1094,11 +1113,10 @@ namespace NOBApp.Sports
 				if (tryGetOutLine > 2)
 				{
 					tryGetOutLine = 0;
-					MainNob.鎖定NPC(MainNob.CodeSetting.目標A);
+					useNOB.鎖定NPC(MainNob.CodeSetting.目標A);
 					await Task.Delay(100, token);
-					if (MainNob.GetTargetIDINT() == MainNob.CodeSetting.目標A)
+					if (await IsOutsideMap(useNOB))
 					{
-						_outsideMapId = MainNob.MAPID;
 						CurrentStage = ScriptStage.Entrance;
 						return;
 					}
