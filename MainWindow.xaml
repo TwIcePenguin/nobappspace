@@ -26,7 +26,7 @@
  <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
  <Button x:Name="手把" Content="手把" Click="Button_Click_手把" Width="50" Style="{DynamicResource CurrentButtonStyle}"/>
  <TextBox x:Name="TB_GamePadName" Width="100" Style="{DynamicResource CurrentInputStyle}"/>
- <Button x:Name="Btn_Update" Content="手動檢查更新" Click="Btn_Update_Click" MinWidth="120" Style="{DynamicResource CurrentButtonStyle}"/>
+ <Button x:Name="Btn_Update" Content="手動檢查更新" MinWidth="120" Style="{DynamicResource CurrentButtonStyle}"/>
  </StackPanel>
  <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
  <Button x:Name="切換風格" Content="切換風格" ToolTip="點擊切換介面風格" Click="Btn_ThemeToggle_Click" Style="{DynamicResource CurrentButtonStyle}"/>

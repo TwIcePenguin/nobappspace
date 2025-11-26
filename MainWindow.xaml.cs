@@ -300,13 +300,22 @@ namespace NOBApp
 
         private async void Btn_Update_Click(object? sender, RoutedEventArgs e)
         {
+            if (_updateManager.IsChecking) return; // already running
             if (!_updateManager.UpdateAvailable)
             {
-                await _updateManager.CheckForUpdatesAsync(msg => 狀態訊息(msg, true), latest =>
+                try
                 {
-                    Btn_Update.Content = $"更新至 {latest}";
-                    Btn_Update.Visibility = Visibility.Visible;
-                });
+                    Btn_Update.IsEnabled = false;
+                    await _updateManager.CheckForUpdatesAsync(msg => 狀態訊息(msg, true), latest =>
+                    {
+                        Btn_Update.Content = $"更新至 {latest}";
+                        Btn_Update.Visibility = Visibility.Visible;
+                    });
+                }
+                finally
+                {
+                    Btn_Update.IsEnabled = true;
+                }
             }
             if (!_updateManager.UpdateAvailable) return;
             var result = MessageBox.Show($"是否更新至 {_updateManager.LatestVersion}版本？\n\n更新後應用將重新啟動。", "更新確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -314,7 +323,7 @@ namespace NOBApp
             {
                 await _updateManager.PerformUpdateAsync(_updateManager.LatestVersion, Root, Btn_Update);
             }
-        }
+         }
 
         private void Button_Click_手把(object sender, RoutedEventArgs e)
         {

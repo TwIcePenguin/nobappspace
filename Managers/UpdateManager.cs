@@ -20,6 +20,9 @@ namespace NOBApp.Managers
         private readonly UpdateChecker _updateChecker = new UpdateChecker();
         private bool _isChecking = false;
 
+        // Expose current checking status so callers can avoid duplicate invocations
+        public bool IsChecking => _isChecking;
+
         public async Task CheckForUpdatesAsync(Action<string>? statusCallback, Action<string>? uiApplyCallback)
         {
             if (_isChecking) return;
