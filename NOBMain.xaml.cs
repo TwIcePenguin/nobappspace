@@ -1033,6 +1033,19 @@ namespace NOBApp
             }
         }
 
+        // Expose a method to read current UI values back into MainNob.CodeSetting
+        public void ReadSettingFromUI()
+        {
+            try
+            {
+                _scriptManager?.ReadSettingFromUI();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ReadSettingFromUI failed: {ex.Message}");
+            }
+        }
+
         public void RestartTimer()
         {
             _timer.Stop();

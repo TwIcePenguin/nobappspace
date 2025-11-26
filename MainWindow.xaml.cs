@@ -122,8 +122,31 @@ namespace NOBApp
         {
             if (NBTabControl.SelectedItem is TabItem tabItem && tabItem.Content is NobMainCodePage page && page.MainNob != null)
             {
-                page.MainNob.CodeSetting = CodeSetting;
-                page.SettingLoadToUI();
+                try
+                {
+                    // Read values from the selected page's UI back into its CodeSetting
+                    page.ReadSettingFromUI();
+
+                    // Update global CodeSetting from the source page
+                    CodeSetting = page.MainNob.CodeSetting;
+
+                    // Apply updated CodeSetting to all other open pages (except the source)
+                    foreach (var item in NBTabControl.Items)
+                    {
+                        if (item is TabItem ti && ti.Content is NobMainCodePage otherPage && !ReferenceEquals(otherPage, page) && otherPage.MainNob != null)
+                        {
+                            otherPage.MainNob.CodeSetting = CodeSetting;
+                            otherPage.SettingLoadToUI();
+                        }
+                    }
+
+                    // Also refresh the source page UI to reflect normalized/global values
+                    page.SettingLoadToUI();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Btn_SetApply_Click failed: {ex.Message}");
+                }
             }
         }
 
