@@ -124,23 +124,17 @@ namespace NOBApp
             {
                 try
                 {
-                    // Read values from the selected page's UI back into its CodeSetting
-                    page.ReadSettingFromUI();
-
-                    // Update global CodeSetting from the source page
-                    CodeSetting = page.MainNob.CodeSetting;
-
-                    // Apply updated CodeSetting to all other open pages (except the source)
-                    foreach (var item in NBTabControl.Items)
+                    // Apply the globally loaded CodeSetting to the currently selected page only.
+                    // Ensure we have a valid CodeSetting (if user loaded one earlier). If not, read current UI into CodeSetting first.
+                    if (CodeSetting == null)
                     {
-                        if (item is TabItem ti && ti.Content is NobMainCodePage otherPage && !ReferenceEquals(otherPage, page) && otherPage.MainNob != null)
-                        {
-                            otherPage.MainNob.CodeSetting = CodeSetting;
-                            otherPage.SettingLoadToUI();
-                        }
+                        // Read current UI into CodeSetting
+                        page.ReadSettingFromUI();
+                        CodeSetting = CloneSetting(page.MainNob.CodeSetting);
                     }
 
-                    // Also refresh the source page UI to reflect normalized/global values
+                    // Assign a deep-cloned copy so we don't share the same reference with other pages
+                    page.MainNob.CodeSetting = CloneSetting(CodeSetting);
                     page.SettingLoadToUI();
                 }
                 catch (Exception ex)
@@ -154,8 +148,25 @@ namespace NOBApp
         {
             if (NBTabControl.SelectedItem is TabItem tabItem && tabItem.Content is NobMainCodePage page && page.MainNob != null)
             {
+                // Read all current UI values back into the page's setting, then copy into the global CodeSetting
+                page.ReadSettingFromUI();
                 Btn_SetLoad.Content = $"取得{page.MainNob.PlayerName}設定";
-                CodeSetting = page.MainNob.CodeSetting;
+                CodeSetting = CloneSetting(page.MainNob.CodeSetting);
+            }
+        }
+
+        // Helper to deep clone Setting using JSON serialization
+        private Setting CloneSetting(Setting src)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(src);
+                var copy = JsonSerializer.Deserialize<Setting>(json);
+                return copy ?? new Setting();
+            }
+            catch
+            {
+                return new Setting();
             }
         }
 
