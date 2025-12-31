@@ -28,8 +28,8 @@ namespace NOBApp.Sports
             for (int i = 0; i < NobTeam.Count; i++)
             {
                 NobTeam[i].選擇目標類型(1);
-                MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
-                MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
+                NobTeam[i].WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
+                NobTeam[i].WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
             }
 
             nowClassCount = MainNob?.CodeSetting.線路 ?? 0;

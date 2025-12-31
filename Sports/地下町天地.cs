@@ -755,15 +755,15 @@ namespace NOBApp.Sports
                 long fminID = long.MaxValue;
                 for (int i = 0; i < 64; i++)
                 {
-                    long findID = MainWindow.dmSoft?.ReadInt(nob.Hwnd, "<nobolHD.bng> + " + str, 4) ?? 0;
+                    long findID = nob.ReadIntValue("<nobolHD.bng> + " + str, 4);
                     if (findID <= 10)
                     {
                         skipIDs.Add(findID);
                         str = str.AddressAdd(12); continue;
                     }
 
-                    long chid = MainWindow.dmSoft?.ReadInt(nob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(3), 2) ?? 0;
-                    long dis = MainWindow.dmSoft?.ReadInt(nob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(4), 4) ?? 0;
+                    long chid = nob.ReadIntValue("<nobolHD.bng> + " + str.AddressAdd(3), 2);
+                    long dis = nob.ReadIntValue("<nobolHD.bng> + " + str.AddressAdd(4), 4);
                     MainNob.Log("dis : " + dis + " findID : " + findID + " chid : " + chid);
 
                     if (skipIDs.Contains(findID) || chid != 96 || dis > 9000) { str = str.AddressAdd(12); continue; }

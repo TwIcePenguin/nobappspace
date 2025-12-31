@@ -195,8 +195,8 @@ namespace NOBApp.Sports
                 List<long> skipIDs = new();
                 for (int i = 0; i < 150; i++)
                 {
-                    findID = MainWindow.dmSoft?.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4) ?? 0;
-                    chid = MainWindow.dmSoft?.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(3), 2) ?? 0;
+                    findID = MainNob.ReadIntValue("<nobolHD.bng> + " + str, 4);
+                    chid = MainNob.ReadIntValue("<nobolHD.bng> + " + str.AddressAdd(3), 2);
                     if (chid != 254 || findID == -1)
                     {
                         skipIDs.Add(findID);

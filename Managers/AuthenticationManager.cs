@@ -18,6 +18,7 @@ namespace NOBApp.Managers
 		private DateTime _lastNetworkTime = DateTime.MinValue;
 		private long _lastTickCount = 0;
 		private bool _isUpdatingTime = false; // 防止重入
+		private bool _isCheckingValidity = false;
 
 		public AuthenticationManager(NobMainCodePage view)
 		{
@@ -469,150 +470,173 @@ namespace NOBApp.Managers
 
 		public async Task CheckValidity(TextBox statusBox, Label expireLabel)
 		{
-			if (_view.MainNob == null)
+			if (_isCheckingValidity)
 			{
-				MessageBox.Show("請先選擇並驗證一個角色", "提示");
-				statusBox.Clear();
-				statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] ⚠ 請先選擇角色\n");
+				statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] 其他驗證流程執行中，請稍候...\n");
+				statusBox.ScrollToEnd();
 				return;
 			}
 
-			statusBox.Clear();
-			statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] 查詢賬號有效期中...\n");
-			statusBox.ScrollToEnd();
-
+			_isCheckingValidity = true;
 			try
 			{
-				await GoogleSheet.GoogleSheetInitAsync();
-				await GoogleSheet.CheckDonateAsync(_view.MainNob);
-			}
-			catch (Exception ex)
-			{
-				statusBox.AppendText($"⚠️ 無法連接驗證伺服器: {ex.Message}\n");
-				statusBox.AppendText($"將顯示本地緩存信息...\n");
-				statusBox.ScrollToEnd();
-			}
-
-			try
-			{
-				string cdkFilePath = $@"{_view.MainNob.Account}_CDK.nob";
-				if (!File.Exists(cdkFilePath))
+				if (_view.MainNob == null)
 				{
-					statusBox.AppendText($"❌ 找不到驗證文件\n");
-					statusBox.AppendText($"賬號: {_view.MainNob.Account}\n");
-					statusBox.AppendText($"請先進行驗證！\n");
-					MessageBox.Show($"賬號 {_view.MainNob.Account} 沒有驗證記錄，請先驗證", "未驗證");
+					MessageBox.Show("請先選擇並驗證一個角色", "提示");
+					statusBox.Clear();
+					statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] ⚠ 請先選擇角色\n");
 					return;
 				}
 
-				using (StreamReader reader = new(cdkFilePath))
+				statusBox.Clear();
+				statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] 查詢賬號有效期中...\n");
+				statusBox.ScrollToEnd();
+
+				try
 				{
-					string jsonString = await reader.ReadToEndAsync();
-					string dJson = Encoder.AesDecrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
-					PNobUserData nobUseData = JsonSerializer.Deserialize<PNobUserData>(dJson);
+					await GoogleSheet.GoogleSheetInitAsync();
+					await GoogleSheet.CheckDonateAsync(_view.MainNob);
+				}
+				catch (Exception ex)
+				{
+					statusBox.AppendText($"⚠️ 無法連接驗證伺服器: {ex.Message}\n");
+					statusBox.AppendText($"將顯示本地緩存信息...\n");
+					statusBox.ScrollToEnd();
+				}
 
-					if (nobUseData != null && DateTime.TryParse(nobUseData.StartTimer, out DateTime expireDate))
+				try
+				{
+					string cdkFilePath = $"{_view.MainNob.Account}_CDK.nob";
+					if (!File.Exists(cdkFilePath))
 					{
-						DateTime nowTime = await NetworkTime.GetNowAsync();
-						_lastNetworkTime = nowTime;
-						_lastTickCount = Environment.TickCount64;
+						statusBox.AppendText($"❌ 找不到驗證文件\n");
+						statusBox.AppendText($"賬號: {_view.MainNob.Account}\n");
+						statusBox.AppendText($"請先進行驗證！\n");
+						MessageBox.Show($"賬號 {_view.MainNob.Account} 沒有驗證記錄，請先驗證", "未驗證");
+						return;
+					}
 
-						TimeSpan remaining = expireDate - nowTime;
+					using (StreamReader reader = new(cdkFilePath))
+					{
+						string jsonString = await reader.ReadToEndAsync();
+						string dJson = Encoder.AesDecrypt(jsonString, "CHECKNOBPENGUIN", "CHECKNOB");
+						PNobUserData nobUseData = JsonSerializer.Deserialize<PNobUserData>(dJson);
 
-						statusBox.AppendText($"\n📋 賬號驗證信息\n");
-						statusBox.AppendText($"━━━━━━━━━━━━━━━━━━\n");
-						statusBox.AppendText($"帳號: {_view.MainNob.Account}\n");
-						statusBox.AppendText($"角色: {_view.MainNob.PlayerName}\n");
-						statusBox.AppendText($"\n⏰ 有效期信息\n");
-						statusBox.AppendText($"到期時間: {expireDate:yyyy-MM-dd HH:mm:ss}\n");
-
-						if (remaining.TotalSeconds > 0)
+						if (nobUseData != null && DateTime.TryParse(nobUseData.StartTimer, out DateTime expireDate))
 						{
-							statusBox.AppendText($"✅ 狀態: 有效\n");
-							statusBox.AppendText($"剩餘時間: {remaining.Days} 天 {remaining.Hours} 小時 {remaining.Minutes} 分鐘\n");
-
-							expireLabel.Content = $"到期時間: {expireDate:yyyy-MM-dd} (有效)";
-							expireLabel.Foreground = new SolidColorBrush(Colors.White);
-
-							if (remaining.TotalDays <= 7)
+							DateTime nowTime;
+							try
 							{
-								statusBox.AppendText($"⚠️ 提醒: 即將過期，請提前續費\n");
+								nowTime = await NetworkTime.GetNowAsync();
+								_lastNetworkTime = nowTime;
+								_lastTickCount = Environment.TickCount64;
 							}
-						}
-						else
-						{
-							statusBox.AppendText($"❌ 狀態: 已過期\n");
-							statusBox.AppendText($"過期時間: {Math.Abs(remaining.Days)} 天前\n");
-							statusBox.AppendText($"請聯繫管理員續費\n");
-
-							expireLabel.Content = $"到期時間: {expireDate:yyyy-MM-dd} (已過期)";
-							expireLabel.Foreground = new SolidColorBrush(Colors.Red);
-						}
-
-						await UpdateRemainingDays(_view.到期計時);
-
-						var vipSp = _view.VIPSP;
-						if (remaining.TotalSeconds > 0)
-						{
-							vipSp.IsEnabled = true;
-							
-							// 設定帳號等級
-							if (_view.MainNob.特殊者) Tools.CurrentLevel = Tools.AccountLevel.Special;
-							else if (_view.MainNob.贊助者) Tools.CurrentLevel = Tools.AccountLevel.Sponsor;
-							else if (nobUseData.CheckC != null && nobUseData.CheckC.Contains("1")) Tools.CurrentLevel = Tools.AccountLevel.VIP;
-							else Tools.CurrentLevel = Tools.AccountLevel.Free;
-
-							if (Tools.IsVIP)
+							catch
 							{
-								vipSp.IsChecked = true;
-								statusBox.AppendText($"👑 VIP 權限: 已啟用 ({Tools.CurrentLevel})\n");
+								nowTime = DateTime.Now;
+								statusBox.AppendText($"⚠️ 無法取得網路時間，改用本機時間顯示。\n");
 							}
-						}
-						else
-						{
-							vipSp.IsEnabled = false;
-							vipSp.IsChecked = false;
-						}
 
-						statusBox.ScrollToEnd();
+							TimeSpan remaining = expireDate - nowTime;
 
-						if (!string.IsNullOrEmpty(nobUseData.LastAuthTime))
-						{
-							statusBox.AppendText($"\n📅 驗證記錄\n");
-							statusBox.AppendText($"上次驗證: {nobUseData.LastAuthTime}\n");
-						}
+							statusBox.AppendText($"\n📋 賬號驗證信息\n");
+							statusBox.AppendText($"━━━━━━━━━━━━━━━━━━\n");
+							statusBox.AppendText($"帳號: {_view.MainNob.Account}\n");
+							statusBox.AppendText($"角色: {_view.MainNob.PlayerName}\n");
+							statusBox.AppendText($"\n⏰ 有效期信息\n");
+							statusBox.AppendText($"到期時間: {expireDate:yyyy-MM-dd HH:mm:ss}\n");
 
-						if (!string.IsNullOrEmpty(nobUseData.NextReAuthTime))
-						{
-							if (DateTime.TryParse(nobUseData.NextReAuthTime, out DateTime nextReAuth))
+							if (remaining.TotalSeconds > 0)
 							{
-								TimeSpan timeUntilReAuth = nextReAuth - nowTime;
-								statusBox.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
-								if (timeUntilReAuth.TotalSeconds < 0)
+								statusBox.AppendText($"✅ 狀態: 有效\n");
+								statusBox.AppendText($"剩餘時間: {remaining.Days} 天 {remaining.Hours} 小時 {remaining.Minutes} 分鐘\n");
+
+								expireLabel.Content = $"到期時間: {expireDate:yyyy-MM-dd} (有效)";
+								expireLabel.Foreground = new SolidColorBrush(Colors.White);
+
+								if (remaining.TotalDays <= 7)
 								{
-									statusBox.AppendText($"⚠ 已需要重新驗證！\n");
+									statusBox.AppendText($"⚠️ 提醒: 即將過期，請提前續費\n");
 								}
 							}
 							else
 							{
-								statusBox.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
-							}
-						}
+								statusBox.AppendText($"❌ 狀態: 已過期\n");
+								statusBox.AppendText($"過期時間: {Math.Abs(remaining.Days)} 天前\n");
+								statusBox.AppendText($"請聯繫管理員續費\n");
 
-						statusBox.AppendText($"━━━━━━━━━━━━━━━━━━\n");
-						statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] ✓ 查詢完成\n");
-					}
-					else
-					{
-						statusBox.AppendText($"❌ 驗證文件格式錯誤\n");
-						statusBox.AppendText($"無法解析到期時間\n");
+								expireLabel.Content = $"到期時間: {expireDate:yyyy-MM-dd} (已過期)";
+								expireLabel.Foreground = new SolidColorBrush(Colors.Red);
+							}
+
+							await UpdateRemainingDays(_view.到期計時);
+
+							var vipSp = _view.VIPSP;
+							if (remaining.TotalSeconds > 0)
+							{
+								vipSp.IsEnabled = true;
+
+								if (_view.MainNob.特殊者) Tools.CurrentLevel = Tools.AccountLevel.Special;
+								else if (_view.MainNob.贊助者) Tools.CurrentLevel = Tools.AccountLevel.Sponsor;
+								else if (nobUseData.CheckC != null && nobUseData.CheckC.Contains("1")) Tools.CurrentLevel = Tools.AccountLevel.VIP;
+								else Tools.CurrentLevel = Tools.AccountLevel.Free;
+
+								if (Tools.IsVIP)
+								{
+									vipSp.IsChecked = true;
+									statusBox.AppendText($"👑 VIP 權限: 已啟用 ({Tools.CurrentLevel})\n");
+								}
+							}
+							else
+							{
+								vipSp.IsEnabled = false;
+								vipSp.IsChecked = false;
+							}
+
+							statusBox.ScrollToEnd();
+
+							if (!string.IsNullOrEmpty(nobUseData.LastAuthTime))
+							{
+								statusBox.AppendText($"\n📅 驗證記錄\n");
+								statusBox.AppendText($"上次驗證: {nobUseData.LastAuthTime}\n");
+							}
+
+							if (!string.IsNullOrEmpty(nobUseData.NextReAuthTime))
+							{
+								if (DateTime.TryParse(nobUseData.NextReAuthTime, out DateTime nextReAuth))
+								{
+									TimeSpan timeUntilReAuth = nextReAuth - nowTime;
+									statusBox.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
+									if (timeUntilReAuth.TotalSeconds < 0)
+									{
+										statusBox.AppendText($"⚠ 已需要重新驗證！\n");
+									}
+								}
+								else
+								{
+									statusBox.AppendText($"下次驗證: {nobUseData.NextReAuthTime}\n");
+								}
+							}
+
+							statusBox.AppendText($"━━━━━━━━━━━━━━━━━━\n");
+							statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] ✓ 查詢完成\n");
+						}
+						else
+						{
+							statusBox.AppendText($"❌ 驗證文件格式錯誤\n");
+							statusBox.AppendText($"無法解析到期時間\n");
+						}
 					}
 				}
+				catch (Exception ex)
+				{
+					statusBox.AppendText($"❌ 出現錯誤: {ex.Message}\n");
+					Debug.WriteLine($"檢查有效期錯誤: {ex}");
+				}
 			}
-			catch (Exception ex)
+			finally
 			{
-				statusBox.AppendText($"❌ 出現錯誤: {ex.Message}\n");
-				Debug.WriteLine($"檢查有效期錯誤: {ex}");
+				_isCheckingValidity = false;
 			}
 		}
 	}

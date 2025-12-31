@@ -76,7 +76,7 @@ namespace NOBApp.Sports
                             else
                             {
                                 Debug.WriteLine("自動移動-->");
-                                MainWindow.dmSoft!.WriteString(MainNob.Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCA");
+                                MainNob.WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCA");
                                 Task.Delay(100).Wait();
                                 MainNob.KeyPress(VKeys.KEY_F12);
                                 Task.Delay(5000).Wait();

@@ -1,8 +1,6 @@
 ﻿using Microsoft.VisualBasic.Logging;
 using NOBApp.Managers;
 using NOBApp.Sports;
-using RegisterDmSoftConsoleApp.Configs;
-using RegisterDmSoftConsoleApp.DmSoft;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,7 +23,6 @@ namespace NOBApp
     public partial class MainWindow : Window
     {
         public static MainWindow? Instance { get; private set; }
-        public static DmSoftCustomClassName? dmSoft;
 
         // 使用 Instance 存取 GameWindowManager
         public static List<NOBDATA> AllNobWindowsList => Instance?._gameWindowManager.NobWindows ?? new List<NOBDATA>();
@@ -46,7 +43,6 @@ namespace NOBApp
 
         public Setting CodeSetting = new();
 
-        private readonly DmSoftManager _dmManager = new();
         private readonly TabManager _tabManager = new();
         private readonly UpdateManager _updateManager = new();
         private readonly GameWindowManager _gameWindowManager = new();
@@ -64,10 +60,6 @@ namespace NOBApp
             InitializeComponent();
             企鵝之野望.Title = $"企鵝之野望 v{VersionInfo.Version} KEY = {Tools.GetSerialNumber()}";
             Instance = this;
-
-            // 初始化大漠插件
-            _dmManager.InitializeDmSoft();
-            dmSoft = _dmManager.DmSoft;
 
             // 初始化解析度下拉
             var list = Tools.InitResolution();

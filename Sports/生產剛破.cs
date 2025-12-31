@@ -59,7 +59,7 @@ namespace NOBApp.Sports
             {
                 if (tryCheck == 0)
                 {
-                    MainWindow.dmSoft!.WriteString(MainNob.Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCD");
+                    MainNob.WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCD");
                     Task.Delay(100).Wait();
                     MainNob.KeyPress(VKeys.KEY_F12);
                     Task.Delay(10000).Wait();
@@ -112,7 +112,7 @@ namespace NOBApp.Sports
             {
                 if (tryCheck == 0)
                 {
-                    MainWindow.dmSoft!.WriteString(MainNob.Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCA");
+                    MainNob.WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCA");
                     Task.Delay(100).Wait();
                     MainNob.KeyPress(VKeys.KEY_F12);
                     Task.Delay(10000).Wait();
@@ -164,7 +164,7 @@ namespace NOBApp.Sports
             {
                 if (tryCheck == 0)
                 {
-                    MainWindow.dmSoft!.WriteString(MainNob.Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCB");
+                    MainNob.WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCB");
                     Task.Delay(100).Wait();
                     MainNob.KeyPress(VKeys.KEY_F12);
                     Task.Delay(10000).Wait();
@@ -219,7 +219,7 @@ namespace NOBApp.Sports
             {
                 if (tryCheck == 0)
                 {
-                    MainWindow.dmSoft!.WriteString(MainNob.Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCC");
+                    MainNob.WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:NPCC");
                     Task.Delay(100).Wait();
                     MainNob.KeyPress(VKeys.KEY_F12);
                     Task.Delay(10000).Wait();

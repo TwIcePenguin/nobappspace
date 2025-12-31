@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<TargetFramework>net9.0-windows10.0.19041</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
 		<StartupObject>NOBApp.App</StartupObject>
@@ -12,7 +12,7 @@
 		<PackageIcon>SteamPGIN.png</PackageIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<!-- 移除自訂 BaseOutputPath以避免啟動路徑/權限問題 -->
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 	</PropertyGroup>
@@ -40,15 +40,6 @@
 		<None Remove="448545149_994763355983896_6737183326767466195_n.jpg" />
 		<None Remove="6f90a860dd47c4bafb631f2fa7930e50.png" />
 		<None Remove="images.jpg" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<!-- Replace COMReference (unsupported by SDK MSBuild) with a direct file reference to the interop/COM proxy DLL if present. -->
-		<!-- If you need true COM tlb import, generate interop assembly with tlbimp.exe and reference the generated assembly here. -->
-		<Reference Include="dm">
-			<HintPath>libs\dm.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -101,15 +92,6 @@
 		<None Update="libs\Bkgnd.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="libs\dm.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="libs\DmReg.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="libs\handle.exe">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>SettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -132,7 +114,7 @@
 			<VersionFileContent>@(VersionFileLines,' ')</VersionFileContent>
 			<VersionNumber>$([System.Text.RegularExpressions.Regex]::Match('$(VersionFileContent)','public\s+const\s+string\s+Version\s*=\s*"([^"]+)"').Groups[1].Value)</VersionNumber>
 			<!-- 固定 ZIP目錄為 publish\zip -->
-			<ZipOutputDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0-windows7.0\publish\zip\</ZipOutputDir>
+			<ZipOutputDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\publish\zip\</ZipOutputDir>
 			<ZipFilePath>$(ZipOutputDir)v$(VersionNumber).zip</ZipFilePath>
 		</PropertyGroup>
 		<Message Importance="High" Text="✅版本號: $(VersionNumber)" />

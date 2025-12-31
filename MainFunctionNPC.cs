@@ -92,11 +92,10 @@ namespace NOBApp
 
             string startAddress = AddressData.搜尋身邊NPCID起始; // 使用已儲存的 AddressData
 
-            // 1. 批次讀取記憶體: 一次讀取所有 NPC 資料
             int npcCountToRead = NpcCountToRead; // 可考慮使其動態化
             int bytesToRead = npcCountToRead * 12; // 每個 NPC 條目佔 12 位元組
 
-            string dataStr = MainWindow.dmSoft?.ReadData(user.Hwnd, "<nobolHD.bng> + " + startAddress, bytesToRead);
+            string dataStr = user.ReadDataHex("<nobolHD.bng> + " + startAddress, bytesToRead);
 
             if (string.IsNullOrEmpty(dataStr))
                 return allNPCs; // 處理 dataStr 失敗

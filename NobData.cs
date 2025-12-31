@@ -9,281 +9,391 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using NOBApp.Sports;
+using NOBApp.Memory;
 using static NOBApp.NobMainCodePage;
 
 namespace NOBApp
 {
-	public class NOBDATA : NOBBehavior
-	{
-		private CancellationTokenSource? _infoCts;
-		private string _cachedAccount = string.Empty;
-		private string _cachedPassword = string.Empty;
-		private string _cachedPlayerName = string.Empty;
+    public class NOBDATA : NOBBehavior
+    {
+        private MemoryReaderFacade? _memory;
 
-		public NOBDATA(Process proc) : base(proc)
-		{
-			bool _initWH = true;
-			while (_initWH)
-			{
-				if (GetWindowRect(Proc.MainWindowHandle, out RECT rect))
-				{
-					原視窗 = rect;
-					NowWidth = rect.Right - rect.Left;
-					NowHeight = rect.Bottom - rect.Top;
-					_initWH = false;
-				}
-				Task.Delay(100).Wait();
-			}
+        private bool TryEnsureMemoryReaderInitialized()
+        {
+            if (_memory is not null)
+                return _memory.IsWin32Available;
 
-			// Start background refresh which will populate cached Account/PlayerName shortly after construction.
-			_infoCts?.Cancel();
-			_infoCts = new CancellationTokenSource();
-			_ = Task.Run(() => RefreshBasicInfoLoop(_infoCts.Token));
+            try
+            {
+                var baseAddr = Proc.MainModule?.BaseAddress ?? IntPtr.Zero;
+                _memory = new MemoryReaderFacade(Proc.Id, (nuint)baseAddr.ToInt64());
+                return _memory.IsWin32Available;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"TryEnsureMemoryReaderInitialized failed: {ex}");
+                _memory = null;
+                return false;
+            }
+        }
 
-			// Set initial LogID to placeholder to avoid heavy read here
-			LogID = "(loading)";
-		}
+        private void EnsureMemoryReaderInitialized()
+        {
+            _ = TryEnsureMemoryReaderInitialized();
+        }
 
-		private async Task RefreshBasicInfoLoop(CancellationToken token)
-		{
-			try
-			{
-				int attempts = 0;
-				while (!token.IsCancellationRequested)
-				{
-					try
-					{
-						var acc = ReadString(GetFullAddress(AddressData.Acc), 0, 15);
-						var pas = ReadString(GetFullAddress(AddressData.Pas), 0, 15);
-						var name = ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+        private CancellationTokenSource? _hfCts;
+        private volatile string _stateARawCache = string.Empty;
+        private volatile int _mapIdCache;
+        private volatile int _posXCache;
+        private volatile int _posYCache;
+        private volatile int _posHCache;
+        private volatile float _camXCache;
+        private volatile float _camYCache;
 
-						if (!string.IsNullOrEmpty(acc)) _cachedAccount = acc;
-						if (!string.IsNullOrEmpty(pas)) _cachedPassword = pas;
-						if (!string.IsNullOrEmpty(name)) _cachedPlayerName = name;
+        private void StartHighFrequencyCache()
+        {
+            _hfCts?.Cancel();
+            _hfCts = new CancellationTokenSource();
+            _ = Task.Run(() => HighFrequencyLoopAsync(_hfCts.Token));
+        }
 
-						if (!string.IsNullOrEmpty(_cachedAccount) && LogID == "(loading)")
-						{
-							LogID = _cachedAccount;
-						}
+        private async Task HighFrequencyLoopAsync(CancellationToken token)
+        {
+            const int periodMs = 50;
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (!TryEnsureMemoryReaderInitialized())
+                    {
+                        await Task.Delay(500, token);
+                        continue;
+                    }
 
-						attempts++;
-						await Task.Delay(attempts < 3 ? 200 : 500, token);
-					}
-					catch (OperationCanceledException)
-					{
-						break;
-					}
-					catch (Exception ex)
-					{
-						Debug.WriteLine($"RefreshBasicInfoLoop error: {ex.Message}");
-						await Task.Delay(500, token);
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine($"RefreshBasicInfoLoop fatal: {ex.Message}");
-			}
-		}
+                    _stateARawCache = ReadData(GetFullAddress(AddressData.判別狀態A), 2);
+                    _mapIdCache = ReadInt(GetFullAddress(AddressData.地圖位置), 1);
+                    _posXCache = ReadInt(GetFullAddress(AddressData.地圖座標X), 0);
+                    _posYCache = ReadInt(GetFullAddress(AddressData.地圖座標Y), 0);
+                    _posHCache = ReadInt(GetFullAddress(AddressData.地圖座標H), 0);
+                    _camXCache = ReadFloat(GetFullAddress(AddressData.攝影機角度A));
+                    _camYCache = ReadFloat(GetFullAddress(AddressData.攝影機角度B));
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"HighFrequencyLoopAsync error: {ex}");
+                    try { await Task.Delay(500, token); } catch { }
+                    continue;
+                }
 
-		/// <summary>
-		/// 取得應用程式畫面
-		/// </summary>
-		/// <param name="hWnd">程序</param>
-		/// <param name="bounds">範圍</param>
-		/// <returns></returns>
-		#region DllImport
-		[DllImport("user32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+                await Task.Delay(periodMs, token);
+            }
+        }
+        private CancellationTokenSource? _infoCts;
+        private string _cachedAccount = string.Empty;
+        private string _cachedPassword = string.Empty;
+        private string _cachedPlayerName = string.Empty;
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct RECT
-		{
-			public int Left;        // x position of upper-left corner
-			public int Top;         // y position of upper-left corner
-			public int Right;       // x position of lower-right corner
-			public int Bottom;      // y position of lower-right corner
-		}
+        public NOBDATA(Process proc) : base(proc)
+        {
+            int attempts = 0;
+            const int maxAttempts = 10;
 
-		[DllImport("user32.dll", SetLastError = true)]
-		internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+            while (attempts < maxAttempts)
+            {
+                try
+                {
+                    if (GetWindowRect(Proc.MainWindowHandle, out RECT rect))
+                    {
+                        原視窗 = rect;
+                        NowWidth = rect.Right - rect.Left;
+                        NowHeight = rect.Bottom - rect.Top;
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[NOBDATA] GetWindowRect failed attempt {attempts}: {ex.Message}");
+                }
 
-		[DllImport("USER32.DLL")]
-		public static extern bool SetForegroundWindow(IntPtr hWnd);
+                attempts++;
+                if (attempts >= maxAttempts)
+                {
+                    Debug.WriteLine($"[NOBDATA] GetWindowRect failed after {maxAttempts} attempts, using default size");
+                    NowWidth = 800;
+                    NowHeight = 600;
+                    break;
+                }
 
-		#endregion
+                Task.Delay(100).Wait();
+            }
 
-		public Setting CodeSetting = new();
-		public 自動技能組 AutoSkillSet = new();
-		public int CurrentRound { get; set; } = 1;
-		private bool _wasInBattle = false;
-		public DateTime 到期日 = DateTime.Now.AddYears(99);
-		public RECT 原視窗;
-		public int NowHeight;
-		public int NowWidth;
-		public bool VIPSP = false;
-		public bool 追蹤 = false;
-		private static readonly Random _random = new Random();
+            _infoCts?.Cancel();
+            _infoCts = new CancellationTokenSource();
+            _ = Task.Run(() => RefreshBasicInfoLoop(_infoCts.Token));
 
-		#region 記憶體讀取位置
-		private const string BASE_ADDRESS = "<nobolHD.bng> +";
-		private readonly Dictionary<string, string> _addressCache = new();
-		// 使用緩存減少重複字串連接的效能開銷
-		private string GetFullAddress(string address) =>
-			_addressCache.TryGetValue(address, out var fullAddress)
-				? fullAddress
-				: _addressCache[address] = $"{BASE_ADDRESS}{address}";
+            LogID = "(loading)";
 
-		// 角色基本資訊: return cached first to avoid blocking UI
-		public string Account => !string.IsNullOrEmpty(_cachedAccount) ? _cachedAccount : ReadString(GetFullAddress(AddressData.Acc), 0, 15);
-		public string Password => !string.IsNullOrEmpty(_cachedPassword) ? _cachedPassword : ReadString(GetFullAddress(AddressData.Pas), 0, 15);
-		public string PlayerName => !string.IsNullOrEmpty(_cachedPlayerName) ? _cachedPlayerName : ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+            StartHighFrequencyCache();
+        }
 
-		// 同步直接讀取（需要即時值時使用）
-		public string ReadAccountNow() => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
-		public string ReadPlayerNameNow() => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+        private async Task RefreshBasicInfoLoop(CancellationToken token)
+        {
+            try
+            {
+                int attempts = 0;
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (!TryEnsureMemoryReaderInitialized())
+                        {
+                            attempts++;
+                            if (attempts <= 3)
+                                Debug.WriteLine($"[NOBDATA] RefreshBasicInfoLoop: memory reader not available, attempt {attempts}");
+                            await Task.Delay(attempts < 3 ? 500 : 1000, token);
+                            continue;
+                        }
 
-		// 位置和地圖資訊
-		public int MAPID => ReadInt(GetFullAddress(AddressData.地圖位置), 1);
-		public int PosX => ReadInt(GetFullAddress(AddressData.地圖座標X), 0);
-		public int PosH => ReadInt(GetFullAddress(AddressData.地圖座標H), 0);
-		public int PosY => ReadInt(GetFullAddress(AddressData.地圖座標Y), 0);
-		public float CamX => ReadFloat(GetFullAddress(AddressData.攝影機角度A));
-		public float CamY => ReadFloat(GetFullAddress(AddressData.攝影機角度B));
+                        var accAddr = GetFullAddress(AddressData.Acc);
+                        var nameAddr = GetFullAddress(AddressData.角色名稱);
 
-		// UI 狀態
-		public string 取得最下面選項(int num = 4) => ReadString(GetFullAddress(AddressData.直選框文字), 1, num);
-		public bool 任務選擇框 => IsInState(GameState.QuestSelect);
-		public bool 對話與結束戰鬥 => IsInState(GameState.Dialog);
-		public bool 待機 => IsInState(GameState.Idle);
-		public bool 戰鬥中 => IsInState(GameState.InBattle);
+                        var acc = ReadString(accAddr, 0, 15);
+                        var pas = ReadString(GetFullAddress(AddressData.Pas), 0, 15);
+                        var name = ReadString(nameAddr, 1, 12);
 
-		public int 戰鬥中判定 = -1;
+                        if (!string.IsNullOrEmpty(acc)) _cachedAccount = acc;
+                        if (!string.IsNullOrEmpty(pas)) _cachedPassword = pas;
+                        if (!string.IsNullOrEmpty(name)) _cachedPlayerName = name;
 
-		// 結算相關
-		public bool 進入結算
-		{
-			get
-			{
-				if (戰鬥中判定 >= 0 && IsInState(GameState.Dialog))
-				{
-					戰鬥中判定++;
-					Task.Delay(100).Wait();
-				}
-				return 戰鬥中判定 > 3;
-			}
-		}
-		// 視角相關
-		// 修改後
-		public bool 第三人稱
-		{
-			get => ReadInt(GetFullAddress(AddressData.視角), 0) == 0;
-			set
-			{
-				// 設為第三人稱視角 (0)
-				// 設為第一人稱視角 (1)
-				MainWindow.dmSoft?.WriteInt(Hwnd, GetFullAddress(AddressData.視角), 0, value ? 0 : 1);
-			}
-		}
-		public bool 輸入數量視窗 => ReadInt(GetFullAddress(AddressData.輸入數量視窗), 0) == 39 || ReadInt(GetFullAddress(AddressData.輸入數量視窗), 0) == 34;
-		// 觀察與交互系統
-		public string 觀察對象Str => ReadData(GetFullAddress(AddressData.是否有觀察對象), 2);
-		public bool 有觀察對象 => !ReadData(GetFullAddress(AddressData.是否有觀察對象), 2).Contains("FF FF");
-		public int 確認選單 => ReadInt(GetFullAddress(AddressData.直選框), 1);
-		public int 製作Index => ReadInt(GetFullAddress(AddressData.製作Index), 1);
-		public bool 出現左右選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 2;
-		public bool 出現直式選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 1;
-		public string StateA => StateARaw;
-		public bool ResetPoint = false;
+                        if (!string.IsNullOrEmpty(_cachedAccount) && LogID == "(loading)")
+                        {
+                            LogID = _cachedAccount;
+                        }
+
+                        attempts++;
+
+                        if (!string.IsNullOrEmpty(_cachedAccount) && !string.IsNullOrEmpty(_cachedPlayerName))
+                        {
+                            await Task.Delay(5000, token);
+                        }
+                        else
+                        {
+                            await Task.Delay(attempts < 3 ? 200 : 1000, token);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[NOBDATA] RefreshBasicInfoLoop error: {ex.Message}");
+                        await Task.Delay(1000, token);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[NOBDATA] RefreshBasicInfoLoop fatal: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 取得應用程式畫面
+        /// </summary>
+        /// <param name="hWnd">程序</param>
+        /// <param name="bounds">範圍</param>
+        /// <returns></returns>
+        #region DllImport
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;        // x position of upper-left corner
+            public int Top;         // y position of upper-left corner
+            public int Right;       // x position of lower-right corner
+            public int Bottom;      // y position of lower-right corner
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+        [DllImport("USER32.DLL")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        #endregion
+
+        public Setting CodeSetting = new();
+        public 自動技能組 AutoSkillSet = new();
+        public int CurrentRound { get; set; } = 1;
+        private bool _wasInBattle = false;
+        public DateTime 到期日 = DateTime.Now.AddYears(99);
+        public RECT 原視窗;
+        public int NowHeight;
+        public int NowWidth;
+        public bool VIPSP = false;
+        public bool 追蹤 = false;
+        private static readonly Random _random = new Random();
+
+        #region 記憶體讀取位置
+        private const string BASE_ADDRESS = "<nobolHD.bng> +";
+        private readonly Dictionary<string, string> _addressCache = new();
+        private string GetFullAddress(string address) =>
+            _addressCache.TryGetValue(address, out var fullAddress)
+                ? fullAddress
+                : _addressCache[address] = $"{BASE_ADDRESS}{address}";
+
+        // 角色基本資訊: return cached first to avoid blocking UI
+        public string Account => !string.IsNullOrEmpty(_cachedAccount) ? _cachedAccount : ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string Password => !string.IsNullOrEmpty(_cachedPassword) ? _cachedPassword : ReadString(GetFullAddress(AddressData.Pas), 0, 15);
+        public string PlayerName => !string.IsNullOrEmpty(_cachedPlayerName) ? _cachedPlayerName : ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+
+        // 同步直接讀取（需要即時值時使用）
+        public string ReadAccountNow() => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string ReadPlayerNameNow() => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+
+        // 位置和地圖資訊
+        public int MAPID => _mapIdCache != 0 ? _mapIdCache : ReadInt(GetFullAddress(AddressData.地圖位置), 1);
+        public int PosX => _posXCache != 0 ? _posXCache : ReadInt(GetFullAddress(AddressData.地圖座標X), 0);
+        public int PosH => _posHCache != 0 ? _posHCache : ReadInt(GetFullAddress(AddressData.地圖座標H), 0);
+        public int PosY => _posYCache != 0 ? _posYCache : ReadInt(GetFullAddress(AddressData.地圖座標Y), 0);
+        public float CamX => _camXCache != 0 ? _camXCache : ReadFloat(GetFullAddress(AddressData.攝影機角度A));
+        public float CamY => _camYCache != 0 ? _camYCache : ReadFloat(GetFullAddress(AddressData.攝影機角度B));
+
+        // UI 狀態
+        public string 取得最下面選項(int num = 4) => ReadString(GetFullAddress(AddressData.直選框文字), 1, num);
+        public bool 任務選擇框 => IsInState(GameState.QuestSelect);
+        public bool 對話與結束戰鬥 => IsInState(GameState.Dialog);
+        public bool 待機 => IsInState(GameState.Idle);
+        public bool 戰鬥中 => IsInState(GameState.InBattle);
+
+        public int 戰鬥中判定 = -1;
+
+        // 結算相關
+        public bool 進入結算
+        {
+            get
+            {
+                if (戰鬥中判定 >= 0 && IsInState(GameState.Dialog))
+                {
+                    戰鬥中判定++;
+                    Task.Delay(100).Wait();
+                }
+                return 戰鬥中判定 > 3;
+            }
+        }
+        // 視角相關
+        // 修改後
+        public bool 第三人稱
+        {
+            get => ReadInt(GetFullAddress(AddressData.視角), 0) == 0;
+            set
+            {
+                WriteInt(GetFullAddress(AddressData.視角), 0, value ? 0 : 1);
+            }
+        }
+        public bool 輸入數量視窗 => ReadInt(GetFullAddress(AddressData.輸入數量視窗), 0) == 39 || ReadInt(GetFullAddress(AddressData.輸入數量視窗), 0) == 34;
+        // 觀察與交互系統
+        public string 觀察對象Str => ReadData(GetFullAddress(AddressData.是否有觀察對象), 2);
+        public bool 有觀察對象 => !ReadData(GetFullAddress(AddressData.是否有觀察對象), 2).Contains("FF FF");
+        public int 確認選單 => ReadInt(GetFullAddress(AddressData.直選框), 1);
+        public int 製作Index => ReadInt(GetFullAddress(AddressData.製作Index), 1);
+        public bool 出現左右選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 2;
+        public bool 出現直式選單 => ReadInt(GetFullAddress(AddressData.直選框), 0) == 1;
+        public string StateA => StateARaw;
+        public bool ResetPoint = false;
 
 
-		// 1. 首先新增遊戲狀態的枚舌類型
-		public enum GameState
-		{
-			Unknown = 0,
-			InBattle = 1,      // A0 98 - 戰鬥中
-			Idle = 2,          // F0 B8 - 野外待機
-			/// <summary>
-			/// 對話框或戰鬥結束
-			/// </summary>
-			Dialog = 3,        // F0 F8 - 對話或戰鬥結束
-			QuestSelect = 4    // E0 F0 - 任務選擇框
-		}
-		// 2. 修改 StateA 相關實現
-		private string _rawStateA = string.Empty;
-		private GameState _currentState = GameState.Unknown;
-		private DateTime _lastStateCheck = DateTime.MinValue;
-		private const int STATE_CACHE_MS = 50; // 狀態緩存 50 毫秒
-		/// <summary>
-		/// 獲取原始狀態字串
-		/// </summary>
-		public string StateARaw
-		{
-			get
-			{
-				//Log($"Update Raw - {_rawStateA}");
-				// 檢查是否需要更新狀態緩存
-				if ((DateTime.Now - _lastStateCheck).TotalMilliseconds > STATE_CACHE_MS)
-				{
-					_rawStateA = ReadData(GetFullAddress(AddressData.判別狀態A), 2);
-					UpdateGameState();
-					_lastStateCheck = DateTime.Now;
-				}
-				return _rawStateA;
-			}
-		}
-		/// <summary>
-		/// 獲取當前遊戲狀態
-		/// </summary>
-		public GameState CurrentState => _currentState;
+        public enum GameState
+        {
+            Unknown = 0,
+            InBattle = 1,      // A0 98 - 戰鬥中
+            Idle = 2,          // F0 B8 - 野外待機
+            /// <summary>
+            /// 對話框或戰鬥結束
+            /// </summary>
+            Dialog = 3,        // F0 F8 - 對話或戰鬥結束
+            QuestSelect = 4    // E0 F0 - 任務選擇框
+        }
+        // 2. 修改 StateA 相關實現
+        private string _rawStateA = string.Empty;
+        private GameState _currentState = GameState.Unknown;
+        private DateTime _lastStateCheck = DateTime.MinValue;
+        private const int STATE_CACHE_MS = 50; // 狀態緩存 50 毫秒
+        /// <summary>
+        /// 獲取原始狀態字串
+        /// </summary>
+        public string StateARaw
+        {
+            get
+            {
+                //Log($"{DateTime.Now} Update Raw - {_rawStateA}");
+                // 檢查是否需要更新狀態緩存
+                if ((DateTime.Now - _lastStateCheck).TotalMilliseconds > STATE_CACHE_MS)
+                {
+                    _rawStateA = ReadData(GetFullAddress(AddressData.判別狀態A), 2);
+                    UpdateGameState();
+                    _lastStateCheck = DateTime.Now;
+                }
+                return _rawStateA;
+            }
+        }
+        /// <summary>
+        /// 獲取當前遊戲狀態
+        /// </summary>
+        public GameState CurrentState => _currentState;
 
-		/// <summary>
-		/// 檢查當前是否處於指定狀態
-		/// </summary>
-		public bool IsInState(GameState state)
-		{
-			if ((DateTime.Now - _lastStateCheck).TotalMilliseconds > STATE_CACHE_MS)
-			{
-				速度();
-				_rawStateA = ReadData(GetFullAddress(AddressData.判別狀態A), 2);
-				UpdateGameState();
-				_lastStateCheck = DateTime.Now;
-			}
-			//Debug.WriteLine($"Update -> {StateARaw}");
-			return _currentState == state;
-		}
+        /// <summary>
+        /// 檢查當前是否處於指定狀態
+        /// </summary>
+        public bool IsInState(GameState state)
+        {
+            if ((DateTime.Now - _lastStateCheck).TotalMilliseconds > STATE_CACHE_MS)
+            {
+                速度();
+                _rawStateA = ReadData(GetFullAddress(AddressData.判別狀態A), 2);
+                UpdateGameState();
+                _lastStateCheck = DateTime.Now;
+            }
+            //Debug.WriteLine($"Update -> {StateARaw}");
+            return _currentState == state;
+        }
 
-		public bool 場上超過10人()
-		{
-			string data = ReadData(GetFullAddress(AddressData.戰鬥人數判斷.AddressAdd(40)), 4);
-			//Debug.WriteLine(data);
-			return data.Contains("00 00 00 00") == false;
-		}
+        public bool 場上超過10人()
+        {
+            string data = ReadData(GetFullAddress(AddressData.戰鬥人數判斷.AddressAdd(40)), 4);
+            //Debug.WriteLine(data);
+            return data.Contains("00 00 00 00") == false;
+        }
 
-		/// <summary>
-		/// 更新遊戲狀態
-		/// </summary>
-		private void UpdateGameState()
-		{
-			if (_rawStateA.Contains("A0 98"))
-			{
-				_currentState = GameState.InBattle;
-				戰鬥中判定 = 0;
-			}
-			else if (_rawStateA.Contains("F0 B8"))
-			{
-				_currentState = GameState.Idle;
-				戰鬥中判定 = -1;
-			}
-			else if (_rawStateA.Contains("F0 F8"))
-				_currentState = GameState.Dialog;
-			else if (_rawStateA.Contains("E0 F0"))
-				_currentState = GameState.QuestSelect;
-			else
-				_currentState = GameState.Unknown;
-		}
+        /// <summary>
+        /// 更新遊戲狀態
+        /// </summary>
+        private void UpdateGameState()
+        {
+            _currentState = ParseState(_rawStateA);
+            if (_currentState == GameState.InBattle)
+            {
+                戰鬥中判定 = 0;
+            }
+        }
 
+        private static GameState ParseState(string raw)
+        {
+            if (raw.Contains("A0 98")) return GameState.InBattle;
+            if (raw.Contains("F0 B8")) return GameState.Idle;
+            if (raw.Contains("F0 F8")) return GameState.Dialog;
+            if (raw.Contains("E0 F0")) return GameState.QuestSelect;
+            return GameState.Unknown;
+        }
 		// 驗證功能
 		public bool 驗證國家
 		{
@@ -324,7 +434,6 @@ namespace NOBApp
 
 		private bool 驗證國家字串包含(string 搜尋字串, string address)
 		{
-			// 使用 GetFullAddress 統一字串前綴，並加入重試與例外處理，避免單次讀取失敗讓整個流程卡住
 			try
 			{
 				string fullAddr = GetFullAddress(address);
@@ -333,7 +442,7 @@ namespace NOBApp
 				{
 					try
 					{
-						var result = MainWindow.dmSoft?.ReadString(Hwnd, fullAddr, 1, 16);
+						var result = ReadString(fullAddr, 1, 16);
 						Debug.WriteLine(result);
 						if (!string.IsNullOrEmpty(result) && result.Contains(搜尋字串))
 							return true;
@@ -341,7 +450,6 @@ namespace NOBApp
 					catch (Exception ex)
 					{
 						Debug.WriteLine($"ReadString exception @{fullAddr}: {ex.Message}");
-						// 若發生例外，稍微等待再重試
 					}
 					Task.Delay(100).Wait();
 				}
@@ -355,29 +463,144 @@ namespace NOBApp
 		}
 
 		// 目標處理
-		public int GetTargetIDINT() => (int)(MainWindow.dmSoft?.ReadInt(Hwnd, GetFullAddress(AddressData.選擇項目), 4) ?? 0);
-		public int GetTargetClass() => (int)(MainWindow.dmSoft?.ReadInt(Hwnd, GetFullAddress(AddressData.選擇項目.AddressAdd(3)), 2) ?? 0);
+		public int GetTargetIDINT()
+		{
+			EnsureMemoryReaderInitialized();
+			if (_memory is { IsWin32Available: true })
+			{
+				try
+				{
+					return _memory.ReadInt32Async(GetFullAddress(AddressData.選擇項目)).GetAwaiter().GetResult();
+				}
+				catch
+				{
+					return 0;
+				}
+			}
+			return 0;
+		}
+
+		public int GetTargetClass()
+		{
+			EnsureMemoryReaderInitialized();
+			if (_memory is { IsWin32Available: true })
+			{
+				try
+				{
+					return _memory.ReadInt16Async(GetFullAddress(AddressData.選擇項目.AddressAdd(3))).GetAwaiter().GetResult();
+				}
+				catch
+				{
+					return 0;
+				}
+			}
+			return 0;
+		}
 
 		// 基礎讀取方法
 		private string ReadString(string address, int type, int length)
 		{
-			return MainWindow.dmSoft?.ReadString(Hwnd, address, type, length) ?? string.Empty;
+			EnsureMemoryReaderInitialized();
+
+			if (_memory is { IsWin32Available: true })
+			{
+				try
+				{
+					int byteLength = Math.Max(length, 1) * 4;
+					if (type == 0)
+					{
+						return _memory.ReadStringAsync(address, byteLength, Encoding.ASCII).GetAwaiter().GetResult();
+					}
+
+					string result = _memory.ReadStringAsync(address, byteLength, Encoding.Unicode).GetAwaiter().GetResult();
+					if (string.IsNullOrWhiteSpace(result) || result.Contains('\uFFFD'))
+					{
+						result = _memory.ReadStringAsync(address, byteLength, Encoding.GetEncoding(950)).GetAwaiter().GetResult();
+					}
+					if (string.IsNullOrWhiteSpace(result))
+					{
+						result = _memory.ReadStringAsync(address, byteLength, Encoding.UTF8).GetAwaiter().GetResult();
+					}
+					return result;
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ReadString failed: {ex.Message}");
+				}
+			}
+
+			return string.Empty;
 		}
 
 		private int ReadInt(string address, int type)
 		{
-			return (int)(MainWindow.dmSoft?.ReadInt(Hwnd, address, type) ?? 0);
+			EnsureMemoryReaderInitialized();
+
+			if (_memory is { IsWin32Available: true })
+			{
+				try
+				{
+					return type switch
+					{
+						2 => _memory.ReadInt16Async(address).GetAwaiter().GetResult(),
+						_ => _memory.ReadInt32Async(address).GetAwaiter().GetResult()
+					};
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ReadInt failed: {ex.Message}");
+				}
+			}
+
+			return 0;
 		}
 
 		private float ReadFloat(string address)
 		{
-			return MainWindow.dmSoft?.ReadFloat(Hwnd, address) ?? 0.0f;
+			EnsureMemoryReaderInitialized();
+
+			if (_memory is { IsWin32Available: true })
+			{
+				try
+				{
+					return _memory.ReadSingleAsync(address).GetAwaiter().GetResult();
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ReadFloat failed: {ex.Message}");
+				}
+			}
+
+			return 0.0f;
 		}
 
 		private string ReadData(string address, int type)
 		{
-			return MainWindow.dmSoft?.ReadData(Hwnd, address, type) ?? string.Empty;
+			EnsureMemoryReaderInitialized();
+
+			if (_memory is { IsWin32Available: true })
+			{
+				try
+				{
+					int lengthBytes = Math.Max(type, 1);
+					return _memory.ReadDataHex(address, lengthBytes);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ReadData failed: {ex.Message}");
+				}
+			}
+
+			return string.Empty;
 		}
+
+        public int ReadIntValue(string address, int type) => ReadInt(address, type);
+        public float ReadFloatValue(string address) => ReadFloat(address);
+        public bool WriteIntValue(string address, int type, int value) => WriteInt(address, type, value);
+        public bool WriteStringValue(string address, int type, string value) => WriteString(address, type, value);
+        public bool WriteHexValue(string address, string hex) => WriteBytesFromHex(address, hex);
+
+		public string ReadDataHex(string address, int lengthBytes) => ReadData(address, lengthBytes);
 		#endregion
 
 		public bool 特殊者 = false;
@@ -432,6 +655,7 @@ namespace NOBApp
 
 		public void CloseGame()
 		{
+			_hfCts?.Cancel();
 			_infoCts?.Cancel();
 			Proc.Kill();
 		}
@@ -515,9 +739,6 @@ namespace NOBApp
 			放技能完成 = false;
 			while (IsUseAutoSkill)
 			{
-				if (MainWindow.dmSoft == null)
-					return;
-
 				//Log($"IsUseAutoSkill->{IsUseAutoSkill}");
 
 				if (AutoSkillSet.背景Enter)
@@ -603,7 +824,7 @@ namespace NOBApp
 			//Log($"進入戰鬥中{_IsRuning} {IsUseAutoSkill} {config_一次放 || config_重複放}");
 			#region 戰鬥中
 			//目前選數量 
-			var index = MainWindow.dmSoft!.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
+			var index = ReadInt(GetFullAddress(AddressData.戰鬥可輸入判斷), 2);
 			//if (index > 0 && (MYTeamData == null || MYTeamData.Count == 0))
 			//{
 			//    BtDataUpdate();
@@ -618,12 +839,12 @@ namespace NOBApp
 				_IsRuning = true;
 				do
 				{
-					index = MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷, 2);
-					string supDataCheck = MainWindow.dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, 1);
-					if (supDataCheck.Substring(supDataCheck.Length - 1).Contains("4"))
+					index = ReadInt(GetFullAddress(AddressData.戰鬥可輸入判斷), 2);
+					string supDataCheck = ReadData(GetFullAddress(AddressData.戰鬥可輸入判斷II), 1);
+					if (supDataCheck.Length > 0 && supDataCheck.Substring(supDataCheck.Length - 1).Contains("4"))
 					{
 						string newD = supDataCheck[0] + "0";
-						MainWindow.dmSoft.WriteData(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥可輸入判斷II, newD);
+						WriteBytesFromHex(GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
 					}
 					//Log($"有指令 準備進入指令 - 2 -> Index {index} 放過依次 : {已經放過一次} SP:{AutoSkillSet.特殊運作} {config_技能段1} {config_技能段2}");
 					if (index > 0)
@@ -637,7 +858,7 @@ namespace NOBApp
 						}
 						if (AutoSkillSet.技能段1 > -1)
 						{
-							int setindex = (int)MainWindow.dmSoft.ReadInt(Hwnd, "<nobolHD.bng> + " + AddressData.戰鬥輸入, 2);
+							int setindex = ReadInt(GetFullAddress(AddressData.戰鬥輸入), 2);
 							Log("setindex : " + setindex);
 
 							Task.Delay(config_程式速度).Wait();
@@ -718,7 +939,7 @@ namespace NOBApp
 								else
 								{
 									KeyPress(VKeys.KEY_ENTER);
-									KeyPress(VKeys.KEY_K);
+								 KeyPress(VKeys.KEY_K);
 								}
 							}
 
@@ -763,7 +984,6 @@ namespace NOBApp
 
 			#endregion 戰鬥中
 		}
-
 		// 處理戰鬥結束動作
 		private void ProcessBattleEndActions()
 		{
@@ -830,10 +1050,7 @@ namespace NOBApp
 			if (supDataCheck.Length > 0 && supDataCheck[supDataCheck.Length - 1].ToString().Contains("4"))
 			{
 				string newD = supDataCheck.Length > 0 ? supDataCheck[0] + "0" : "00";
-				if (MainWindow.dmSoft != null)
-				{
-					MainWindow.dmSoft.WriteData(Hwnd, GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
-				}
+				WriteBytesFromHex(GetFullAddress(AddressData.戰鬥可輸入判斷II), newD);
 			}
 		}
 
@@ -943,18 +1160,22 @@ namespace NOBApp
 			}
 		}
 
+		public void BT_Cmd()
+		{
+			WriteInt(GetFullAddress(AddressData.戰鬥輸入), 1, 6);
+		}
 
-		public void 更改F8追隨() => MainWindow.dmSoft!.WriteString(Hwnd, "<nobolHD.bng> + " + AddressData.快捷F8, 1, "／追蹤：％Ｌ");
+		public void 更改F8追隨() => WriteString(GetFullAddress(AddressData.快捷F8), 1, "／追蹤：％Ｌ");
 		public void 更改字型(int i)
 		{
-			MainWindow.dmSoft?.WriteInt(Hwnd, AddressData.UI字型, 0, i);
+			WriteInt(AddressData.UI字型, 0, i);
 		}
 		public void MoveToNPC(int npcID)
 		{
-			MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
-			MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目B, 0, npcID);
-			MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
-			MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
+			WriteInt(GetFullAddress(AddressData.選擇項目), 0, npcID);
+			WriteInt(GetFullAddress(AddressData.選擇項目B), 0, npcID);
+			WriteInt(GetFullAddress(AddressData.移動對象), 0, npcID);
+			WriteInt(GetFullAddress(AddressData.開始移動到目標對象), 0, npcID);
 		}
 
 		public void MoveToNPC2(int npcID)
@@ -967,10 +1188,10 @@ namespace NOBApp
 				}
 				else
 				{
-					MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
-					MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
-					MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目B, 0, npcID);
-					MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.開始移動到目標對象, 0, npcID);
+					WriteInt(GetFullAddress(AddressData.選擇項目), 0, npcID);
+					WriteInt(GetFullAddress(AddressData.移動對象), 0, npcID);
+					WriteInt(GetFullAddress(AddressData.選擇項目B), 0, npcID);
+					WriteInt(GetFullAddress(AddressData.開始移動到目標對象), 0, npcID);
 					Task.Delay(500).Wait();
 				}
 			}
@@ -978,9 +1199,8 @@ namespace NOBApp
 
 		public void 鎖定NPC(int npcID)
 		{
-			MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目, 0, npcID);
-			MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.選擇項目B, 0, npcID);
-			//MainWindow.dmSoft?.WriteInt(Hwnd, "<nobolHD.bng> + " + AddressData.移動對象, 0, npcID);
+			WriteInt(GetFullAddress(AddressData.選擇項目), 0, npcID);
+			WriteInt(GetFullAddress(AddressData.選擇項目B), 0, npcID);
 		}
 
 		public void 生產到底()
@@ -1013,9 +1233,8 @@ namespace NOBApp
 		{
 			if (VIPSP)
 			{
-				MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+B02CF4] + 26a", 0, 3081718408);
-				MainWindow.dmSoft!.WriteInt(Hwnd, "[<nobolHD.bng>+AFC254] + 260", 0, 3081718408);
-				//await Task.Delay(500);
+				WriteInt("[<nobolHD.bng>+B02CF4] + 26a", 0, unchecked((int)3081718408));
+				WriteInt("[<nobolHD.bng>+AFC254] + 260", 0, unchecked((int)3081718408));
 			}
 		}
 
@@ -1028,10 +1247,10 @@ namespace NOBApp
 
 			while (StartRunCode)
 			{
-				indexCheck = (int)MainWindow.dmSoft!.ReadInt(Hwnd, SelectData, 0);
+				indexCheck = ReadInt(SelectData, 0);
 				if (indexCheck == 0)
 				{
-					MainWindow.dmSoft!.WriteInt(Hwnd, SelectData, 0, num);
+					WriteInt(SelectData, 0, num);
 					Task.Delay(delay).Wait();
 					if (passCheck)
 						KeyPressPP(VKeys.KEY_ENTER);
@@ -1049,14 +1268,14 @@ namespace NOBApp
 
 		public void 直向選擇PP(int num, int delay = 300)
 		{
-			MainWindow.dmSoft!.WriteInt(Hwnd, SelectData, 0, num);
+			WriteInt(SelectData, 0, num);
 			Task.Delay(delay).Wait();
 			KeyPressPP(VKeys.KEY_ENTER);
 		}
 
 		public void 直向選擇(int num, int delay = 300, bool passCheck = false)
 		{
-			MainWindow.dmSoft!.WriteInt(Hwnd, SelectData, 0, num);
+			WriteInt(SelectData, 0, num);
 			Task.Delay(delay).Wait();
 			if (passCheck)
 				KeyPressPP(VKeys.KEY_ENTER);
@@ -1065,8 +1284,8 @@ namespace NOBApp
 		}
 
 		const string addKEY = "4C53FA4";
-		public int 精準移動Index => (int)MainWindow.dmSoft!.ReadInt(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0);
-		public int 點移動 => (int)MainWindow.dmSoft!.ReadInt(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0);
+		public int 精準移動Index => ReadInt($"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0);
+		public int 點移動 => ReadInt($"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0);
 
 
 		public void 準確目標移動(float x, float y, float z)
@@ -1075,14 +1294,14 @@ namespace NOBApp
 			{
 				if (精準移動Index == 0 || 精準移動Index == 1)
 				{
-					var x1 = MainWindow.dmSoft!.ReadFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +58");
-					var y1 = MainWindow.dmSoft!.ReadFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +5C");
-					var z1 = MainWindow.dmSoft!.ReadFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +60");
-					var y2 = MainWindow.dmSoft!.ReadFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +6C");
-					var z2 = MainWindow.dmSoft!.ReadFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +70");
-					var x2 = MainWindow.dmSoft!.ReadFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +68");
+					var x1 = ReadFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +58");
+					var y1 = ReadFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +5C");
+					var z1 = ReadFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +60");
+					var y2 = ReadFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +6C");
+					var z2 = ReadFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +70");
+					var x2 = ReadFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +68");
 
-					var ii = MainWindow.dmSoft!.ReadInt(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0);
+					var ii = ReadInt($"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0);
 					float f = 0;
 					if (x1 < 0 || x2 < 0 || y1 < 0 || y2 < 0 || z1 < 0 || z2 < 0 ||
 						!float.TryParse(x1.ToString(), out f) ||
@@ -1095,15 +1314,14 @@ namespace NOBApp
 					}
 					Debug.WriteLine($"-- Read {x1} {y1} {z1} {x2} {y2} {z2} {ii}");
 
-					MainWindow.dmSoft!.WriteFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +58", x);
-					MainWindow.dmSoft!.WriteFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +5C", y);
-					MainWindow.dmSoft!.WriteFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +60", z);
-					MainWindow.dmSoft!.WriteFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +68", x);
-					MainWindow.dmSoft!.WriteFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +6C", y);
-					MainWindow.dmSoft!.WriteFloat(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +70", z);
+					WriteFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +58", x);
+					WriteFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +5C", y);
+					WriteFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +60", z);
+					WriteFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +68", x);
+					WriteFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +6C", y);
+					WriteFloat($"[[<nobolHD.bng> + {addKEY}] + 164] +70", z);
 					Debug.WriteLine("寫入完成");
-					//4C4D144 -> 4C53F84 _ 6E40
-					MainWindow.dmSoft!.WriteInt(Hwnd, $"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0, 1);
+					WriteInt($"[[<nobolHD.bng> + {addKEY}] + 164] +54", 0, 1);
 					Debug.WriteLine("開始移動");
 					break;
 				}
@@ -1112,73 +1330,6 @@ namespace NOBApp
 					ML_Click((int)NowWidth / 2, NowHeight / 2);
 				}
 			}
-		}
-
-		public void 選擇目標類型(int num)
-		{
-			MainWindow.dmSoft!.WriteInt(Hwnd, "<nobolHD.bng> + B630A4", 0, num);
-		}
-
-		public void BtDataUpdate()
-		{
-			ClearBTData();
-
-			string baseStr = "";
-			string n = "";
-			long l = 0;
-			for (int i = 0; i < 7; i++)
-			{
-				baseStr = AddressData.戰鬥可輸隊員.AddressAdd(4 * i);
-				l = MainWindow.dmSoft?.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4) ?? 0;
-				if (l > 0)
-				{
-					MYTeamData.Add(new BTData(l));
-				}
-			}
-			for (int i = 0; i < 24; i++)
-			{
-				baseStr = AddressData.戰鬥技能編號起.AddressAdd(80 * i);
-				l = MainWindow.dmSoft?.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4) ?? 0;
-				n = MainWindow.dmSoft?.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(34), 1, 10);
-				n = i + "_" + n;
-				if (l > 0)
-				{
-					SetSkillsID.Add(l);
-					SKNames.Add(n);
-				}
-			}
-
-			for (int i = 1; i < 15; i++)
-			{
-				baseStr = AddressData.戰鬥列隊.AddressAdd(44 * (i - 1));
-				//string nid = MainWindow.dmSoft.ReadData(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(8), 6); //Proc.Handle.ReadData(UseAddress(baseStr), new byte[4]);
-				long ln = MainWindow.dmSoft?.ReadInt(Hwnd, "<nobolHD.bng> + " + baseStr, 4) ?? 0;
-
-				string name1 = MainWindow.dmSoft?.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(8), 1, 6) ?? string.Empty; // Proc.Handle.ReadStr(UseAddress(baseStr.AddressAdd(8)), new byte[8]);
-				string name2 = MainWindow.dmSoft?.ReadString(Hwnd, "<nobolHD.bng> + " + baseStr.AddressAdd(26), 1, 6) ?? string.Empty; //Proc.Handle.ReadStr(UseAddress(baseStr.AddressAdd(26)), new byte[8]);
-				var data = MYTeamData.Find(d => d.UID == ln);
-				if (data != null)
-				{
-					data.FirstName = name1;
-					data.LastName = name2;
-					MYTeamData.Add(data);
-					Debug.WriteLine("Data -> " + data.FullName);
-				}
-				else
-				{
-					var EData = new BTData(ln);
-					EData.FirstName = name1;
-					EData.LastName = name2;
-					EMTeamData.Add(EData);
-				}
-				//  MainNob.Log($"baseStr {baseStr} {baseStr.AddressAdd(8)} {baseStr.AddressAdd(26)} {name1} {name2} ID : {data.UID} FName : {data.FullName} SID : {data.SortID} ");
-				//  MainNob.Log("\n");
-			}
-		}
-
-		public void BT_Cmd()
-		{
-			MainWindow.dmSoft!.WriteInt(Hwnd, GetFullAddress(AddressData.戰鬥輸入), 1, 6);
 		}
 
 		public void 離開戰鬥A()
@@ -1362,6 +1513,104 @@ namespace NOBApp
 			{
 				MoveWindow(Proc.MainWindowHandle, 原視窗.Left, 原視窗.Top, 原視窗.Right - 原視窗.Left, 原視窗.Bottom - 原視窗.Top, true);
 			}
+		}
+
+		private bool WriteInt(string address, int type, int value)
+		{
+			EnsureMemoryReaderInitialized();
+			if (_memory is not { IsWin32Available: true }) return false;
+			try
+			{
+				if (type == 2)
+				{
+					_memory.WriteInt16Async(address, (short)value).GetAwaiter().GetResult();
+				}
+				else
+				{
+					_memory.WriteInt32Async(address, value).GetAwaiter().GetResult();
+				}
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"WriteInt failed @{address}: {ex.Message}");
+				return false;
+			}
+		}
+
+		private bool WriteFloat(string address, float value)
+		{
+			EnsureMemoryReaderInitialized();
+			if (_memory is not { IsWin32Available: true }) return false;
+			try
+			{
+				_memory.WriteSingleAsync(address, value).GetAwaiter().GetResult();
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"WriteFloat failed @{address}: {ex.Message}");
+				return false;
+			}
+		}
+
+		private bool WriteBytesFromHex(string address, string hex)
+		{
+			EnsureMemoryReaderInitialized();
+			if (_memory is not { IsWin32Available: true }) return false;
+			try
+			{
+				_memory.WriteDataHexAsync(address, hex).GetAwaiter().GetResult();
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"WriteBytes failed @{address}: {ex.Message}");
+				return false;
+			}
+		}
+
+		private bool WriteString(string address, int type, string value)
+		{
+			EnsureMemoryReaderInitialized();
+			if (_memory is not { IsWin32Available: true }) return false;
+			try
+			{
+				Encoding encoding = type switch
+				{
+					0 => Encoding.ASCII,
+					1 => Encoding.Unicode,
+					2 => Encoding.GetEncoding(950),
+					_ => Encoding.UTF8
+				};
+				_memory.WriteStringAsync(address, value, encoding).GetAwaiter().GetResult();
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"WriteString failed @{address}: {ex.Message}");
+				return false;
+			}
+		}
+
+		private static byte[] ConvertHexToBytes(string hex)
+		{
+			hex = hex.Replace(" ", string.Empty).Replace("0x", string.Empty, StringComparison.OrdinalIgnoreCase);
+			if (hex.Length % 2 != 0)
+			{
+				hex = "0" + hex;
+			}
+			var bytes = new byte[hex.Length / 2];
+			for (int i = 0; i < bytes.Length; i++)
+			{
+				bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+			}
+			return bytes;
+		}
+
+		public void 選擇目標類型(int num)
+		{
+			WriteInt(GetFullAddress(AddressData.B630A4), 0, num);
 		}
 	}
 }

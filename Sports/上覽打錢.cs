@@ -297,7 +297,7 @@ namespace NOBApp.Sports
                 long diffID = 0;
                 for (int i = 0; i < 32; i++)
                 {
-                    findID = MainWindow.dmSoft!.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4);
+                    findID = MainNob.ReadIntValue("<nobolHD.bng> + " + str, 4);
                     if (findID > minID)
                     {
                         minID = findID;
@@ -307,7 +307,7 @@ namespace NOBApp.Sports
                 str = AddressData.搜尋身邊NPCID起始;
                 for (int i = 0; i < 20; i++)
                 {
-                    findID = MainWindow.dmSoft!.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4);
+                    findID = MainNob.ReadIntValue("<nobolHD.bng> + " + str, 4);
                     if (minID > 0)
                         diffID = findID - minID;
 
@@ -522,7 +522,7 @@ namespace NOBApp.Sports
 
         void 尋找筆試官()
         {
-            if (MainNob == null || MainWindow.dmSoft == null)
+            if (MainNob == null)
                 return;
 
             var str = AddressData.搜尋身邊NPCID起始;
@@ -530,8 +530,8 @@ namespace NOBApp.Sports
 
             for (int i = 0; i < 30; i++)
             {
-                long findID = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str, 4);
-                long dis = MainWindow.dmSoft.ReadInt(MainNob.Hwnd, "<nobolHD.bng> + " + str.AddressAdd(4), 4);
+                long findID = MainNob.ReadIntValue("<nobolHD.bng> + " + str, 4);
+                long dis = MainNob.ReadIntValue("<nobolHD.bng> + " + str.AddressAdd(4), 4);
 
                 if (maxID > findID && dis >= 65534)
                 {

@@ -30,9 +30,9 @@ namespace NOBApp.Sports
             Point = 檢查點.入場;
             for (int i = 0; i < NobTeam.Count; i++)
             {
-                NobTeam[i].選擇目標類型(1);
-                MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
-                MainWindow.dmSoft!.WriteString(NobTeam[i].Hwnd, "<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
+                NobTeam[i].WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F11, 1, "／自動移動:NPC");
+                NobTeam[i].WriteStringValue("<nobolHD.bng> + " + AddressData.快捷F12, 1, "／自動移動:GOM");
+                NobTeam[i].KeyPress(VKeys.KEY_F11);
             }
         }
 
@@ -139,6 +139,8 @@ namespace NOBApp.Sports
                             移動點.Add(new(19814, 56618));
                             移動點.Add(new(23057, 55576));
                             移動點.Add(new(24870, 44850));
+                            // 秀吉目前打完都是等待回去
+                            //移動點.Add(new(25701, 42523));
                             移動到定點();
                         }
                         //需打兩個小兵
