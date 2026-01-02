@@ -94,8 +94,8 @@ namespace NOBApp.Managers
 							}
 						}
 
-						// 獲取網路時間進行比對
-						DateTime currentTime = await NetworkTime.GetNowAsync();
+						// 獲取網路時間進行比對（快取 5 分鐘）
+						DateTime currentTime = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
 						_lastNetworkTime = currentTime;
 						_lastTickCount = Environment.TickCount64;
 
@@ -173,7 +173,7 @@ namespace NOBApp.Managers
 
 											if (_view.MainNob.到期日 != DateTime.MinValue)
 											{
-												DateTime nowTime = await NetworkTime.GetNowAsync();
+												DateTime nowTime = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
 												TimeSpan remainingTime = _view.MainNob.到期日 - nowTime;
 												if (remainingTime.TotalDays > 0)
 												{
@@ -212,11 +212,13 @@ namespace NOBApp.Managers
 						{
 							bool SPPass = _view.MainNob.特殊者 ? _view.MainNob.驗證國家 : _view.MainNob.贊助者;
 
-							// 如果過期，強制允許通過但關閉VIP
-							DateTime nowTime = await NetworkTime.GetNowAsync();
+							// 使用最新網路時間檢查到期
+							DateTime nowTime = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
 							if (_view.MainNob.到期日 < nowTime)
 							{
-								isPass = true;
+								statusBox.AppendText("⚠ 認證已過期，無法開啟 VIP 功能\n");
+								isPass = true; // 允許以免費模式繼續使用腳本
+								Tools.CurrentLevel = Tools.AccountLevel.Free;
 							}
 							else
 							{
@@ -225,7 +227,7 @@ namespace NOBApp.Managers
 									MessageBox.Show("免費使用者 需要加入遊戲頻道 請聯繫企鵝 取得加入的方式 或著請認識的朋友提供");
 									return;
 								}
-								isPass = SPPass;
+							 isPass = SPPass;
 							}
 
 							_view.MainNob.驗證完成 = isPass;
@@ -240,7 +242,7 @@ namespace NOBApp.Managers
 						Tools.SetTimeUp(_view.MainNob);
 						statusBox.AppendText($"驗證完成.. 更新時間 -> {_view.MainNob.到期日}\n");
 
-						DateTime checkTime = await NetworkTime.GetNowAsync();
+						DateTime checkTime = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
 						if (_view.MainNob.到期日 >= checkTime)
 						{
 							_view.到期計時.Content = $"到期時間: {_view.MainNob.到期日:yyyy-MM-dd} (有效)";
@@ -257,7 +259,8 @@ namespace NOBApp.Managers
 						ShowReAuthTimeInfo(_view.MainNob, statusBox);
 
 						igMouse.IsEnabled = true;
-						if (_view.MainNob.到期日 >= checkTime)
+						bool vipActive = _view.MainNob.到期日 >= checkTime && isPass && (_view.MainNob.特殊者 || _view.MainNob.贊助者);
+						if (vipActive)
 						{
 							Tools.isBANACC = false;
 							
@@ -428,7 +431,7 @@ namespace NOBApp.Managers
 				{
 					try
 					{
-						_lastNetworkTime = await NetworkTime.GetNowAsync();
+						_lastNetworkTime = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
 						_lastTickCount = Environment.TickCount64;
 						currentTick = _lastTickCount;
 						elapsedMs = 0;
@@ -527,7 +530,7 @@ namespace NOBApp.Managers
 							DateTime nowTime;
 							try
 							{
-								nowTime = await NetworkTime.GetNowAsync();
+								nowTime = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
 								_lastNetworkTime = nowTime;
 								_lastTickCount = Environment.TickCount64;
 							}

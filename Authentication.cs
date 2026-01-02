@@ -14,19 +14,19 @@ namespace NOBApp
         /// </summary>
         private static string CalculateNextReAuthTime(int daysInterval = 7)
         {
-            return NetworkTime.GetNetworkTimeAsync().AddDays(daysInterval).ToString("yyyy-MM-dd HH:mm:ss");
+            return NetworkTime.GetCachedNow(TimeSpan.FromMinutes(5)).AddDays(daysInterval).ToString("yyyy-MM-dd HH:mm:ss");
         }
 
         private static async System.Threading.Tasks.Task<string> CalculateNextReAuthTimeAsync(int daysInterval = 7)
         {
-            var time = await NetworkTime.GetNowAsync();
+            var time = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
             return time.AddDays(daysInterval).ToString("yyyy-MM-dd HH:mm:ss");
         }
 
         public static async System.Threading.Tasks.Task 儲存認證訊息Async(NOBDATA data, PNobUserData nobUseData)
         {
             // 記錄驗證時間
-            var now = await NetworkTime.GetNowAsync();
+            var now = await NetworkTime.GetCachedNowAsync(TimeSpan.FromMinutes(5));
             nobUseData.LastAuthTime = now.ToString("yyyy-MM-dd HH:mm:ss");
             nobUseData.NextReAuthTime = await CalculateNextReAuthTimeAsync();
             
@@ -50,7 +50,7 @@ namespace NOBApp
         public static void 儲存認證訊息(NOBDATA data, PNobUserData nobUseData)
         {
             // 記錄驗證時間
-            nobUseData.LastAuthTime = NetworkTime.GetNetworkTimeAsync().ToString("yyyy-MM-dd HH:mm:ss");
+            nobUseData.LastAuthTime = NetworkTime.GetCachedNow(TimeSpan.FromMinutes(5)).ToString("yyyy-MM-dd HH:mm:ss");
             nobUseData.NextReAuthTime = CalculateNextReAuthTime();
             
             string jsonString = JsonSerializer.Serialize(nobUseData);
@@ -148,7 +148,7 @@ namespace NOBApp
                         if (!string.IsNullOrEmpty(nobUseData.NextReAuthTime) && 
                             DateTime.TryParse(nobUseData.NextReAuthTime, out DateTime nextReAuthDate))
                         {
-                            TimeSpan timeUntilReAuth = nextReAuthDate - NetworkTime.GetNetworkTimeAsync();
+                            TimeSpan timeUntilReAuth = nextReAuthDate - NetworkTime.GetCachedNow(TimeSpan.FromMinutes(5));
                             if (timeUntilReAuth.TotalHours < 0)
                             {
                                 Debug.WriteLine($"警告: {user.Account} 已超過重新驗證時間，建議重新驗證");

@@ -10,8 +10,9 @@ namespace NOBApp.Sports
 {
     internal class 四聖青龍 : BaseClass
     {
-        NOBDATA? mUseNOB;
-        int cache地圖 = 7800;
+        public override bool 需要顏色判斷 => true;
+         NOBDATA? mUseNOB;
+         int cache地圖 = 7800;
 
         public override void 初始化()
         {

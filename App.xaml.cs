@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -33,6 +34,9 @@ namespace NOBApp
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Enable code page encodings (e.g., BIG5/950) for name/account decoding
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             base.OnStartup(e);
             //直接顯示主視窗，不做提權自動重啟
             var mw = new MainWindow();

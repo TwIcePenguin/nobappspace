@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows10.0.19041</TargetFramework>
-		<Nullable>enable</Nullable>
+		<TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+		<Nullable>disable</Nullable>
 		<UseWPF>true</UseWPF>
 		<StartupObject>NOBApp.App</StartupObject>
 		<UseWindowsForms>True</UseWindowsForms>
@@ -12,9 +12,9 @@
 		<PackageIcon>SteamPGIN.png</PackageIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<!-- 移除自訂 BaseOutputPath以避免啟動路徑/權限問題 -->
 		<OutputPath>bin\$(Configuration)\</OutputPath>
+		<NoWarn>CS0168;CS0414;CS4014;CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8618;CS8625</NoWarn>
 	</PropertyGroup>
 
 	<!-- 版本更新邏輯已移至 PublishAndUpload.ps1，以避免檔案鎖定問題 -->

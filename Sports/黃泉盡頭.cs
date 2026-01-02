@@ -12,7 +12,9 @@ namespace NOBApp.Sports
 {
 	internal class 黃泉盡頭 : BaseClass
 	{
-		#region Fields & Constants
+		public override bool 需要VIP => true;
+		public override bool 需要顏色判斷 => true;
+ 		#region Fields & Constants
 
 		// Renamed fields to follow C# conventions (camelCase for private fields)
 		private int _outsideMapId = 0;
@@ -46,9 +48,7 @@ namespace NOBApp.Sports
 		{
 			if (!Tools.IsVIP)
 			{
-				MessageBox.Show($"VIP 腳本暫不開放");
-				MainNob!.StartRunCode = false;
-				return;
+				MainNob?.Log("已過期：將以低速模式運行 VIP 腳本");
 			}
 
 			移動點 = new();
@@ -78,13 +78,11 @@ namespace NOBApp.Sports
 		/// <returns>非同步任務</returns>
 		public override async Task 腳本運作()
 		{
-			if (_isScriptRunning) return;
+ 			if (_isScriptRunning) return;
 
 			if (!Tools.IsVIP)
 			{
-				MessageBox.Show($"VIP 腳本暫不開放");
-				MainNob!.StartRunCode = false;
-				return;
+				MainNob?.Log("已過期：將以低速模式運行 VIP 腳本");
 			}
 
 			if (!MainNob!.StartRunCode)

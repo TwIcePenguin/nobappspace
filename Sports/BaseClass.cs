@@ -11,6 +11,19 @@ namespace NOBApp.Sports
 {
 	public class BaseClass
 	{
+		public virtual bool 需要VIP => false;
+		public virtual bool 需要顏色判斷 => false;
+		private static readonly HashSet<string> _resolutionHints = new();
+
+		public void 顯示顏色提示()
+		{
+			if (!需要顏色判斷 || MainNob == null) return;
+			string key = $"{MainNob.PlayerName}-{GetType().Name}";
+			if (_resolutionHints.Contains(key)) return;
+			_resolutionHints.Add(key);
+			MainNob.Log("提示：此腳本使用顏色判斷，請將遊戲視窗解析度設為 1024x768 以確保顏色座標一致。");
+		}
+
 		#region 移動相關常數 - 建議值，可根據遊戲調整
 		private const int InitialDelayMs = 300;                  // 初始延遲 (毫秒)
 		private const int BattleCheckDelayMs = 500;               // 戰鬥檢查延遲 (毫秒)

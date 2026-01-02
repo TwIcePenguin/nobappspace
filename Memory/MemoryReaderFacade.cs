@@ -49,6 +49,14 @@ namespace NOBApp.Memory
             return BitConverter.ToString(bytes, 0, lengthBytes).Replace('-', ' ');
         }
 
+        /// <summary>
+        /// 讀取原始 bytes（用於診斷編碼格式）
+        /// </summary>
+        public byte[] ReadBytes(string address, int lengthBytes)
+        {
+            return _reader.ReadBytes(Resolve(address), lengthBytes);
+        }
+
         public Task WriteInt32Async(string address, int value, CancellationToken cancellationToken = default)
         {
             _reader.WriteInt32(Resolve(address), value);

@@ -157,6 +157,14 @@ namespace NOBApp
             Btn_TargetC.Visibility = Btn_TargetB.Visibility = Btn_TargetA.Visibility = Visibility.Hidden;
 
             通用欄.Visibility = Visibility.Hidden;
+
+            // 重置顏色提示
+            var colorHint = GetColorHintBlock();
+            if (colorHint != null)
+            {
+                colorHint.Visibility = Visibility.Collapsed;
+                colorHint.Text = string.Empty;
+            }
         }
 
         void UIEventAdd()
@@ -600,8 +608,31 @@ namespace NOBApp
 
         private void SelectMenu_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var str = SelectMenu?.SelectedItem?.ToString();
+            var item = SelectMenu?.SelectedItem as ComboBoxItem;
+            var str = item?.Content?.ToString() ?? SelectMenu?.SelectedItem?.ToString();
             _scriptManager.HandleSelectionChanged(str);
+
+            UpdateColorHint();
+        }
+
+        private TextBlock? GetColorHintBlock() => this.FindName("ColorHintText") as TextBlock;
+
+        private void UpdateColorHint()
+        {
+            var colorHint = GetColorHintBlock();
+            if (colorHint == null) return;
+
+            bool needsColor = useMenu?.需要顏色判斷 == true;
+            if (needsColor)
+            {
+                colorHint.Text = "UI1: 此腳本需要顏色判斷，請將遊戲解析度設定為 1024x768。";
+                colorHint.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                colorHint.Text = string.Empty;
+                colorHint.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>

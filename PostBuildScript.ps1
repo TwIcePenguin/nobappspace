@@ -4,7 +4,7 @@ Parameters:
   -OutputPath: directory containing the ZIP file(s)
   -VersionInfoPath: path to VersionInfo.cs (used to extract Version constant)
   -GitHubToken: personal access token or provide via env GITHUB_TOKEN
-  -GitHubRepo: owner/repo (default TwIcePenguin/nobappspace in original)
+  -GitHubRepo: owner/repo (default TwIcePenguin/nobapp in original)
   -GitFolder: git repository folder (default current)
   -DryRun: switch to print actions without performing network/git changes
 #>

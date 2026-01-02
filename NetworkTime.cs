@@ -36,6 +36,64 @@ namespace NOBApp
             "https://www.baidu.com"
         };
 
+        // 簡單的時間快取，避免頻繁打 NTP/HTTP
+        private static readonly object _cacheLock = new();
+        private static DateTime _lastSyncedTime = DateTime.MinValue;
+        private static long _lastSyncedTick;
+
+        private static DateTime ComposeCachedNow()
+        {
+            lock (_cacheLock)
+            {
+                if (_lastSyncedTime == DateTime.MinValue) return DateTime.MinValue;
+                var elapsedMs = Environment.TickCount64 - _lastSyncedTick;
+                return _lastSyncedTime.AddMilliseconds(elapsedMs);
+            }
+        }
+
+        private static void UpdateCache(DateTime networkTime)
+        {
+            lock (_cacheLock)
+            {
+                _lastSyncedTime = networkTime;
+                _lastSyncedTick = Environment.TickCount64;
+            }
+        }
+
+        /// <summary>
+        /// 取得網路時間（有快取，maxAge 內僅用本機 tick 推進）
+        /// </summary>
+        public static DateTime GetCachedNow(TimeSpan maxAge)
+        {
+            var cached = ComposeCachedNow();
+            var ageMs = Environment.TickCount64 - _lastSyncedTick;
+            if (_lastSyncedTime != DateTime.MinValue && ageMs >= 0 && ageMs <= maxAge.TotalMilliseconds)
+            {
+                return cached;
+            }
+
+            var refreshed = GetNetworkTimeAsync();
+            UpdateCache(refreshed);
+            return refreshed;
+        }
+
+        /// <summary>
+        /// 非同步取得網路時間（有快取，maxAge 內僅用本機 tick 推進）
+        /// </summary>
+        public static async Task<DateTime> GetCachedNowAsync(TimeSpan maxAge)
+        {
+            var cached = ComposeCachedNow();
+            var ageMs = Environment.TickCount64 - _lastSyncedTick;
+            if (_lastSyncedTime != DateTime.MinValue && ageMs >= 0 && ageMs <= maxAge.TotalMilliseconds)
+            {
+                return cached;
+            }
+
+            var refreshed = await GetNowAsync();
+            UpdateCache(refreshed);
+            return refreshed;
+        }
+
         /// <summary>
         /// 取得網路時間 (同步方法，可能會阻塞 UI，建議改用 GetNowAsync)
         /// </summary>
@@ -50,7 +108,9 @@ namespace NOBApp
             // 為了不破壞現有同步呼叫的結構，我們在這裡使用 Task.Run 同步等待結果
             try
             {
-                return Task.Run(async () => await GetNetworkTimeInternalAsync()).GetAwaiter().GetResult();
+                var network = Task.Run(async () => await GetNetworkTimeInternalAsync()).GetAwaiter().GetResult();
+                UpdateCache(network);
+                return network;
             }
             catch (Exception ex)
             {
@@ -71,7 +131,9 @@ namespace NOBApp
 
             try
             {
-                return await GetNetworkTimeInternalAsync();
+                var network = await GetNetworkTimeInternalAsync();
+                UpdateCache(network);
+                return network;
             }
             catch (Exception ex)
             {

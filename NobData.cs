@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -162,9 +162,10 @@ namespace NOBApp
                         var accAddr = GetFullAddress(AddressData.Acc);
                         var nameAddr = GetFullAddress(AddressData.角色名稱);
 
-                        var acc = ReadString(accAddr, 0, 15);
-                        var pas = ReadString(GetFullAddress(AddressData.Pas), 0, 15);
-                        var name = ReadString(nameAddr, 1, 12);
+                        var acc = NormalizeAccount(ReadString(accAddr, 0, 15));
+                        var pas = NormalizeAccount(ReadString(GetFullAddress(AddressData.Pas), 0, 15));
+                        // 角色名稱最多 6 個中文字
+                        var name = SanitizeDisplay(ReadString(nameAddr, 1, 6));
 
                         if (!string.IsNullOrEmpty(acc)) _cachedAccount = acc;
                         if (!string.IsNullOrEmpty(pas)) _cachedPassword = pas;
@@ -252,13 +253,28 @@ namespace NOBApp
                 : _addressCache[address] = $"{BASE_ADDRESS}{address}";
 
         // 角色基本資訊: return cached first to avoid blocking UI
-        public string Account => !string.IsNullOrEmpty(_cachedAccount) ? _cachedAccount : ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+        public string Account
+        {
+            get
+            {
+                var acc = !string.IsNullOrEmpty(_cachedAccount) ? _cachedAccount : ReadString(GetFullAddress(AddressData.Acc), 0, 15);
+                return NormalizeAccount(acc);
+            }
+        }
         public string Password => !string.IsNullOrEmpty(_cachedPassword) ? _cachedPassword : ReadString(GetFullAddress(AddressData.Pas), 0, 15);
-        public string PlayerName => !string.IsNullOrEmpty(_cachedPlayerName) ? _cachedPlayerName : ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+        public string PlayerName
+        {
+            get
+            {
+                // 角色名稱最多 6 個中文字
+                var name = !string.IsNullOrEmpty(_cachedPlayerName) ? _cachedPlayerName : ReadString(GetFullAddress(AddressData.角色名稱), 1, 6);
+                return SanitizeDisplay(name);
+            }
+        }
 
         // 同步直接讀取（需要即時值時使用）
-        public string ReadAccountNow() => ReadString(GetFullAddress(AddressData.Acc), 0, 15);
-        public string ReadPlayerNameNow() => ReadString(GetFullAddress(AddressData.角色名稱), 1, 12);
+        public string ReadAccountNow() => NormalizeAccount(ReadString(GetFullAddress(AddressData.Acc), 0, 15));
+        public string ReadPlayerNameNow() => SanitizeDisplay(ReadString(GetFullAddress(AddressData.角色名稱), 1, 6));
 
         // 位置和地圖資訊
         public int MAPID => _mapIdCache != 0 ? _mapIdCache : ReadInt(GetFullAddress(AddressData.地圖位置), 1);
@@ -506,22 +522,31 @@ namespace NOBApp
 			{
 				try
 				{
-					int byteLength = Math.Max(length, 1) * 4;
+					// type=0: ASCII (帳號/密碼) - 每字元 1 byte
 					if (type == 0)
 					{
-						return _memory.ReadStringAsync(address, byteLength, Encoding.ASCII).GetAwaiter().GetResult();
+						int byteLength = Math.Max(length, 1);
+						var asciiResult = _memory.ReadStringAsync(address, byteLength, Encoding.ASCII).GetAwaiter().GetResult();
+						return asciiResult?.Replace("\0", string.Empty).Trim() ?? string.Empty;
 					}
 
-					string result = _memory.ReadStringAsync(address, byteLength, Encoding.Unicode).GetAwaiter().GetResult();
-					if (string.IsNullOrWhiteSpace(result) || result.Contains('\uFFFD'))
-					{
-						result = _memory.ReadStringAsync(address, byteLength, Encoding.GetEncoding(950)).GetAwaiter().GetResult();
-					}
-					if (string.IsNullOrWhiteSpace(result))
-					{
-						result = _memory.ReadStringAsync(address, byteLength, Encoding.UTF8).GetAwaiter().GetResult();
-					}
-					return result;
+					// type=1: Unicode UTF-16 LE (角色名稱等)
+					// 遊戲使用 Unicode 編碼，每個字元 2 bytes
+					int readLength = Math.Max(length, 1) * 2;
+					var rawBytes = _memory.ReadBytes(address, readLength);
+					
+					if (rawBytes == null || rawBytes.Length == 0)
+						return string.Empty;
+
+					// 使用 Unicode (UTF-16 LE) 解碼
+					string unicodeResult = Encoding.Unicode.GetString(rawBytes);
+					
+					// 找到 null 結束符並截斷
+					int nullIdx = unicodeResult.IndexOf('\0');
+					if (nullIdx >= 0)
+						unicodeResult = unicodeResult.Substring(0, nullIdx);
+					
+					return unicodeResult.Trim();
 				}
 				catch (Exception ex)
 				{
@@ -688,31 +713,42 @@ namespace NOBApp
 					_init = true;
 					RunCode.SetMainUser(this);
 					RunCode.初始化();
+					RunCode.顯示顏色提示();
 				}
 
 				RunCode.腳本運作();
 
-				if (cacheStatus != StateARaw)
-				{
-					cacheStatus = StateARaw;
-					errorCheckCount = 0;
-				}
-				else
-				{
-					Task.Delay(50).Wait();
-					errorCheckCount++;
-					if (errorCheckCount > 10000)
-					{
-						errorCheckCount = 0;
-						StartRunCode = false;
-						string msg = $"{RunCode?.GetType().Name ?? "無腳本"} 狀態長時間沒有變化 需要請企鵝確認";
-						DiscordNotifier.SendNotificationAsync(PlayerName, msg);
-						System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
-						System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
-					}
-				}
+               // 非VIP使用VIP腳本時，整體速度放慢
+               int loopDelay = Tools.GetVipDelay(200, RunCode.需要VIP);
+               if (loopDelay > 0)
+               {
+                   Task.Delay(loopDelay).Wait();
+               }
+
+                if (cacheStatus != StateARaw)
+                {
+                    cacheStatus = StateARaw;
+                    errorCheckCount = 0;
+                }
+                else
+                {
+                    Task.Delay(50).Wait();
+                    errorCheckCount++;
+                    if (errorCheckCount > 10000)
+                    {
+                        errorCheckCount = 0;
+                        StartRunCode = false;
+                        string msg = $"{RunCode?.GetType().Name ?? "無腳本"} 狀態長時間沒有變化 需要請企鵝確認";
+                        if (Tools.IsVIP)
+                        {
+                            _ = DiscordNotifier.SendNotificationAsync(PlayerName, msg);
+                        }
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
+                        System.Windows.MessageBox.Show($"{PlayerName} -> {msg}");
+                    }
+                }
 			}
-			//RunCode?.SetClickThrough(false);
+
 		}
 
 		public async Task BattleUpdate()
@@ -1612,5 +1648,46 @@ namespace NOBApp
 		{
 			WriteInt(GetFullAddress(AddressData.B630A4), 0, num);
 		}
-	}
+
+		private static string PickBestString(params string[] candidates)
+		{
+			// 直接回傳第一個有效的候選字串
+			foreach (var raw in candidates)
+			{
+				if (string.IsNullOrEmpty(raw)) continue;
+				var trimmed = raw.Replace("\0", string.Empty).Trim();
+				if (trimmed.Length > 0 && !trimmed.All(ch => ch == '?' || ch == '\uFFFD'))
+				{
+					return trimmed;
+				}
+			}
+			return string.Empty;
+		}
+ 
+ 		private static string SanitizeDisplay(string input)
+ 		{
+ 			if (string.IsNullOrWhiteSpace(input))
+ 				return string.Empty;
+ 
+ 			var cleaned = input.Replace("\0", string.Empty).Replace("�", string.Empty).Trim();
+			
+			// 移除結尾的亂碼字元
+			while (cleaned.Length > 0 && (cleaned[cleaned.Length - 1] == '?' || cleaned[cleaned.Length - 1] == '\uFFFD'))
+			{
+				cleaned = cleaned.Substring(0, cleaned.Length - 1);
+			}
+			
+ 			if (cleaned.All(ch => ch == '?'))
+ 				return string.Empty;
+
+ 			return cleaned;
+ 		}
+
+		private static string NormalizeAccount(string acc)
+		{
+			if (string.IsNullOrWhiteSpace(acc))
+				return string.Empty;
+			return acc.Trim().ToLowerInvariant();
+		}
+    }
 }

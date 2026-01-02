@@ -10,6 +10,7 @@ namespace NOBApp.Sports
 {
     internal class 討伐2025_白石 : BaseClass
     {
+        public override bool 需要顏色判斷 => true;
         NOBDATA? mUseNOB;
         public int SetClass = 0;
         public int 起始地圖 = 7800; //白石 地圖 -10015

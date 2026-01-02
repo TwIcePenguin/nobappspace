@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace NOBApp.Managers
 {
@@ -21,8 +23,25 @@ namespace NOBApp.Managers
             _view = view;
         }
 
+        private readonly HashSet<string> _vipScripts = new();
+
+        private sealed class VipBrushConverter : IValueConverter
+        {
+            private readonly HashSet<string> _vip;
+            public VipBrushConverter(HashSet<string> vip) => _vip = vip;
+
+            public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                var name = value?.ToString();
+                return name != null && _vip.Contains(name);
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => throw new NotImplementedException();
+        }
+
         public void UpdateSelectMenu()
         {
+            _vipScripts.Clear();
             var selectMenu = _view.SelectMenu;
             var btnTargetA = _view.Btn_TargetA;
             var btnTargetB = _view.Btn_TargetB;
@@ -48,13 +67,26 @@ namespace NOBApp.Managers
             var backTime = _view.後退時間;
 
             selectMenu.Items.Clear();
-            var sportsClasses = Assembly.GetExecutingAssembly()
+            var sportsTypes = Assembly.GetExecutingAssembly()
                                         .GetTypes()
                                         .Where(t => t.IsClass && t.Namespace == "NOBApp.Sports" &&
                                                     t.Name != "ScriptExtensions" &&
                                                     t.Name != "BaseClass" && !t.Name.Contains("<"))
-                                        .Select(t => t.Name)
                                         .ToList();
+
+            foreach (var t in sportsTypes)
+            {
+                try
+                {
+                    if (Activator.CreateInstance(t) is BaseClass bc && bc.需要VIP)
+                    {
+                        _vipScripts.Add(t.Name);
+                    }
+                }
+                catch { }
+            }
+
+            var sportsClasses = sportsTypes.Select(t => t.Name).ToList();
 
             foreach (var className in sportsClasses)
             {

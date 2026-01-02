@@ -21,6 +21,21 @@ namespace NOBApp
 {
     public static class Tools
     {
+        // 非VIP使用VIP腳本時的速度倍率（3~5倍，預設4倍）
+        public static int NonVipPenaltyMultiplier { get; set; } = 4;
+
+        /// <summary>
+        /// 回傳考慮VIP與腳本需求後的延遲時間。
+        /// </summary>
+        /// <param name="baseDelayMs">基礎延遲毫秒數。</param>
+        /// <param name="requiresVip">腳本是否為VIP腳本。</param>
+        public static int GetVipDelay(int baseDelayMs, bool requiresVip)
+        {
+            if (baseDelayMs <= 0) return 0;
+            if (!requiresVip || IsVIP) return baseDelayMs;
+            return Math.Max(baseDelayMs * NonVipPenaltyMultiplier, baseDelayMs);
+        }
+
         #region API
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
